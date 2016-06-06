@@ -45,128 +45,6 @@ angular
     
   }]);
 
-/**
- * Created by jonybang on 04.07.15.
- */
-angular.module('a-edit')
-    .factory('AEditConfig', [function() {
-       this.templates_path = 'templates/';
-       
-       return this;
-    }]);
-
-/**
- * Created by jonybang on 04.07.15.
- */
-angular.module('a-edit')
-    .factory('AEditHelpers', [function() {
-        var service = {
-            //config:
-            //  html_attributes
-            //  lists_container
-            //  list_variable
-            //  item_name
-            //  field_name
-            //  always_edit
-            generateDirectiveByConfig: function(field, config){
-                var output = '';
-                var directive = '';
-
-                switch(field.type){
-                    case 'select':
-                    case 'multiselect':
-                        directive = 'select-input';
-                        break;
-                    case 'date':
-                        directive = 'date-input';
-                        break;
-                    case 'file':
-                    case 'multifile':
-                        directive = 'file-upload';
-                        break;
-                    default:
-                        directive = 'text-input';
-                        break;
-                }
-
-                output += '<' + directive + ' ';
-
-                output += 'type="' + (field.type || '') + '" ' +
-                    'input-name="' + (field.input_name || '') + '" ';
-
-                if(field.width)
-                    output += 'width="' + field.width + '" ';
-
-                if(field.model)
-                    output += 'url="' + field.model.config.url + '" ';
-
-                if(config.list_variable)
-                    output += 'list="' + config.list_variable + '" ';
-                else if(config.lists_container)
-                    output += 'list="' + config.lists_container + '.' + field.list + '" ';
-
-                var item_name = angular.isUndefined(config.item_name) ? 'item' : config.item_name;
-                var field_name = angular.isUndefined(config.field_name) ? field.name : config.field_name;
-                var item_field = item_name + (field.name != 'self' ? '.' : '') + field_name;
-
-                var is_edit;
-                if(field.readonly)
-                    is_edit = 'false';
-                else if(config.always_edit)
-                    is_edit = 'true';
-                else
-                    is_edit = item_name + '.is_edit';
-                    
-                output += 'ng-model="' + item_field + '" ' +
-                    'on-save="save(' + item_name + ')" ' +
-                    'ng-model-str="' + item_name + '.' +  field_name + '_str" ' +
-                    'ng-model-sub-str="' + item_name + '.' +  field_name + '_sub_str" ' +
-                    'is-edit="' + is_edit + '" '+
-                    'placeholder="' + ((config.always_edit ? field.new_placeholder : field.placeholder) || '') + '" ';
-
-                if(field.type == 'file' || field.type == 'multifile')
-                    output += 'uploader="' + item_name + '.' + field_name + '__uploader" ';
-
-                if(field.modal && !config.already_modal && field.modal == 'self')
-                    output += 'modal-model="' + item_name + '" ';
-
-                output += '></' + directive + '>';
-
-                return output;
-            },
-            getResourceQuery: function(obj, action){
-                
-                var possibleFunctions;
-                switch(action){
-                    case 'create':
-                        possibleFunctions = ['$save', 'create'];
-                        break;
-                    case 'update':
-                        possibleFunctions = ['$save', 'update'];
-                        break;
-                    case 'delete':
-                        possibleFunctions = ['$delete', 'delete'];
-                        break;
-                }
-                
-                var query;
-                possibleFunctions.some(function(functionName){
-                    if(obj[functionName])
-                        query = obj[functionName]();
-                    
-                    return obj[functionName];
-                });
-                
-                if(!query){
-                    console.error('Undefined model resource! Override getResourceQuery function in AEditHelpers service for define custom resource function.')
-                }
-                return query;
-            }
-        };
-
-        return service;
-    }]);
-
 angular
     .module('a-edit')
     .directive('aGrid', ['$timeout', '$compile', '$filter', 'AEditHelpers', 'AEditConfig', function($timeout, $compile, $filter, AEditHelpers, AEditConfig) {
@@ -959,4 +837,126 @@ angular
                 }
             }
         };
+    }]);
+
+/**
+ * Created by jonybang on 04.07.15.
+ */
+angular.module('a-edit')
+    .factory('AEditConfig', [function() {
+       this.templates_path = 'templates/';
+       
+       return this;
+    }]);
+
+/**
+ * Created by jonybang on 04.07.15.
+ */
+angular.module('a-edit')
+    .factory('AEditHelpers', [function() {
+        var service = {
+            //config:
+            //  html_attributes
+            //  lists_container
+            //  list_variable
+            //  item_name
+            //  field_name
+            //  always_edit
+            generateDirectiveByConfig: function(field, config){
+                var output = '';
+                var directive = '';
+
+                switch(field.type){
+                    case 'select':
+                    case 'multiselect':
+                        directive = 'select-input';
+                        break;
+                    case 'date':
+                        directive = 'date-input';
+                        break;
+                    case 'file':
+                    case 'multifile':
+                        directive = 'file-upload';
+                        break;
+                    default:
+                        directive = 'text-input';
+                        break;
+                }
+
+                output += '<' + directive + ' ';
+
+                output += 'type="' + (field.type || '') + '" ' +
+                    'input-name="' + (field.input_name || '') + '" ';
+
+                if(field.width)
+                    output += 'width="' + field.width + '" ';
+
+                if(field.model)
+                    output += 'url="' + field.model.config.url + '" ';
+
+                if(config.list_variable)
+                    output += 'list="' + config.list_variable + '" ';
+                else if(config.lists_container)
+                    output += 'list="' + config.lists_container + '.' + field.list + '" ';
+
+                var item_name = angular.isUndefined(config.item_name) ? 'item' : config.item_name;
+                var field_name = angular.isUndefined(config.field_name) ? field.name : config.field_name;
+                var item_field = item_name + (field.name != 'self' ? '.' : '') + field_name;
+
+                var is_edit;
+                if(field.readonly)
+                    is_edit = 'false';
+                else if(config.always_edit)
+                    is_edit = 'true';
+                else
+                    is_edit = item_name + '.is_edit';
+                    
+                output += 'ng-model="' + item_field + '" ' +
+                    'on-save="save(' + item_name + ')" ' +
+                    'ng-model-str="' + item_name + '.' +  field_name + '_str" ' +
+                    'ng-model-sub-str="' + item_name + '.' +  field_name + '_sub_str" ' +
+                    'is-edit="' + is_edit + '" '+
+                    'placeholder="' + ((config.always_edit ? field.new_placeholder : field.placeholder) || '') + '" ';
+
+                if(field.type == 'file' || field.type == 'multifile')
+                    output += 'uploader="' + item_name + '.' + field_name + '__uploader" ';
+
+                if(field.modal && !config.already_modal && field.modal == 'self')
+                    output += 'modal-model="' + item_name + '" ';
+
+                output += '></' + directive + '>';
+
+                return output;
+            },
+            getResourceQuery: function(obj, action){
+                
+                var possibleFunctions;
+                switch(action){
+                    case 'create':
+                        possibleFunctions = ['$save', 'create'];
+                        break;
+                    case 'update':
+                        possibleFunctions = ['$save', 'update'];
+                        break;
+                    case 'delete':
+                        possibleFunctions = ['$delete', 'delete'];
+                        break;
+                }
+                
+                var query;
+                possibleFunctions.some(function(functionName){
+                    if(obj[functionName])
+                        query = obj[functionName]();
+                    
+                    return obj[functionName];
+                });
+                
+                if(!query){
+                    console.error('Undefined model resource! Override getResourceQuery function in AEditHelpers service for define custom resource function.')
+                }
+                return query;
+            }
+        };
+
+        return service;
     }]);

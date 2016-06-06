@@ -23,27 +23,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.12.0/moment-with-locales.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-moment/0.10.3/angular-moment.min.js"></script>
     
-    <link rel="stylesheet" href="../css/a-edit.css" />
+    <link href="../dist/a-edit.css" rel="stylesheet" />
+
+    <script src="../dist/a-edit.js"></script>
     
     <script src="helpers.js"></script>
     <script src="example-backend.js"></script>
     
-    <script src="../src/js/a-edit.js"></script>
-
-    <script src="../src/js/services/config.js"></script>
-    <script src="../src/js/services/helpers.js"></script>
-
-    <script src="../src/js/directives/helpers.js"></script>
-    <script src="../src/js/directives/grid.js"></script>
-    <script src="../src/js/directives/inputs.js"></script>
-    <script src="../src/js/directives/modal.js"></script>
     
     <script src="script.js"></script>
   </head>
 
   <body ng-app="app" ng-strict-di="" ng-controller="myController">
 	<div class="container">
-		 <h1>Awesome Grid!</h1>
+		 <h1>Awesome Edit Grid!</h1>
     
 		<a-grid ng-model="list" options="aGridOptions"></a-grid>
 		
