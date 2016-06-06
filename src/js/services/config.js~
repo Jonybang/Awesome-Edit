@@ -1,0 +1,11 @@
+/**
+ * Created by jonybang on 04.07.15.
+ */
+angular.module('a-edit')
+    .factory('AEditConfig', [function() {
+        var service = {
+            templates_path: 'a-edit-'
+        };
+
+        return service;
+    }]);

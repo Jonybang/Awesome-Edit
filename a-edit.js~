@@ -1,0 +1,8 @@
+// Code goes here
+angular
+  .module('a-edit', ['ui.bootstrap', 'angularMoment', 'ui.select', 'ngSanitize', 'rt.debounce'])
+  
+  .run(['amMoment', 'uiSelectConfig', function(amMoment, uiSelectConfig) {
+    amMoment.changeLocale('ru');
+    uiSelectConfig.theme = 'bootstrap';
+  }]);
