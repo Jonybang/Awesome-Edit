@@ -254,7 +254,7 @@ angular
                     scope.list.some(function(obj){
                         var result = obj.id == val;
                         if(result)
-                            resultName = obj.name;
+                            resultName = obj.name || obj.title;
                         return result;
                     });
                     return resultName;
