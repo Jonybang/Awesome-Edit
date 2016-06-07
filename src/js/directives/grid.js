@@ -47,6 +47,18 @@ angular
             scope.save = function(item){
                 if(!item)
                     return;
+
+                item.errors || (item.errors = {});
+
+                scope.options.fields.forEach(function(field){
+                    if(field.required && !item[field.name])
+                        item.errors[field.name] = true;
+                    else if(item.errors[field.name])
+                        delete item.errors[field.name];
+                });
+
+                if(!AEditHelpers.isEmptyObject(item.errors))
+                    return;
                     
                 console.log('save item', item);
 

@@ -40,6 +40,9 @@ angular.module('a-edit')
                 if(field.width)
                     output += 'width="' + field.width + '" ';
 
+                if(field.required)
+                    output += 'required="true" ';
+
                 if(field.model)
                     output += 'url="' + field.model.config.url + '" ';
 
@@ -62,6 +65,7 @@ angular.module('a-edit')
                     
                 output += 'ng-model="' + item_field + '" ' +
                     'on-save="save(' + item_name + ')" ' +
+                    'has-error="' + item_name + '.errors.' + field_name + '" ' +
                     'ng-model-str="' + item_name + '.' +  field_name + '_str" ' +
                     'ng-model-sub-str="' + item_name + '.' +  field_name + '_sub_str" ' +
                     'is-edit="' + is_edit + '" '+
@@ -85,7 +89,7 @@ angular.module('a-edit')
                         possibleFunctions = ['$save', 'create'];
                         break;
                     case 'update':
-                        possibleFunctions = ['$save', 'update'];
+                        possibleFunctions = ['$update', 'update'];
                         break;
                     case 'delete':
                         possibleFunctions = ['$delete', 'delete'];
@@ -104,6 +108,14 @@ angular.module('a-edit')
                     console.error('Undefined model resource! Override getResourceQuery function in AEditHelpers service for define custom resource function.')
                 }
                 return query;
+            },
+            isEmptyObject: function(obj) {
+                for(var prop in obj) {
+                    if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+                        return false;
+                    }
+                }
+                return true;
             }
         };
 

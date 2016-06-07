@@ -11,7 +11,7 @@ angular
             '<div ng-if="!isEdit">' +
                 (type == 'text' ? text : '<pre ng-if="$parent.ngModel">{{$parent.ngModel}}</pre>') +
             '</div>' +
-            '<div ng-if="isEdit">' +
+            '<div ng-if="isEdit" ng-class="input_class">' +
                 (type == 'text' ? '<input type="text"' : '<textarea ') +
                 ' class="form-control input-sm" placeholder="{{$parent.placeholder}}"' +
                 ' ng-model="$parent.ngModel" ng-enter="$parent.save()"' +
@@ -34,6 +34,7 @@ angular
                 ngModelStr: '=?',
                 isEdit: '=?',
                 modalModel: '=?',
+                hasError: '=?',
                 //callbacks
                 ngChange: '&',
                 onSave: '&',
@@ -41,6 +42,7 @@ angular
                 placeholder: '@',
                 name: '@',
                 width: '@',
+                required: '@',
                 type: '@' //text or textarea
             },
             link: function (scope, element, attrs) {
@@ -63,7 +65,17 @@ angular
                     templateElement = null;
                 });
 
+                scope.$watch('hasError', function(hasError){
+                    scope.input_class = hasError ? "has-error" : '';
+                });
+
                 scope.save = function(){
+                    if(scope.required && !scope.ngModel){
+                        scope.input_class = "has-error";
+                        return;
+                    }
+
+                    scope.input_class = '';
                     if(scope.onSave)
                         $timeout(scope.onSave);
                 }
