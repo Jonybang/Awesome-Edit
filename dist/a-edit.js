@@ -154,6 +154,8 @@ angular
                             console.log(updated_item);
                             angular.extend(item, updated_item);
                             item.is_edit = false;
+
+                            scope.search();
                         });
                     } else {
                         angular.forEach(scope.options.defaultAttrs, function(value, attr){
@@ -164,8 +166,10 @@ angular
                         query.then(function(created_item){
                             created_item.is_new = true;
 
-                            scope.ngModel.push(created_item);
+                            scope.ngModel.unshift(created_item);
                             delete scope.new_item;
+
+                            scope.search();
                         });
                     }
                     item.is_edit = false;
@@ -196,6 +200,9 @@ angular
                     scope.filtredList = scope.ngModel;
                 else
                     scope.filtredList = $filter('filter')(scope.ngModel, scope.searchQuery);
+
+                if(scope.options.orderBy)
+                    scope.filtredList = $filter('orderBy')(scope.filtredList, scope.options.orderBy);
             };
 
             scope.clearSearch = function(){
@@ -228,7 +235,7 @@ angular
 
             var tplBodyItem =
                 '<tbody>' +
-                '<tr ng-repeat="item in filtredList | orderBy: options.orderBy track by item.id">';
+                '<tr ng-repeat="item in filtredList track by item.id">';
 
 
             scope.options.fields.forEach(function(field, index){
