@@ -68,14 +68,13 @@ angular
                 orderBy: '-id',
                 defaultAttrs: {},
                 modalIndex: 0,
-                searchDebounce: 200
+                searchDebounce: 200,
+                lists: {}
             };
             scope.options = angular.extend(defaultOptions, scope.options);
             AEditConfig.currentOptions = scope.options;
 
             scope.new_item = {};
-
-            scope.options.models_lists = {};
 
             scope.status = "";
 
@@ -204,8 +203,9 @@ angular
                 scope.filtredList = scope.ngModel;
             };
 
-            scope.$watchCollection('ngModel', function(){
+            scope.$watchCollection('ngModel', function(list){
                 scope.search();
+                scope.options.lists['self'] = list;
             });
 
             var tplSearch =
@@ -229,6 +229,7 @@ angular
             var tplBodyItem =
                 '<tbody>' +
                 '<tr ng-repeat="item in filtredList | orderBy: options.orderBy track by item.id">';
+
 
             scope.options.fields.forEach(function(field, index){
                 if(field.table_hide)
@@ -256,15 +257,15 @@ angular
                         else if(field.list)
                             list_variable = 'options.lists.' + field.list;
 
-                        var model_name = field.model ? field.list_name : null;
+                        var model_name = field.model ? field.list : null;
                         if(model_name){
-                            list_variable = 'options.models_lists.' + model_name;
+                            list_variable = 'options.lists.' + model_name;
 
-                            if(!scope.options.models_lists[model_name]){
-                                scope.options.models_lists[model_name] = [];
+                            if(!scope.options.lists[model_name]){
+                                scope.options.lists[model_name] = [];
 
                                 AEditHelpers.getResourceQuery(field.model, 'get').then(function(list){
-                                    scope.options.models_lists[model_name] = list;
+                                    scope.options.lists[model_name] = list;
                                 });
                             }
                         }
@@ -530,7 +531,7 @@ angular
                     '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
                     '<ui-select ' + (type == 'multiselect' ? 'multiple close-on-select="false"' : '') + ' ng-model="options.value" ng-if="isEdit" ng-click="changer()" class="input-small">' +
                         '<ui-select-match placeholder="">' +
-                            '{{' + (type == 'multiselect' ? '$item.name || $item.title' : '$select.selected.name || $select.selected.title') + '}}' +
+                            '{{' + (type == 'multiselect' ? '$item.name || $item.title' : 'selectedName') + '}}' +
                         '</ui-select-match>' +
 
                         '<ui-select-choices repeat="item.id as item in $parent.list track by $index">' +
@@ -796,7 +797,7 @@ angular
                                 '<h3 class="modal-title">Awesome modal!</h3>' +
                             '</div>' +
                             '<div class="modal-body">' +
-                                '<button type="button" class="btn btn-default btn-sm pull-right" ng-click="object.is_edit = !object.is_edit">' +
+                                '<button type="button" class="btn btn-warning btn-sm pull-right" ng-click="object.is_edit = !object.is_edit">' +
                                     '<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>' +
                                 '</button>' +
                                 '<dl class="dl-horizontal">';

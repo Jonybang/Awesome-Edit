@@ -21,14 +21,13 @@ angular
                 orderBy: '-id',
                 defaultAttrs: {},
                 modalIndex: 0,
-                searchDebounce: 200
+                searchDebounce: 200,
+                lists: {}
             };
             scope.options = angular.extend(defaultOptions, scope.options);
             AEditConfig.currentOptions = scope.options;
 
             scope.new_item = {};
-
-            scope.options.models_lists = {};
 
             scope.status = "";
 
@@ -157,8 +156,9 @@ angular
                 scope.filtredList = scope.ngModel;
             };
 
-            scope.$watchCollection('ngModel', function(){
+            scope.$watchCollection('ngModel', function(list){
                 scope.search();
+                scope.options.lists['self'] = list;
             });
 
             var tplSearch =
@@ -182,6 +182,7 @@ angular
             var tplBodyItem =
                 '<tbody>' +
                 '<tr ng-repeat="item in filtredList | orderBy: options.orderBy track by item.id">';
+
 
             scope.options.fields.forEach(function(field, index){
                 if(field.table_hide)
@@ -209,15 +210,15 @@ angular
                         else if(field.list)
                             list_variable = 'options.lists.' + field.list;
 
-                        var model_name = field.model ? field.list_name : null;
+                        var model_name = field.model ? field.list : null;
                         if(model_name){
-                            list_variable = 'options.models_lists.' + model_name;
+                            list_variable = 'options.lists.' + model_name;
 
-                            if(!scope.options.models_lists[model_name]){
-                                scope.options.models_lists[model_name] = [];
+                            if(!scope.options.lists[model_name]){
+                                scope.options.lists[model_name] = [];
 
                                 AEditHelpers.getResourceQuery(field.model, 'get').then(function(list){
-                                    scope.options.models_lists[model_name] = list;
+                                    scope.options.lists[model_name] = list;
                                 });
                             }
                         }

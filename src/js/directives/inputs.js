@@ -151,7 +151,7 @@ angular
                     '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
                     '<ui-select ' + (type == 'multiselect' ? 'multiple close-on-select="false"' : '') + ' ng-model="options.value" ng-if="isEdit" ng-click="changer()" class="input-small">' +
                         '<ui-select-match placeholder="">' +
-                            '{{' + (type == 'multiselect' ? '$item.name || $item.title' : '$select.selected.name || $select.selected.title') + '}}' +
+                            '{{' + (type == 'multiselect' ? '$item.name || $item.title' : 'selectedName') + '}}' +
                         '</ui-select-match>' +
 
                         '<ui-select-choices repeat="item.id as item in $parent.list track by $index">' +

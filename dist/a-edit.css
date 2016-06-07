@@ -12,3 +12,8 @@
 select-input .input-small .btn-default {
   height: 30px;
 }
+
+dd,
+dt {
+  line-height: 3;
+}

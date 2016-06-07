@@ -28,7 +28,7 @@ angular
                                 '<h3 class="modal-title">Awesome modal!</h3>' +
                             '</div>' +
                             '<div class="modal-body">' +
-                                '<button type="button" class="btn btn-default btn-sm pull-right" ng-click="object.is_edit = !object.is_edit">' +
+                                '<button type="button" class="btn btn-warning btn-sm pull-right" ng-click="object.is_edit = !object.is_edit">' +
                                     '<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>' +
                                 '</button>' +
                                 '<dl class="dl-horizontal">';
