@@ -43,8 +43,8 @@ angular.module('a-edit')
                 if(field.required)
                     output += 'required="true" ';
 
-                if(field.model)
-                    output += 'url="' + field.model.config.url + '" ';
+                if(field.url)
+                    output += 'url="' + field.url + '" ';
 
                 if(config.list_variable)
                     output += 'list="' + config.list_variable + '" ';
@@ -85,6 +85,9 @@ angular.module('a-edit')
                 
                 var possibleFunctions;
                 switch(action){
+                    case 'get':
+                        possibleFunctions = ['query', 'get'];
+                        break;
                     case 'create':
                         possibleFunctions = ['$save', 'create'];
                         break;
@@ -107,7 +110,7 @@ angular.module('a-edit')
                 if(!query){
                     console.error('Undefined model resource! Override getResourceQuery function in AEditHelpers service for define custom resource function.')
                 }
-                return query;
+                return query.$promise || query;
             },
             isEmptyObject: function(obj) {
                 for(var prop in obj) {

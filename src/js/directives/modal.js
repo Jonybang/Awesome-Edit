@@ -40,7 +40,7 @@ angular
                                 lists_container: 'lists',
                                 already_modal: true
                             }) + '</dd>';
-                        })
+                        });
                         
                         template +=
                                 '</dl>' +

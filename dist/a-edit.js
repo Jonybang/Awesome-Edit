@@ -231,6 +231,9 @@ angular
                 '<tr ng-repeat="item in filtredList | orderBy: options.orderBy track by item.id">';
 
             scope.options.fields.forEach(function(field, index){
+                if(field.table_hide)
+                    return;
+
                 tplHead += '<th>' + field.label + '</th>';
 
                 if(field.readonly || !scope.options.edit){
@@ -253,14 +256,14 @@ angular
                         else if(field.list)
                             list_variable = 'options.lists.' + field.list;
 
-                        var model_name = field.model ? field.model.config.name : null;
+                        var model_name = field.model ? field.list_name : null;
                         if(model_name){
                             list_variable = 'options.models_lists.' + model_name;
 
                             if(!scope.options.models_lists[model_name]){
                                 scope.options.models_lists[model_name] = [];
 
-                                field.model.get().then(function(list){
+                                AEditHelpers.getResourceQuery(field.model, 'get').then(function(list){
                                     scope.options.models_lists[model_name] = list;
                                 });
                             }
@@ -527,11 +530,11 @@ angular
                     '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
                     '<ui-select ' + (type == 'multiselect' ? 'multiple close-on-select="false"' : '') + ' ng-model="options.value" ng-if="isEdit" ng-click="changer()" class="input-small">' +
                         '<ui-select-match placeholder="">' +
-                            '{{' + (type == 'multiselect' ? '$item.name' : '$select.selected.name') + '}}' +
+                            '{{' + (type == 'multiselect' ? '$item.name || $item.title' : '$select.selected.name || $select.selected.title') + '}}' +
                         '</ui-select-match>' +
 
                         '<ui-select-choices repeat="item.id as item in $parent.list track by $index">' +
-                            '<div ng-bind-html="item.name | highlight: $select.search"></div>' +
+                            '<div ng-bind-html="item.name || item.title | highlight: $select.search"></div>' +
                         '</ui-select-choices>' +
                     '</ui-select>' +
                 '</div>';
@@ -805,7 +808,7 @@ angular
                                 lists_container: 'lists',
                                 already_modal: true
                             }) + '</dd>';
-                        })
+                        });
                         
                         template +=
                                 '</dl>' +
@@ -918,8 +921,8 @@ angular.module('a-edit')
                 if(field.required)
                     output += 'required="true" ';
 
-                if(field.model)
-                    output += 'url="' + field.model.config.url + '" ';
+                if(field.url)
+                    output += 'url="' + field.url + '" ';
 
                 if(config.list_variable)
                     output += 'list="' + config.list_variable + '" ';
@@ -960,6 +963,9 @@ angular.module('a-edit')
                 
                 var possibleFunctions;
                 switch(action){
+                    case 'get':
+                        possibleFunctions = ['query', 'get'];
+                        break;
                     case 'create':
                         possibleFunctions = ['$save', 'create'];
                         break;
@@ -982,7 +988,7 @@ angular.module('a-edit')
                 if(!query){
                     console.error('Undefined model resource! Override getResourceQuery function in AEditHelpers service for define custom resource function.')
                 }
-                return query;
+                return query.$promise || query;
             },
             isEmptyObject: function(obj) {
                 for(var prop in obj) {

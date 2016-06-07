@@ -184,6 +184,9 @@ angular
                 '<tr ng-repeat="item in filtredList | orderBy: options.orderBy track by item.id">';
 
             scope.options.fields.forEach(function(field, index){
+                if(field.table_hide)
+                    return;
+
                 tplHead += '<th>' + field.label + '</th>';
 
                 if(field.readonly || !scope.options.edit){
@@ -206,14 +209,14 @@ angular
                         else if(field.list)
                             list_variable = 'options.lists.' + field.list;
 
-                        var model_name = field.model ? field.model.config.name : null;
+                        var model_name = field.model ? field.list_name : null;
                         if(model_name){
                             list_variable = 'options.models_lists.' + model_name;
 
                             if(!scope.options.models_lists[model_name]){
                                 scope.options.models_lists[model_name] = [];
 
-                                field.model.get().then(function(list){
+                                AEditHelpers.getResourceQuery(field.model, 'get').then(function(list){
                                     scope.options.models_lists[model_name] = list;
                                 });
                             }
