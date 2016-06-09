@@ -143,19 +143,23 @@ angular
         };
     }])
 
-    .directive('selectInput', ['$timeout', '$compile', 'AEditHelpers', function($timeout, $compile, AEditHelpers) {
-        function getTemplateByType(type){
+    .directive('selectInput', ['$timeout', '$compile', '$templateCache', 'AEditHelpers', function($timeout, $compile, $templateCache, AEditHelpers) {
+        function getTemplateByType(type, options){
             var uiSelect = {
                 tags: '',
-                match: 'selectedName'
+                match: 'selectedName',
+                subClasses: ''
             };
             if(type == 'multiselect'){
                 uiSelect.tags = 'multiple close-on-select="false" ';
                 uiSelect.match = '$item.name || $item.title';
             }
+            if(options.adder){
+                uiSelect.subClasses = 'btn-group select-adder';
+            }
 
-            return '' +
-                '<div class="select-input-container">' +
+            var template = '' +
+                '<div class="select-input-container ' + uiSelect.subClasses + '">' +
                     '<span ng-if="!isEdit">{{selectedName}}</span>' +
                     '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
 
@@ -167,13 +171,24 @@ angular
                         '<ui-select-choices repeat="item.id as item in $parent.list | filter: $select.search track by $index">' +
                             '<div ng-bind-html="item.name || item.title | highlight: $select.search"></div>' +
                         '</ui-select-choices>' +
-                    '</ui-select>' +
+                    '</ui-select>';
+
+            if(options.adder){
+                template += '' +
+                    '<button type="button" class="btn btn-success" uib-popover-template="popoverAddRoom" uib-popover-title="Добавить площадку" uib-popover-placement="right">' +
+                        '<span class="glyphicon glyphicon-plus"></span>' +
+                    '</button>';
+            }
+
+            template += '' +
                 '</div>';
         }
 
         var typeTemplates = {
             'select': $compile(getTemplateByType('')),
-            'multiselect': $compile(getTemplateByType('multiselect'))
+            'select-adder': $compile(getTemplateByType('multiselect', {adder: true})),
+            'multiselect': $compile(getTemplateByType('multiselect')),
+            'multiselect-adder': $compile(getTemplateByType('multiselect', {adder: true}))
         };
 
         return {
@@ -185,11 +200,16 @@ angular
                 ngModel: '=',
                 ngModelStr: '=?',
                 isEdit: '=?',
+
+                ngResource: '=?',
+                ngResourceFields: '=?',
+
                 //callbacks
                 ngChange: '&',
                 onSave: '&',
                 //sub
-                multiselect: '=',
+                multiselect: '=?',
+                adder: '=?',
                 placeholder: '@',
                 name: '@',
                 type: '@' //select or multiselect
@@ -199,7 +219,11 @@ angular
                     value: ''
                 };
 
-                var template = typeTemplates[scope.type || 'select'],
+                scope.type = scope.type || 'select';
+                if(scope.adder)
+                    scope.type += '-adder';
+
+                var template = typeTemplates[scope.type],
                     templateElement;
 
                 template(scope, function (clonedElement, scope) {
@@ -257,6 +281,33 @@ angular
                 scope.save = function(){
                     if(scope.onSave)
                         $timeout(scope.onSave);
+                };
+
+                if(scope.adder){
+
+                    var popoverTemplate = '' +
+                        '<div ng-click="popoverContentClick($event)">';
+
+                    scope.ngResourceFields.forEach(function(field){
+                        popoverTemplate += '' +
+                            '<div class="form-group col-md-12 row">' +
+                                '<div>' +
+                                    '<label>' + field.label + '</label>' +
+                                '</div>' +
+                                '<div>' +
+                                    AEditHelpers.generateDirectiveByConfig(field) +
+                                '</div>' +
+                            '</div>';
+                    });
+
+                    popoverTemplate += '' +
+                            '<div class="form-group col-md-12 row">' +
+                                '<button type="submit" class="btn btn-primary" ng-click="$parent.saveResource(new_resource);">Save</button>' +
+                            '</div>' +
+                        '</div>';
+
+                    scope.popoverTemplateName = attr.ngModel + '-' + attr.ngResource + '.html';
+                    $templateCache.put(scope.popoverTemplateName, popoverTemplate);
                 }
             }
         };

@@ -13,3 +13,14 @@ select-input .input-small .btn-default{
 dd, dt {
   line-height: 3;
 }
+.btn-group.select-adder{
+  width: 260px;
+  padding: 0 15px;
+}
+.btn-group.select-adder .ui-select-container{
+  width: 190px !important;
+  display: inline-block;
+}
+.btn-group.select-adder .btn-success{
+  float: right;
+}
