@@ -143,18 +143,28 @@ angular
         };
     }])
 
-    .directive('selectInput', ['$timeout', '$compile', function($timeout, $compile) {
+    .directive('selectInput', ['$timeout', '$compile', 'AEditHelpers', function($timeout, $compile, AEditHelpers) {
         function getTemplateByType(type){
+            var uiSelect = {
+                tags: '',
+                match: 'selectedName'
+            };
+            if(type == 'multiselect'){
+                uiSelect.tags = 'multiple close-on-select="false" ';
+                uiSelect.match = '$item.name || $item.title';
+            }
+
             return '' +
                 '<div class="select-input-container">' +
                     '<span ng-if="!isEdit">{{selectedName}}</span>' +
                     '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
-                    '<ui-select ' + (type == 'multiselect' ? 'multiple close-on-select="false"' : '') + ' ng-model="options.value" ng-if="isEdit" ng-click="changer()" class="input-small">' +
+
+                    '<ui-select ' + uiSelect.tags + ' ng-model="options.value" ng-if="isEdit" ng-click="changer()" class="input-small">' +
                         '<ui-select-match placeholder="">' +
-                            '{{' + (type == 'multiselect' ? '$item.name || $item.title' : 'selectedName') + '}}' +
+                            '{{' + uiSelect.match + '}}' +
                         '</ui-select-match>' +
 
-                        '<ui-select-choices repeat="item.id as item in $parent.list track by $index">' +
+                        '<ui-select-choices repeat="item.id as item in $parent.list | filter: $select.search track by $index">' +
                             '<div ng-bind-html="item.name || item.title | highlight: $select.search"></div>' +
                         '</ui-select-choices>' +
                     '</ui-select>' +
@@ -215,7 +225,7 @@ angular
 
                     scope.options.value = newVal;
 
-                    scope.setSelectedName (newVal);
+                    scope.setSelectedName(newVal);
                 });
 
                 //TODO: optimize
@@ -223,11 +233,11 @@ angular
                     return ngModel.$viewValue;
                 }, function(newVal) {
                     scope.ngModel = newVal;
-                    scope.setSelectedName (newVal);
+                    scope.setSelectedName(newVal);
                 });
 
                 scope.$watch('list', function(){
-                    scope.setSelectedName (scope.ngModel);
+                    scope.setSelectedName(scope.ngModel);
                 });
 
                 scope.setSelectedName = function (newVal){
@@ -238,27 +248,11 @@ angular
                         });
                         scope.selectedName = names.join(', ');
                     } else {
-                        scope.selectedName = getNameById(newVal);
+                        scope.selectedName = AEditHelpers.getNameById(scope.list, newVal);
                     }
 
                     scope.ngModelStr = scope.selectedName;
                 };
-
-                //TODO: to helper
-                function getNameById (val){
-                    var resultName = '';
-
-                    if(!scope.list || !scope.list.length)
-                        return resultName;
-
-                    scope.list.some(function(obj){
-                        var result = obj.id == val;
-                        if(result)
-                            resultName = obj.name || obj.title;
-                        return result;
-                    });
-                    return resultName;
-                }
 
                 scope.save = function(){
                     if(scope.onSave)
