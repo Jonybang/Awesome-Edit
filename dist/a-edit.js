@@ -1,6 +1,6 @@
 // Code goes here
 angular
-  .module('a-edit', ['ui.bootstrap', 'angularMoment', 'ui.select', 'ngSanitize'])
+  .module('a-edit', ['ui.bootstrap', 'angularMoment', 'ui.select', 'ngSanitize', 'wiz.markdown'])
   
   .run(['amMoment', 'uiSelectConfig', '$templateCache', function(amMoment, uiSelectConfig, $templateCache) {
     amMoment.changeLocale('ru');
@@ -402,6 +402,7 @@ angular
                 (type == 'text' ? '<input type="text"' : '<textarea ') +
                 ' class="form-control input-sm" placeholder="{{$parent.placeholder}}"' +
                 ' ng-model="$parent.ngModel" ng-enter="$parent.save()"' +
+                ' ng-model-options="$parent.ngModelOptions || {}"' +
                 ' ng-style="{ \'width\' : $parent.width + \'px\'}">' +
                 (type == 'textarea' ? '</textarea>' : '') +
             '</div>';
@@ -418,6 +419,7 @@ angular
             scope: {
                 //require
                 ngModel: '=',
+                ngModelOptions: '=?',
                 ngModelStr: '=?',
                 isEdit: '=?',
                 modalModel: '=?',
@@ -532,6 +534,8 @@ angular
 
     .directive('selectInput', ['$timeout', '$compile', '$templateCache', 'AEditHelpers', function($timeout, $compile, $templateCache, AEditHelpers) {
         function getTemplateByType(type, options){
+            options = options || {};
+
             var uiSelect = {
                 tags: '',
                 match: 'selectedName',
@@ -546,7 +550,7 @@ angular
             }
 
             var template = '' +
-                '<div class="select-input-container ' + uiSelect.subClasses + '">' +
+                '<div class="select-input-container ' + uiSelect.subClasses + ' {{input_class}}">' +
                     '<span ng-if="!isEdit">{{selectedName}}</span>' +
                     '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
 
@@ -562,18 +566,19 @@ angular
 
             if(options.adder){
                 template += '' +
-                    '<button type="button" class="btn btn-success" uib-popover-template="popoverAddRoom" uib-popover-title="Добавить площадку" uib-popover-placement="right">' +
+                    '<button type="button" class="btn btn-success" uib-popover-template="popoverTemplateName" uib-popover-title="Add object" uib-popover-placement="right">' +
                         '<span class="glyphicon glyphicon-plus"></span>' +
                     '</button>';
             }
 
             template += '' +
                 '</div>';
+            return template;
         }
 
         var typeTemplates = {
             'select': $compile(getTemplateByType('')),
-            'select-adder': $compile(getTemplateByType('multiselect', {adder: true})),
+            'select-adder': $compile(getTemplateByType('', {adder: true})),
             'multiselect': $compile(getTemplateByType('multiselect')),
             'multiselect-adder': $compile(getTemplateByType('multiselect', {adder: true}))
         };
@@ -583,10 +588,11 @@ angular
             require: 'ngModel',
             scope: {
                 //require
-                list: '=',
+                list: '=?',
                 ngModel: '=',
                 ngModelStr: '=?',
                 isEdit: '=?',
+                hasError: '=?',
 
                 ngResource: '=?',
                 ngResourceFields: '=?',
@@ -625,6 +631,10 @@ angular
                     templateElement = null;
                 });
 
+                scope.$watch('hasError', function(hasError){
+                    scope.input_class = hasError ? "has-error" : '';
+                });
+
                 scope.changer = function() {
                     ngModel.$setViewValue(scope.options.value)
                 };
@@ -651,6 +661,15 @@ angular
                     scope.setSelectedName(scope.ngModel);
                 });
 
+                scope.$watch('ngResource', function(ngResource){
+                    if(!ngResource)
+                        return;
+
+                    AEditHelpers.getResourceQuery(ngResource, 'get').then(function(list){
+                        scope.list = list;
+                    });
+                });
+
                 scope.setSelectedName = function (newVal){
                     if(Array.isArray(newVal)){
                         var names = [];
@@ -671,7 +690,6 @@ angular
                 };
 
                 if(scope.adder){
-
                     var popoverTemplate = '' +
                         '<div ng-click="popoverContentClick($event)">';
 
@@ -682,7 +700,11 @@ angular
                                     '<label>' + field.label + '</label>' +
                                 '</div>' +
                                 '<div>' +
-                                    AEditHelpers.generateDirectiveByConfig(field) +
+                                    AEditHelpers.generateDirectiveByConfig(field, {
+                                        item_name: 'object',
+                                        lists_container: 'lists',
+                                        //already_modal: true
+                                    }) +
                                 '</div>' +
                             '</div>';
                     });
@@ -693,7 +715,7 @@ angular
                             '</div>' +
                         '</div>';
 
-                    scope.popoverTemplateName = attr.ngModel + '-' + attr.ngResource + '.html';
+                    scope.popoverTemplateName = attrs.ngModel + '-' + attrs.ngResource + '.html';
                     $templateCache.put(scope.popoverTemplateName, popoverTemplate);
                 }
             }
@@ -919,7 +941,7 @@ angular
         };
     }]);
 
-angular.module('app').directive('selectAdder', [function() {
+angular.module('a-edit').directive('selectAdder', [function() {
     return {
         restrict: 'C',
         link: function ($scope, $element, $attrs){

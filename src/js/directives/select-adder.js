@@ -1,4 +1,4 @@
-angular.module('app').directive('selectAdder', [function() {
+angular.module('a-edit').directive('selectAdder', [function() {
     return {
         restrict: 'C',
         link: function ($scope, $element, $attrs){
