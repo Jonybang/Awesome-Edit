@@ -248,6 +248,16 @@ angular
 
 
             scope.options.fields.forEach(function(field, index){
+                if(field.model && field.list){
+                    if(!scope.options.lists[field.list]){
+                        scope.options.lists[field.list] = [];
+
+                        AEditHelpers.getResourceQuery(field.model, 'get').then(function(list){
+                            scope.options.lists[field.list] = list;
+                        });
+                    }
+                }
+
                 if(field.table_hide)
                     return;
 
@@ -272,19 +282,6 @@ angular
                             list_variable = 'ngModel';
                         else if(field.list)
                             list_variable = 'options.lists.' + field.list;
-
-                        var model_name = field.model ? field.list : null;
-                        if(model_name){
-                            list_variable = 'options.lists.' + model_name;
-
-                            if(!scope.options.lists[model_name]){
-                                scope.options.lists[model_name] = [];
-
-                                AEditHelpers.getResourceQuery(field.model, 'get').then(function(list){
-                                    scope.options.lists[model_name] = list;
-                                });
-                            }
-                        }
 
                         return AEditHelpers.generateDirectiveByConfig(field, {
                             item_name: item_name,
@@ -744,6 +741,10 @@ angular
                                     }) +
                                 '</div>' +
                             '</div>';
+
+                        if(field.model){
+                            scope[field.name + '_model'] = field.model;
+                        }
                     });
 
                     popoverTemplate += '' +
@@ -1061,6 +1062,9 @@ angular.module('a-edit')
 
                 if(field.url)
                     output += 'url="' + field.url + '" ';
+
+                if(field.model)
+                    output += 'ng-resource="' + field.name + '_model" ';
 
                 if(config.list_variable)
                     output += 'list="' + config.list_variable + '" ';

@@ -46,6 +46,9 @@ angular.module('a-edit')
                 if(field.url)
                     output += 'url="' + field.url + '" ';
 
+                if(field.model)
+                    output += 'ng-resource="' + field.name + '_model" ';
+
                 if(config.list_variable)
                     output += 'list="' + config.list_variable + '" ';
                 else if(config.lists_container)

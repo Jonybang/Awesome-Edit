@@ -347,6 +347,10 @@ angular
                                     }) +
                                 '</div>' +
                             '</div>';
+
+                        if(field.model){
+                            scope[field.name + '_model'] = field.model;
+                        }
                     });
 
                     popoverTemplate += '' +

@@ -21,6 +21,7 @@ dt {
 .btn-group.select-adder {
   width: 260px;
   padding: 0 15px;
+  margin-left: -15px;
 }
 
 .btn-group.select-adder .ui-select-container {
