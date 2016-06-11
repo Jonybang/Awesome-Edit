@@ -595,8 +595,14 @@ angular
 
             if(options.adder){
                 template += '' +
-                    '<button type="button" class="btn btn-success" uib-popover-template="popoverTemplateName" uib-popover-title="Add object" uib-popover-placement="right">' +
-                        '<span class="glyphicon glyphicon-plus"></span>' +
+                    '<button type="button" class="btn btn-success" ng-click="popover.is_open = true"' +
+                        ' uib-popover-template="popover.template_name"' +
+                        ' uib-popover-title="Add object"' +
+                        ' popover-placement="top"' +
+                        ' popover-append-to-body="true"' +
+                        ' popover-is-open="popover.is_open"' +
+                        ' popover-trigger="none">' +
+                            '<span class="glyphicon glyphicon-plus"></span>' +
                     '</button>';
             }
 
@@ -730,8 +736,10 @@ angular
                                 '</div>' +
                                 '<div>' +
                                     AEditHelpers.generateDirectiveByConfig(field, {
-                                        item_name: 'object',
+                                        item_name: 'new_object',
                                         lists_container: 'lists',
+                                        always_edit: true,
+                                        is_new: true
                                         //already_modal: true
                                     }) +
                                 '</div>' +
@@ -740,12 +748,23 @@ angular
 
                     popoverTemplate += '' +
                             '<div class="form-group col-md-12 row">' +
-                                '<button type="submit" class="btn btn-primary" ng-click="$parent.saveResource(new_resource);">Save</button>' +
+                                '<button type="submit" class="btn btn-primary" ng-click="$parent.saveToList(new_object);">Save</button>' +
                             '</div>' +
                         '</div>';
 
-                    scope.popoverTemplateName = attrs.ngModel + '-' + attrs.ngResource + '.html';
-                    $templateCache.put(scope.popoverTemplateName, popoverTemplate);
+                    scope.popover = {
+                        is_open: false,
+                        template_name: attrs.ngModel + '-' + attrs.ngResource + '.html'
+                    };
+                    $templateCache.put(scope.popover.template_name, popoverTemplate);
+                }
+
+                scope.saveToList = function(new_object){
+                    scope.popover.is_open = false;
+                    AEditHelpers.getResourceQuery(new scope.ngResource(new_object), 'create').then(function(object){
+                        scope.list.unshift(object);
+                        scope.ngModel = object.id;
+                    });
                 }
             }
         };
@@ -970,21 +989,21 @@ angular
         };
     }]);
 
-angular.module('a-edit').directive('selectAdder', [function() {
-    return {
-        restrict: 'C',
-        link: function ($scope, $element, $attrs){
-            $element.click(function($event){
-                var $element = angular.element($event.target);
-                if(!$element.hasClass('btn'))
-                    $event.stopPropagation();
-
-                if($element.hasClass('btn-default'))
-                    $event.stopPropagation();
-            });
-        }
-    };
-}]);
+//angular.module('a-edit').directive('selectAdder', [function() {
+//    return {
+//        restrict: 'C',
+//        link: function ($scope, $element, $attrs){
+//            $element.click(function($event){
+//                var $element = angular.element($event.target);
+//                if(!$element.hasClass('btn'))
+//                    $event.stopPropagation();
+//
+//                if($element.hasClass('btn-default'))
+//                    $event.stopPropagation();
+//            });
+//        }
+//    };
+//}]);
 /**
  * Created by jonybang on 04.07.15.
  */
