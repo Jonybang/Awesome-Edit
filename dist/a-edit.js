@@ -633,7 +633,6 @@ angular
                 ngChange: '&',
                 onSave: '&',
                 //sub
-                multiselect: '=?',
                 adder: '=?',
                 placeholder: '@',
                 name: '@',
@@ -641,7 +640,7 @@ angular
             },
             link: function (scope, element, attrs, ngModel) {
                 scope.options = {
-                    value: ''
+                    value: scope.ngModel
                 };
 
                 scope.type = scope.type || 'select';
@@ -706,7 +705,7 @@ angular
                     if(Array.isArray(newVal)){
                         var names = [];
                         newVal.forEach(function(val){
-                            names.push(getNameById(val));
+                            names.push(AEditHelpers.getNameById(val));
                         });
                         scope.selectedName = names.join(', ');
                     } else {
@@ -764,7 +763,11 @@ angular
                     scope.popover.is_open = false;
                     AEditHelpers.getResourceQuery(new scope.ngResource(new_object), 'create').then(function(object){
                         scope.list.unshift(object);
-                        scope.ngModel = object.id;
+
+                        if(angular.isArray(scope.ngModel))
+                            scope.ngModel.push(object.id);
+                        else
+                            scope.ngModel = object.id;
                     });
                 }
             }
