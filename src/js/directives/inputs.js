@@ -4,25 +4,43 @@ angular
     .directive('textInput', ['$timeout', '$compile', function($timeout, $compile) {
         function getTemplateByType(type, options){
             var text = '{{$parent.ngModel}}';
+            var inputTagBegin = '<input type="text"';
+            var inputTagEnd = '';
+
             if(options && options.modal_link)
                 text = '<a a-model-modal="modalModel" on-save="save()" href>' + text + '</a>';
+            else if(type == 'textarea'){
+                text = '<pre ng-if="$parent.ngModel">{{$parent.ngModel}}</pre>';
+
+                inputTagBegin = '<textarea';
+                inputTagEnd = '</textarea>';
+            } else if(type == 'password'){
+                text = '<small>[password hidden]</small>';
+
+                inputTagBegin = '' +
+                    '<a href ng-click="changePassword = true" ng-show="!isNew && !changePassword">Change password</a>' +
+                    '<div ng-show="changePassword || isNew"><input type="password"';
+                inputTagEnd = '</div>';
+            }
+
 
             return '' +
             '<div ng-if="!isEdit">' +
-                (type == 'text' ? text : '<pre ng-if="$parent.ngModel">{{$parent.ngModel}}</pre>') +
+                text +
             '</div>' +
             '<div ng-if="isEdit" ng-class="input_class">' +
-                (type == 'text' ? '<input type="text"' : '<textarea ') +
+                inputTagBegin +
                 ' class="form-control input-sm" placeholder="{{$parent.placeholder}}"' +
                 ' ng-model="$parent.ngModel" ng-enter="$parent.save()"' +
                 ' ng-model-options="$parent.ngModelOptions || {}"' +
                 ' ng-style="{ \'width\' : $parent.width + \'px\'}">' +
-                (type == 'textarea' ? '</textarea>' : '') +
+                inputTagEnd +
             '</div>';
         }
 
         var typeTemplates = {
             'text': $compile(getTemplateByType('text')),
+            'password': $compile(getTemplateByType('password')),
             'text_modal_link': $compile(getTemplateByType('text', {modal_link: true})),
             'textarea': $compile(getTemplateByType('textarea'))
         };
@@ -34,6 +52,7 @@ angular
                 ngModel: '=',
                 ngModelOptions: '=?',
                 ngModelStr: '=?',
+                isNew: '=?',
                 isEdit: '=?',
                 modalModel: '=?',
                 hasError: '=?',

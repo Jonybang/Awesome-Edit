@@ -50,10 +50,19 @@ angular
                 item.errors || (item.errors = {});
 
                 scope.options.fields.forEach(function(field){
+                    //if field empty and required - add to errors, else delete from errors
                     if(field.required && !item[field.name])
                         item.errors[field.name] = true;
                     else if(item.errors[field.name])
                         delete item.errors[field.name];
+
+                    //if password not changed and not new object
+                    if(field.type == 'password' && item.id)
+                        delete item.errors[field.name];
+
+                    //if password not changed delete field from request data
+                    if(field.type == 'password' && !item[field.name])
+                        delete item[field.name];
                 });
 
                 if(!AEditHelpers.isEmptyObject(item.errors))
@@ -234,6 +243,7 @@ angular
                             item_name: item_name,
                             field_name: field_name,
                             always_edit: is_new,
+                            is_new: is_new,
                             list_variable: list_variable
                         });
                     }

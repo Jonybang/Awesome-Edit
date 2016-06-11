@@ -97,10 +97,19 @@ angular
                 item.errors || (item.errors = {});
 
                 scope.options.fields.forEach(function(field){
+                    //if field empty and required - add to errors, else delete from errors
                     if(field.required && !item[field.name])
                         item.errors[field.name] = true;
                     else if(item.errors[field.name])
                         delete item.errors[field.name];
+
+                    //if password not changed and not new object
+                    if(field.type == 'password' && item.id)
+                        delete item.errors[field.name];
+
+                    //if password not changed delete field from request data
+                    if(field.type == 'password' && !item[field.name])
+                        delete item[field.name];
                 });
 
                 if(!AEditHelpers.isEmptyObject(item.errors))
@@ -281,6 +290,7 @@ angular
                             item_name: item_name,
                             field_name: field_name,
                             always_edit: is_new,
+                            is_new: is_new,
                             list_variable: list_variable
                         });
                     }
@@ -391,25 +401,43 @@ angular
     .directive('textInput', ['$timeout', '$compile', function($timeout, $compile) {
         function getTemplateByType(type, options){
             var text = '{{$parent.ngModel}}';
+            var inputTagBegin = '<input type="text"';
+            var inputTagEnd = '';
+
             if(options && options.modal_link)
                 text = '<a a-model-modal="modalModel" on-save="save()" href>' + text + '</a>';
+            else if(type == 'textarea'){
+                text = '<pre ng-if="$parent.ngModel">{{$parent.ngModel}}</pre>';
+
+                inputTagBegin = '<textarea';
+                inputTagEnd = '</textarea>';
+            } else if(type == 'password'){
+                text = '<small>[password hidden]</small>';
+
+                inputTagBegin = '' +
+                    '<a href ng-click="changePassword = true" ng-show="!isNew && !changePassword">Change password</a>' +
+                    '<div ng-show="changePassword || isNew"><input type="password"';
+                inputTagEnd = '</div>';
+            }
+
 
             return '' +
             '<div ng-if="!isEdit">' +
-                (type == 'text' ? text : '<pre ng-if="$parent.ngModel">{{$parent.ngModel}}</pre>') +
+                text +
             '</div>' +
             '<div ng-if="isEdit" ng-class="input_class">' +
-                (type == 'text' ? '<input type="text"' : '<textarea ') +
+                inputTagBegin +
                 ' class="form-control input-sm" placeholder="{{$parent.placeholder}}"' +
                 ' ng-model="$parent.ngModel" ng-enter="$parent.save()"' +
                 ' ng-model-options="$parent.ngModelOptions || {}"' +
                 ' ng-style="{ \'width\' : $parent.width + \'px\'}">' +
-                (type == 'textarea' ? '</textarea>' : '') +
+                inputTagEnd +
             '</div>';
         }
 
         var typeTemplates = {
             'text': $compile(getTemplateByType('text')),
+            'password': $compile(getTemplateByType('password')),
             'text_modal_link': $compile(getTemplateByType('text', {modal_link: true})),
             'textarea': $compile(getTemplateByType('textarea'))
         };
@@ -421,6 +449,7 @@ angular
                 ngModel: '=',
                 ngModelOptions: '=?',
                 ngModelStr: '=?',
+                isNew: '=?',
                 isEdit: '=?',
                 modalModel: '=?',
                 hasError: '=?',
@@ -1037,6 +1066,7 @@ angular.module('a-edit')
                     'ng-model-str="' + item_name + '.' +  field_name + '_str" ' +
                     'ng-model-sub-str="' + item_name + '.' +  field_name + '_sub_str" ' +
                     'is-edit="' + is_edit + '" '+
+                    'is-new="' + (config.is_new ? 'true': 'false') + '" '+
                     'placeholder="' + ((config.always_edit ? field.new_placeholder : field.placeholder) || '') + '" ';
 
                 if(field.type == 'file' || field.type == 'multifile')
