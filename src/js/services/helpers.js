@@ -92,6 +92,9 @@ angular.module('a-edit')
                     case 'get':
                         possibleFunctions = ['query', 'get'];
                         break;
+                    case 'show':
+                        possibleFunctions = ['$get'];
+                        break;
                     case 'create':
                         possibleFunctions = ['$save', 'create'];
                         break;

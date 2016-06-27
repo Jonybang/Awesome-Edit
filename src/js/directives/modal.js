@@ -66,8 +66,12 @@ angular
                         },
                         controller: ['$scope', '$uibModalInstance', 'data', function($scope, $uibModalInstance, data) {
                             angular.extend($scope, data);
-                            $scope.object.is_edit = data.isEdit;
-                            console.log('modal controller', $scope.object);
+
+                            AEditHelpers.getResourceQuery($scope.object, 'show').then(function(object){
+                                angular.extend($scope.object, object);
+                                $scope.object.is_edit = data.isEdit;
+                                console.log('modal controller', $scope.object);
+                            });
                             
                             $scope.ok = function () {
                                 $scope.object.is_edit = false;
