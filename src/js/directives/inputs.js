@@ -311,7 +311,7 @@ angular
                     if(Array.isArray(newVal)){
                         var names = [];
                         newVal.forEach(function(val){
-                            names.push(AEditHelpers.getNameById(val));
+                            names.push(AEditHelpers.getNameById(scope.list, val));
                         });
                         scope.selectedName = names.join(', ');
                     } else {
