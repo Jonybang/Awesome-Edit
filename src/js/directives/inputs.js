@@ -235,6 +235,8 @@ angular
                 ngResource: '=?',
                 ngResourceFields: '=?',
 
+                refreshListOn: '=?',
+
                 //callbacks
                 ngChange: '&',
                 onSave: '&',
@@ -298,14 +300,17 @@ angular
                     scope.setSelectedName(scope.ngModel);
                 });
 
-                scope.$watch('ngResource', function(ngResource){
-                    if(!ngResource)
+                function getListByResource(){
+                    if(!scope.ngResource)
                         return;
 
-                    AEditHelpers.getResourceQuery(ngResource, 'get').then(function(list){
+                    AEditHelpers.getResourceQuery(scope.ngResource, 'get').then(function(list){
                         scope.list = list;
                     });
-                });
+                }
+
+                scope.$watch('ngResource', getListByResource);
+                scope.$watch('refreshListOn', getListByResource);
 
                 scope.setSelectedName = function (newVal){
                     if(Array.isArray(newVal)){
