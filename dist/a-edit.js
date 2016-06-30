@@ -36,11 +36,16 @@ angular
         \
         </div>\
     ');
-    
+
+    $templateCache.put('a-edit-bool-input.html', '\
+        <span ng-if="!isEdit" ng-class="[\'glyphicon\',{\'glyphicon-check\': $parent.fakeModel, \'glyphicon-unchecked\': !$parent.fakeModel}]"></span>\
+        <input ng-if="isEdit" ng-model="$parent.fakeModel" type="checkbox" class="form-control" name="{{$parent.name}}" ng-change="$parent.change()">\
+    ');
+
     $templateCache.put('a-edit-popover-image.html', '\
-            <a target="_blank" href="{{::image}}" uib-popover-template="imagePopoverPath" popover-placement="left" popover-trigger="mouseenter">\
-                {{:: text || image}}\
-            </a>\
+        <a target="_blank" href="{{::image}}" uib-popover-template="imagePopoverPath" popover-placement="left" popover-trigger="mouseenter">\
+            {{:: text || image}}\
+        </a>\
     ');
     
   }]);
@@ -171,7 +176,7 @@ angular
                             upload_item[attr] = value;
                         });
 
-                        var query = AEditHelpers.getResourceQuery(new scope.options.model(upload_item), 'create');
+                        var query = AEditHelpers.getResourceQuery(new scope.options.resource(upload_item), 'create');
                         query.then(function(created_item){
                             created_item.is_new = true;
 
@@ -248,11 +253,11 @@ angular
 
 
             scope.options.fields.forEach(function(field, index){
-                if(field.model && field.list){
+                if(field.resource && field.list){
                     if(!scope.options.lists[field.list]){
                         scope.options.lists[field.list] = [];
 
-                        AEditHelpers.getResourceQuery(field.model, 'get').then(function(list){
+                        AEditHelpers.getResourceQuery(field.resource, 'get').then(function(list){
                             scope.options.lists[field.list] = list;
                         });
                     }
@@ -402,7 +407,7 @@ angular
             var inputTagEnd = '';
 
             if(options && options.modal_link)
-                text = '<a a-model-modal="modalModel" on-save="save()" href>' + text + '</a>';
+                text = '<a a-modal-resource="modalResource" on-save="save()" href>' + text + '</a>';
             else if(type == 'textarea'){
                 text = '<pre ng-if="$parent.ngModel">{{$parent.ngModel}}</pre>';
 
@@ -448,7 +453,7 @@ angular
                 ngModelStr: '=?',
                 isNew: '=?',
                 isEdit: '=?',
-                modalModel: '=?',
+                modalResource: '=?',
                 hasError: '=?',
                 //callbacks
                 ngChange: '&',
@@ -462,7 +467,7 @@ angular
             },
             link: function (scope, element, attrs) {
                 scope.type = scope.type || 'text';
-                if(attrs.modalModel && scope.type == 'text')
+                if(attrs.modalResource && scope.type == 'text')
                     scope.type = "text_modal_link";
 
                 var template = typeTemplates[scope.type],
@@ -497,6 +502,37 @@ angular
             }
         };
     }])
+
+    .directive('boolInput', ['$timeout', '$filter', function($timeout, $filter) {
+        return {
+            restrict: 'E',
+            templateUrl: 'a-edit-bool-input.html',
+            scope: {
+                //require
+                ngModel: '=',
+                isEdit: '=',
+                //callbacks
+                ngChange: '&',
+                onSave: '&',
+                //sub
+                name: '@'
+            },
+            link: function (scope, element) {
+
+                scope.$watch('ngModel', function(ngModel){
+                    scope.fakeModel = ngModel == 1;
+                });
+
+                scope.change = function(){
+                    scope.ngModel =  scope.fakeModel;
+
+                    if(scope.ngChange)
+                        $timeout(scope.ngChange);
+                };
+            }
+        };
+    }])
+
 
     .directive('dateInput', ['$timeout', '$filter', function($timeout, $filter) {
         return {
@@ -746,8 +782,8 @@ angular
                                 '</div>' +
                             '</div>';
 
-                        if(field.model){
-                            scope[field.name + '_model'] = field.model;
+                        if(field.resource){
+                            scope[field.name + '_resource'] = field.resource;
                         }
                     });
 
@@ -901,14 +937,14 @@ angular
 angular
     .module('a-edit')
 
-    .directive('aModelModal', ['$timeout', '$log', '$cacheFactory', 'AEditHelpers', 'AEditConfig', '$uibModal', function($timeout, $log, $cacheFactory, AEditHelpers, AEditConfig, $uibModal) {
+    .directive('aModalResource', ['$timeout', '$log', '$cacheFactory', 'AEditHelpers', 'AEditConfig', '$uibModal', function($timeout, $log, $cacheFactory, AEditHelpers, AEditConfig, $uibModal) {
         var cache = $cacheFactory('aModal.Templates');
 
         return {
             restrict: 'A',
             scope: {
                 //require
-                aModelModal: '=',
+                aModalResource: '=',
                 isEdit: '=?',
                 options: '=?',
                 //callbacks
@@ -916,11 +952,11 @@ angular
             },
             link: function (scope, element, attrs) {
 
-                var model_name = attrs.aModelModal;
+                var resource_name = attrs.aModalResource;
                 scope.options = scope.options || AEditConfig.currentOptions;
 
                 element.on("click", function () {
-                    var template = cache.get(model_name) || '';
+                    var template = cache.get(resource_name) || '';
                     if(!template){
                         template +=
                             '<div class="modal-header">' +
@@ -949,7 +985,7 @@ angular
                                 '<button class="btn btn-primary" type="button" ng-click="ok()">OK</button>' +
                             '</div>';
                             
-                        cache.put(model_name, template);
+                        cache.put(resource_name, template);
                     }
 
                     var modalInstance = $uibModal.open({
@@ -958,7 +994,7 @@ angular
                         resolve: {
                             data: function () {
                                 return {
-                                    object: angular.copy(scope.aModelModal),
+                                    object: angular.copy(scope.aModalResource),
                                     lists: scope.options.lists,
                                     isEdit: scope.isEdit
                                 };
@@ -985,7 +1021,7 @@ angular
                     });
 
                     modalInstance.result.then(function (object) {
-                        angular.extend(scope.aModelModal, object);
+                        angular.extend(scope.aModalResource, object);
                         
                         if(scope.onSave)
                             $timeout(scope.onSave);
@@ -1037,6 +1073,9 @@ angular.module('a-edit')
                     case 'date':
                         directive = 'date-input';
                         break;
+                    case 'bool':
+                        directive = 'date-input';
+                        break;
                     case 'file':
                     case 'multifile':
                         directive = 'file-upload';
@@ -1060,8 +1099,8 @@ angular.module('a-edit')
                 if(field.url)
                     output += 'url="' + field.url + '" ';
 
-                if(field.model)
-                    output += 'ng-resource="' + field.name + '_model" ';
+                if(field.resource)
+                    output += 'ng-resource="' + field.name + '_resource" ';
 
                 if(config.list_variable)
                     output += 'list="' + config.list_variable + '" ';
@@ -1093,7 +1132,7 @@ angular.module('a-edit')
                     output += 'uploader="' + item_name + '.' + field_name + '__uploader" ';
 
                 if(field.modal && !config.already_modal && field.modal == 'self')
-                    output += 'modal-model="' + item_name + '" ';
+                    output += 'modal-resource="' + item_name + '" ';
 
                 output += '></' + directive + '>';
 

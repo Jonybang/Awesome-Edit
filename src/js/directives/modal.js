@@ -1,14 +1,14 @@
 angular
     .module('a-edit')
 
-    .directive('aModelModal', ['$timeout', '$log', '$cacheFactory', 'AEditHelpers', 'AEditConfig', '$uibModal', function($timeout, $log, $cacheFactory, AEditHelpers, AEditConfig, $uibModal) {
+    .directive('aModalResource', ['$timeout', '$log', '$cacheFactory', 'AEditHelpers', 'AEditConfig', '$uibModal', function($timeout, $log, $cacheFactory, AEditHelpers, AEditConfig, $uibModal) {
         var cache = $cacheFactory('aModal.Templates');
 
         return {
             restrict: 'A',
             scope: {
                 //require
-                aModelModal: '=',
+                aModalResource: '=',
                 isEdit: '=?',
                 options: '=?',
                 //callbacks
@@ -16,11 +16,11 @@ angular
             },
             link: function (scope, element, attrs) {
 
-                var model_name = attrs.aModelModal;
+                var resource_name = attrs.aModalResource;
                 scope.options = scope.options || AEditConfig.currentOptions;
 
                 element.on("click", function () {
-                    var template = cache.get(model_name) || '';
+                    var template = cache.get(resource_name) || '';
                     if(!template){
                         template +=
                             '<div class="modal-header">' +
@@ -49,7 +49,7 @@ angular
                                 '<button class="btn btn-primary" type="button" ng-click="ok()">OK</button>' +
                             '</div>';
                             
-                        cache.put(model_name, template);
+                        cache.put(resource_name, template);
                     }
 
                     var modalInstance = $uibModal.open({
@@ -58,7 +58,7 @@ angular
                         resolve: {
                             data: function () {
                                 return {
-                                    object: angular.copy(scope.aModelModal),
+                                    object: angular.copy(scope.aModalResource),
                                     lists: scope.options.lists,
                                     isEdit: scope.isEdit
                                 };
@@ -85,7 +85,7 @@ angular
                     });
 
                     modalInstance.result.then(function (object) {
-                        angular.extend(scope.aModelModal, object);
+                        angular.extend(scope.aModalResource, object);
                         
                         if(scope.onSave)
                             $timeout(scope.onSave);

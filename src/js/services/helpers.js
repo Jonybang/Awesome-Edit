@@ -23,6 +23,9 @@ angular.module('a-edit')
                     case 'date':
                         directive = 'date-input';
                         break;
+                    case 'bool':
+                        directive = 'date-input';
+                        break;
                     case 'file':
                     case 'multifile':
                         directive = 'file-upload';
@@ -46,8 +49,8 @@ angular.module('a-edit')
                 if(field.url)
                     output += 'url="' + field.url + '" ';
 
-                if(field.model)
-                    output += 'ng-resource="' + field.name + '_model" ';
+                if(field.resource)
+                    output += 'ng-resource="' + field.name + '_resource" ';
 
                 if(config.list_variable)
                     output += 'list="' + config.list_variable + '" ';
@@ -79,7 +82,7 @@ angular.module('a-edit')
                     output += 'uploader="' + item_name + '.' + field_name + '__uploader" ';
 
                 if(field.modal && !config.already_modal && field.modal == 'self')
-                    output += 'modal-model="' + item_name + '" ';
+                    output += 'modal-resource="' + item_name + '" ';
 
                 output += '></' + directive + '>';
 

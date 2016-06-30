@@ -36,11 +36,16 @@ angular
         \
         </div>\
     ');
-    
+
+    $templateCache.put('a-edit-bool-input.html', '\
+        <span ng-if="!isEdit" ng-class="[\'glyphicon\',{\'glyphicon-check\': $parent.fakeModel, \'glyphicon-unchecked\': !$parent.fakeModel}]"></span>\
+        <input ng-if="isEdit" ng-model="$parent.fakeModel" type="checkbox" class="form-control" name="{{$parent.name}}" ng-change="$parent.change()">\
+    ');
+
     $templateCache.put('a-edit-popover-image.html', '\
-            <a target="_blank" href="{{::image}}" uib-popover-template="imagePopoverPath" popover-placement="left" popover-trigger="mouseenter">\
-                {{:: text || image}}\
-            </a>\
+        <a target="_blank" href="{{::image}}" uib-popover-template="imagePopoverPath" popover-placement="left" popover-trigger="mouseenter">\
+            {{:: text || image}}\
+        </a>\
     ');
     
   }]);

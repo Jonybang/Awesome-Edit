@@ -124,7 +124,7 @@ angular
                             upload_item[attr] = value;
                         });
 
-                        var query = AEditHelpers.getResourceQuery(new scope.options.model(upload_item), 'create');
+                        var query = AEditHelpers.getResourceQuery(new scope.options.resource(upload_item), 'create');
                         query.then(function(created_item){
                             created_item.is_new = true;
 
@@ -201,11 +201,11 @@ angular
 
 
             scope.options.fields.forEach(function(field, index){
-                if(field.model && field.list){
+                if(field.resource && field.list){
                     if(!scope.options.lists[field.list]){
                         scope.options.lists[field.list] = [];
 
-                        AEditHelpers.getResourceQuery(field.model, 'get').then(function(list){
+                        AEditHelpers.getResourceQuery(field.resource, 'get').then(function(list){
                             scope.options.lists[field.list] = list;
                         });
                     }

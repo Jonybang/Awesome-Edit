@@ -8,7 +8,7 @@ angular
             var inputTagEnd = '';
 
             if(options && options.modal_link)
-                text = '<a a-model-modal="modalModel" on-save="save()" href>' + text + '</a>';
+                text = '<a a-modal-resource="modalResource" on-save="save()" href>' + text + '</a>';
             else if(type == 'textarea'){
                 text = '<pre ng-if="$parent.ngModel">{{$parent.ngModel}}</pre>';
 
@@ -54,7 +54,7 @@ angular
                 ngModelStr: '=?',
                 isNew: '=?',
                 isEdit: '=?',
-                modalModel: '=?',
+                modalResource: '=?',
                 hasError: '=?',
                 //callbacks
                 ngChange: '&',
@@ -68,7 +68,7 @@ angular
             },
             link: function (scope, element, attrs) {
                 scope.type = scope.type || 'text';
-                if(attrs.modalModel && scope.type == 'text')
+                if(attrs.modalResource && scope.type == 'text')
                     scope.type = "text_modal_link";
 
                 var template = typeTemplates[scope.type],
@@ -103,6 +103,37 @@ angular
             }
         };
     }])
+
+    .directive('boolInput', ['$timeout', '$filter', function($timeout, $filter) {
+        return {
+            restrict: 'E',
+            templateUrl: 'a-edit-bool-input.html',
+            scope: {
+                //require
+                ngModel: '=',
+                isEdit: '=',
+                //callbacks
+                ngChange: '&',
+                onSave: '&',
+                //sub
+                name: '@'
+            },
+            link: function (scope, element) {
+
+                scope.$watch('ngModel', function(ngModel){
+                    scope.fakeModel = ngModel == 1;
+                });
+
+                scope.change = function(){
+                    scope.ngModel =  scope.fakeModel;
+
+                    if(scope.ngChange)
+                        $timeout(scope.ngChange);
+                };
+            }
+        };
+    }])
+
 
     .directive('dateInput', ['$timeout', '$filter', function($timeout, $filter) {
         return {
@@ -352,8 +383,8 @@ angular
                                 '</div>' +
                             '</div>';
 
-                        if(field.model){
-                            scope[field.name + '_model'] = field.model;
+                        if(field.resource){
+                            scope[field.name + '_resource'] = field.resource;
                         }
                     });
 
