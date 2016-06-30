@@ -91,12 +91,12 @@ angular
                 if(!scope.options)
                     return;
 
-                scope.options = angular.extend({}, defaultOptions, scope.options);
-                AEditConfig.currentOptions = scope.options;
+                scope.actualOptions = angular.extend({}, defaultOptions, scope.options);
+                AEditConfig.currentOptions = scope.actualOptions;
 
                 var tplSearch =
                     '<div class="input-group">' +
-                    '<input type="text" class="form-control" ng-model="searchQuery" placeholder="Search" ng-change="search()" ng-model-options="{ debounce: ' + scope.options.searchDebounce + ' }"/>' +
+                    '<input type="text" class="form-control" ng-model="searchQuery" placeholder="Search" ng-change="search()" ng-model-options="{ debounce: ' + scope.actualOptions.searchDebounce + ' }"/>' +
                     '<span class="input-group-btn">' +
                     '<button class="btn btn-default" ng-click="clearSearch()"><i class="glyphicon glyphicon-remove"></i></button>' +
                     '</span>' +
@@ -104,7 +104,7 @@ angular
 
                 var tplHead =
                     '<table class="table table-hover bootstrap-table">' +
-                    '<caption>{{options.caption}}</caption>' +
+                    '<caption>{{actualOptions.caption}}</caption>' +
                     '<thead>' +
                     '<tr>';
 
@@ -117,13 +117,13 @@ angular
                     '<tr ng-repeat="item in filtredList track by item.id">';
 
 
-                scope.options.fields.forEach(function(field, index){
+                scope.actualOptions.fields.forEach(function(field, index){
                     if(field.resource && field.list){
-                        if(!scope.options.lists[field.list]){
-                            scope.options.lists[field.list] = [];
+                        if(!scope.actualOptions.lists[field.list]){
+                            scope.actualOptions.lists[field.list] = [];
 
                             AEditHelpers.getResourceQuery(field.resource, 'get').then(function(list){
-                                scope.options.lists[field.list] = list;
+                                scope.actualOptions.lists[field.list] = list;
                             });
                         }
                     }
@@ -133,7 +133,7 @@ angular
 
                     tplHead += '<th>' + field.label + '</th>';
 
-                    if(field.readonly || !scope.options.edit){
+                    if(field.readonly || !scope.actualOptions.edit){
                         tplBodyNewItem += '<th scope="row"></th>';
                         tplBodyItem += '<th scope="row">{{item.' + field.name +'}}</th>';
                     } else {
@@ -151,7 +151,7 @@ angular
                             if(field.list && field.list == 'self')
                                 list_variable = 'ngModel';
                             else if(field.list)
-                                list_variable = 'options.lists.' + field.list;
+                                list_variable = 'actualOptions.lists.' + field.list;
 
                             return AEditHelpers.generateDirectiveByConfig(field, {
                                 item_name: item_name,
@@ -167,7 +167,7 @@ angular
                     }
                 });
 
-                if(scope.options.edit){
+                if(scope.actualOptions.edit){
                     tplHead +=
                         '<th class="controls"></th>';
 
@@ -192,12 +192,12 @@ angular
 
                 var tplHtml = '';
 
-                if(scope.options.search)
+                if(scope.actualOptions.search)
                     tplHtml += tplSearch;
 
                 tplHtml += tplHead;
 
-                if(scope.options.create)
+                if(scope.actualOptions.create)
                     tplHtml += tplBodyNewItem;
 
                 tplHtml += tplBodyItem;
@@ -219,7 +219,7 @@ angular
 
                 item.errors || (item.errors = {});
 
-                scope.options.fields.forEach(function(field){
+                scope.actualOptions.fields.forEach(function(field){
                     //if field empty and required - add to errors, else delete from errors
                     if(field.required && !item[field.name])
                         item.errors[field.name] = true;
@@ -302,11 +302,11 @@ angular
                             saveCallbacks(item);
                         });
                     } else {
-                        angular.forEach(scope.options.defaultAttrs, function(value, attr){
+                        angular.forEach(scope.actualOptions.defaultAttrs, function(value, attr){
                             upload_item[attr] = value;
                         });
 
-                        var query = AEditHelpers.getResourceQuery(new scope.options.resource(upload_item), 'create');
+                        var query = AEditHelpers.getResourceQuery(new scope.actualOptions.resource(upload_item), 'create');
                         query.then(function(created_item){
                             created_item.is_new = true;
 
@@ -347,8 +347,8 @@ angular
                 else
                     scope.filtredList = $filter('filter')(scope.ngModel, scope.searchQuery);
 
-                if(scope.options.orderBy)
-                    scope.filtredList = $filter('orderBy')(scope.filtredList, scope.options.orderBy);
+                if(scope.actualOptions.orderBy)
+                    scope.filtredList = $filter('orderBy')(scope.filtredList, scope.actualOptions.orderBy);
             };
 
             scope.clearSearch = function(){
@@ -362,7 +362,7 @@ angular
 
             scope.$watchCollection('ngModel', function(list){
                 scope.search();
-                scope.options.lists['self'] = list;
+                scope.actualOptions.lists['self'] = list;
             });
         }
     };
