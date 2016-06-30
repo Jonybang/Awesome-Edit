@@ -24,7 +24,7 @@ angular.module('a-edit')
                         directive = 'date-input';
                         break;
                     case 'bool':
-                        directive = 'date-input';
+                        directive = 'bool-input';
                         break;
                     case 'file':
                     case 'multifile':
@@ -35,7 +35,7 @@ angular.module('a-edit')
                         break;
                 }
 
-                output += '<' + directive + ' ';
+                output += '<ae-' + directive + ' ';
 
                 output += 'type="' + (field.type || '') + '" ' +
                     'input-name="' + (field.input_name || '') + '" ';
@@ -84,7 +84,7 @@ angular.module('a-edit')
                 if(field.modal && !config.already_modal && field.modal == 'self')
                     output += 'modal-resource="' + item_name + '" ';
 
-                output += '></' + directive + '>';
+                output += '></ae-' + directive + '>';
 
                 return output;
             },

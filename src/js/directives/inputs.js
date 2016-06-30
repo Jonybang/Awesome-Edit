@@ -1,7 +1,7 @@
 angular
     .module('a-edit')
 
-    .directive('textInput', ['$timeout', '$compile', function($timeout, $compile) {
+    .directive('aeTextInput', ['$timeout', '$compile', function($timeout, $compile) {
         function getTemplateByType(type, options){
             var text = '{{$parent.ngModel}}';
             var inputTagBegin = '<input type="text"';
@@ -104,7 +104,7 @@ angular
         };
     }])
 
-    .directive('boolInput', ['$timeout', '$filter', function($timeout, $filter) {
+    .directive('aeBoolInput', ['$timeout', '$filter', function($timeout, $filter) {
         return {
             restrict: 'E',
             templateUrl: 'a-edit-bool-input.html',
@@ -135,7 +135,7 @@ angular
     }])
 
 
-    .directive('dateInput', ['$timeout', '$filter', function($timeout, $filter) {
+    .directive('aeDateInput', ['$timeout', '$filter', function($timeout, $filter) {
         return {
             restrict: 'E',
             templateUrl: 'a-edit-date-input.html',
@@ -195,7 +195,7 @@ angular
         };
     }])
 
-    .directive('selectInput', ['$timeout', '$compile', '$templateCache', 'AEditHelpers', function($timeout, $compile, $templateCache, AEditHelpers) {
+    .directive('aeSelectInput', ['$timeout', '$compile', '$templateCache', 'AEditHelpers', function($timeout, $compile, $templateCache, AEditHelpers) {
         function getTemplateByType(type, options){
             options = options || {};
 
@@ -416,7 +416,7 @@ angular
         };
     }])
 
-    .directive('fileUpload', ['$timeout', '$compile', 'FileUploader', function($timeout, $compile, FileUploader) {
+    .directive('aeFileUpload', ['$timeout', '$compile', 'FileUploader', function($timeout, $compile, FileUploader) {
 
         function getTemplateByType(type){
             var result = '';
