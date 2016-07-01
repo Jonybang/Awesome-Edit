@@ -18,6 +18,8 @@ angular
                 search: true,
                 create: true,
                 edit: true,
+                boldHeaders: true,
+                resource: null,
                 orderBy: '-id',
                 defaultAttrs: {},
                 modalIndex: 0,
@@ -26,7 +28,10 @@ angular
                 lists: {}
             };
 
-            scope.new_item = {};
+            var new_item = {
+                is_new: true
+            };
+            scope.new_item = angular.copy(new_item);
             scope.status = "";
 
             var mode = 'local';
@@ -42,27 +47,30 @@ angular
                 scope.actualOptions = angular.extend({}, defaultOptions, scope.options);
                 AEditConfig.currentOptions = scope.actualOptions;
 
+                if(scope.actualOptions.resource)
+                    mode = 'remote';
+
                 var tplSearch =
                     '<div class="input-group">' +
-                    '<input type="text" class="form-control" ng-model="searchQuery" placeholder="Search" ng-change="search()" ng-model-options="{ debounce: ' + scope.actualOptions.searchDebounce + ' }"/>' +
-                    '<span class="input-group-btn">' +
-                    '<button class="btn btn-default" ng-click="clearSearch()"><i class="glyphicon glyphicon-remove"></i></button>' +
-                    '</span>' +
+                        '<input type="text" class="form-control" ng-model="searchQuery" placeholder="Search" ng-change="search()" ng-model-options="{ debounce: ' + scope.actualOptions.searchDebounce + ' }"/>' +
+                        '<span class="input-group-btn">' +
+                            '<button class="btn btn-default" ng-click="clearSearch()"><i class="glyphicon glyphicon-remove"></i></button>' +
+                        '</span>' +
                     '</div>';
 
                 var tplHead =
                     '<table class="table table-hover bootstrap-table">' +
-                    '<caption>{{actualOptions.caption}}</caption>' +
-                    '<thead>' +
-                    '<tr>';
+                        '<caption>{{actualOptions.caption}}</caption>' +
+                        '<thead>' +
+                        '<tr>';
 
                 var tplBodyNewItem =
-                    '<tbody>' +
-                    '<tr>';
+                        '<tbody>' +
+                        '<tr>';
 
                 var tplBodyItem =
-                    '<tbody>' +
-                    '<tr ng-repeat="item in filtredList track by item.id">';
+                        '<tbody>' +
+                        '<tr ng-repeat="item in filtredList track by item.' + (mode == 'remote' ? 'id' : 'json_id') + '">';
 
 
                 scope.actualOptions.fields.forEach(function(field, index){
@@ -79,11 +87,12 @@ angular
                     if(field.table_hide)
                         return;
 
-                    tplHead += '<th>' + field.label + '</th>';
+                    var headerEl = scope.actualOptions.boldHeaders ? 'th' : 'td';
+                    tplHead += '<' + headerEl + '>' + field.label + '</' + headerEl + '>';
 
                     if(field.readonly || !scope.actualOptions.edit){
-                        tplBodyNewItem += '<th scope="row"></th>';
-                        tplBodyItem += '<th scope="row">{{item.' + field.name +'}}</th>';
+                        tplBodyNewItem += '<' + headerEl + ' scope="row"></' + headerEl + '>';
+                        tplBodyItem += '<' + headerEl + ' scope="row">{{item.' + field.name +'}}</' + headerEl + '>';
                     } else {
                         //for new item row
                         tplBodyNewItem += '<td>';
@@ -121,14 +130,14 @@ angular
 
                     tplBodyNewItem +=
                         '<td class="controls">' +
-                        '<icon-button type="primary" glyphicon="floppy-disk" ng-click="save(new_item)" size="sm"></icon-button>' +
+                            '<icon-button type="primary" glyphicon="floppy-disk" ng-click="save(new_item)" size="sm"></icon-button>' +
                         '</td>';
 
                     tplBodyItem +=
                         '<td class="controls">' +
-                        '<icon-button ng-show="item.is_edit" type="primary" glyphicon="floppy-disk" ng-click="save(item)"></icon-button>' +
-                        '<icon-button ng-hide="item.is_edit" type="warning" glyphicon="pencil" ng-click="item.is_edit = true"></icon-button>' +
-                        '<icon-button type="danger" glyphicon="remove" ng-click="deleteConfirm(item)"></icon-button>' +
+                            '<icon-button ng-show="item.is_edit" type="primary" glyphicon="floppy-disk" ng-click="save(item)"></icon-button>' +
+                            '<icon-button ng-hide="item.is_edit" type="warning" glyphicon="pencil" ng-click="item.is_edit = true"></icon-button>' +
+                            '<icon-button type="danger" glyphicon="remove" ng-click="deleteConfirm(item)"></icon-button>' +
                         '</td>';
                 }
 
@@ -186,6 +195,41 @@ angular
                 if(!AEditHelpers.isEmptyObject(item.errors))
                     return;
 
+                function saveCallbacks(item){
+                    if(scope.onSave)
+                        $timeout(scope.onSave);
+
+                    if(scope.ngChange)
+                        $timeout(scope.ngChange);
+
+                    scope.search();
+
+                    item.is_edit = false;
+
+                    scope.status = item.name + " saved!";
+                    $timeout(function(){
+                        scope.status = "";
+                    }, 1000);
+
+                    if(mode != 'remote'){
+                        delete item.is_new;
+                        delete item.is_edit;
+                        delete item.errors;
+                    }
+                }
+
+                if(mode != 'remote'){
+                    if(item.is_new){
+                        item.json_id = scope.ngModel.length + 1;
+                        scope.ngModel.unshift(item);
+                        scope.new_item = angular.copy(new_item);
+                    }
+
+                    saveCallbacks(item);
+
+                    return;
+                }
+
                 var upload_item = angular.copy(item);
 
                 var uploaders = Object.keys(upload_item).filter(function(k){ return ~k.indexOf("__uploader") });
@@ -223,24 +267,6 @@ angular
                 }
 
                 function sendItem(){
-
-                    function saveCallbacks(item){
-                        if(scope.onSave)
-                            $timeout(scope.onSave);
-
-                        if(scope.ngChange)
-                            $timeout(scope.ngChange);
-
-                        scope.search();
-
-                        item.is_edit = false;
-
-                        scope.status = item.name + " saved!";
-                        $timeout(function(){
-                            scope.status = "";
-                        }, 1000);
-
-                    }
                     if('id' in upload_item && upload_item.id){
                         var query = AEditHelpers.getResourceQuery(upload_item, 'update');
                         
@@ -260,6 +286,7 @@ angular
 
                             scope.ngModel.unshift(created_item);
                             delete scope.new_item;
+                            scope.new_item = angular.copy(new_item);
 
                             saveCallbacks(item);
                         });
@@ -272,15 +299,23 @@ angular
             // *************************************************************
 
             scope.deleteConfirm = function(item){
+                var index = scope.ngModel.indexOf(item);
+
+                function deleteCallbacks(){
+                    scope.ngModel.splice(index, 1);
+                    if(scope.ngChange)
+                        $timeout(scope.ngChange);
+                }
+                if(mode != 'remote'){
+                    deleteCallbacks();
+                    return;
+                }
+
                 if(confirm('Do you want delete object "' + item.name + '"?')){
                     var query = AEditHelpers.getResourceQuery(item, 'delete');
                     
                     query.then(function(){
-                        var index = scope.ngModel.indexOf(item);
-                        scope.ngModel.splice(index, 1);
-
-                        if(scope.ngChange)
-                            $timeout(scope.ngChange);
+                        deleteCallbacks();
                     });
                 }
             };
