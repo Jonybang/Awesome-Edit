@@ -168,7 +168,7 @@ angular
                     todayText: '',
                     currentText:'',
                     clearText: '',
-                    closeText: 'РЎРѕС…СЂР°РЅРёС‚СЊ',
+                    closeText: 'Close',
                     appendToBody: false
                 };
 
