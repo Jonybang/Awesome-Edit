@@ -19,6 +19,7 @@ angular
                 create: true,
                 edit: true,
                 boldHeaders: true,
+                modalAdder: false,
                 resource: null,
                 orderBy: '-id',
                 defaultAttrs: {},
@@ -62,15 +63,15 @@ angular
                     '<table class="table table-hover bootstrap-table">' +
                         '<caption>{{actualOptions.caption}}</caption>' +
                         '<thead>' +
-                        '<tr>';
+                            '<tr>';
 
                 var tplBodyNewItem =
                         '<tbody>' +
-                        '<tr>';
+                            '<tr>';
 
                 var tplBodyItem =
                         '<tbody>' +
-                        '<tr ng-repeat="item in filtredList track by item.' + (mode == 'remote' ? 'id' : 'json_id') + '">';
+                            '<tr ng-repeat="item in filtredList track by item.' + (mode == 'remote' ? 'id' : 'json_id') + '">';
 
 
                 scope.actualOptions.fields.forEach(function(field, index){
@@ -152,14 +153,21 @@ angular
                 if(scope.actualOptions.search)
                     tplHtml += tplSearch;
 
-                tplHtml += tplHead;
+                var tableHtml = '';
 
-                if(scope.actualOptions.create)
-                    tplHtml += tplBodyNewItem;
+                tableHtml += tplHead;
 
-                tplHtml += tplBodyItem;
+                if(scope.actualOptions.create){
 
-                var template = angular.element(tplHtml);
+                    if(scope.actualOptions.modalAdder)
+                        tplHtml += '<button class="btn btn-success" ng-click=""><span class="glyphicon glyphicon-plus"></span> Add</button>';
+                    else
+                        tableHtml += tplBodyNewItem;
+                }
+
+                tableHtml += tplBodyItem;
+
+                var template = angular.element(tplHtml + tableHtml);
 
                 var linkFn = $compile(template)(scope);
                 element.html(linkFn);
@@ -344,6 +352,16 @@ angular
             // *************************************************************
 
             scope.$watchCollection('ngModel', function(list){
+                if(!list)
+                    return;
+
+                if(mode == 'local'){
+                    list.forEach(function(item, index){
+                        if(!item.json_id)
+                            item.json_id = list.length + index + 1;
+                    })
+                }
+
                 scope.search();
                 scope.actualOptions.lists['self'] = list;
             });
