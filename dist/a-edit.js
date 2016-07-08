@@ -147,10 +147,15 @@ angular
                         tplBodyNewItem += '<' + headerEl + ' scope="row"></' + headerEl + '>';
                         tplBodyItem += '<' + headerEl + ' scope="row">{{item.' + field.name +'}}</' + headerEl + '>';
                     } else {
+                        var style = 'style="';
+                        if(field.width)
+                            style += 'width:' + field.width + ';';
+                        style += '"';
+
                         //for new item row
-                        tplBodyNewItem += '<td>';
+                        tplBodyNewItem += '<td><div ' + style + ' >';
                         //for regular item row
-                        tplBodyItem += '<td ng-dblclick="item.is_edit = !item.is_edit">';
+                        tplBodyItem += '<td ng-dblclick="item.is_edit = !item.is_edit"><div ' + style + ' >';
 
                         function getFieldDirective(is_new) {
                             var item_name = (is_new ? 'new_' : '' ) + 'item';
@@ -172,8 +177,8 @@ angular
                             });
                         }
 
-                        tplBodyNewItem += getFieldDirective(true) + '</td>';
-                        tplBodyItem += getFieldDirective(false) + '</td>';
+                        tplBodyNewItem += getFieldDirective(true) + '</div></td>';
+                        tplBodyItem += getFieldDirective(false) + '</div></td>';
                     }
                 });
 
@@ -506,7 +511,7 @@ angular
             '<div ng-if="isEdit" ng-class="input_class">' +
                 inputTagBegin +
                 ' class="form-control input-sm" placeholder="{{$parent.placeholder}}"' +
-                ' ng-model="$parent.ngModel" ng-enter="$parent.save()"' +
+                ' ng-model="$parent.ngModel" ' + (type != 'textarea' ? 'ng-enter="$parent.save()"' : '') +
                 ' ng-model-options="$parent.ngModelOptions || {}"' +
                 ' ng-style="{ \'width\' : $parent.width + \'px\'}">' +
                 inputTagEnd +
