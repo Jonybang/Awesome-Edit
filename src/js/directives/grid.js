@@ -91,43 +91,39 @@ angular
                     var headerEl = scope.actualOptions.boldHeaders ? 'th' : 'td';
                     tplHead += '<' + headerEl + '>' + field.label + '</' + headerEl + '>';
 
-                    if(field.readonly || !scope.actualOptions.edit){
-                        tplBodyNewItem += '<' + headerEl + ' scope="row"></' + headerEl + '>';
-                        tplBodyItem += '<' + headerEl + ' scope="row">{{item.' + field.name +'}}</' + headerEl + '>';
-                    } else {
-                        var style = 'style="';
-                        if(field.width)
-                            style += 'width:' + field.width + ';';
-                        style += '"';
+                    var style = 'style="';
+                    if(field.width)
+                        style += 'width:' + field.width + ';';
+                    style += '"';
 
-                        //for new item row
-                        tplBodyNewItem += '<td><div ' + style + ' >';
-                        //for regular item row
-                        tplBodyItem += '<td ng-dblclick="item.is_edit = !item.is_edit"><div ' + style + ' >';
+                    //for new item row
+                    tplBodyNewItem += '<td><div ' + style + ' >';
+                    //for regular item row
+                    tplBodyItem += '<td ng-dblclick="item.is_edit = !item.is_edit"><div ' + style + ' >';
 
-                        function getFieldDirective(is_new) {
-                            var item_name = (is_new ? 'new_' : '' ) + 'item';
-                            var field_name = field.name != 'self' ? field.name : '';
+                    function getFieldDirective(is_new) {
+                        var item_name = (is_new ? 'new_' : '' ) + 'item';
+                        var field_name = field.name != 'self' ? field.name : '';
 
-                            var list_variable;
+                        var list_variable;
 
-                            if(field.list && field.list == 'self')
-                                list_variable = 'ngModel';
-                            else if(field.list)
-                                list_variable = 'actualOptions.lists.' + field.list;
+                        if(field.list && field.list == 'self')
+                            list_variable = 'ngModel';
+                        else if(field.list)
+                            list_variable = 'actualOptions.lists.' + field.list;
 
-                            return AEditHelpers.generateDirectiveByConfig(field, {
-                                item_name: item_name,
-                                field_name: field_name,
-                                always_edit: is_new,
-                                is_new: is_new,
-                                list_variable: list_variable
-                            });
-                        }
-
-                        tplBodyNewItem += getFieldDirective(true) + '</div></td>';
-                        tplBodyItem += getFieldDirective(false) + '</div></td>';
+                        return AEditHelpers.generateDirectiveByConfig(field, {
+                            item_name: item_name,
+                            field_name: field_name,
+                            readonly: field.readonly || !scope.actualOptions.edit,
+                            always_edit: is_new,
+                            is_new: is_new,
+                            list_variable: list_variable
+                        });
                     }
+
+                    tplBodyNewItem += getFieldDirective(true) + '</div></td>';
+                    tplBodyItem += getFieldDirective(false) + '</div></td>';
                 });
 
                 if(scope.actualOptions.edit){

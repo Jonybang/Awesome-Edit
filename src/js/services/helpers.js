@@ -62,7 +62,7 @@ angular.module('a-edit')
                 var item_field = item_name + (field.name != 'self' ? '.' : '') + field_name;
 
                 var is_edit;
-                if(field.readonly)
+                if(field.readonly || config.readonly)
                     is_edit = 'false';
                 else if(config.always_edit)
                     is_edit = 'true';
