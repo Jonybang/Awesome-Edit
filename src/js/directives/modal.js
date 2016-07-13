@@ -9,15 +9,15 @@ angular
             scope: {
                 //require
                 aModalResource: '=',
+                aModalOptions: '=?',
                 isEdit: '=?',
-                options: '=?',
                 //callbacks
                 onSave: '&'
             },
             link: function (scope, element, attrs) {
 
-                var resource_name = attrs.aModalResource;
-                scope.options = scope.options || AEditConfig.currentOptions;
+                var resource_name = attrs.aModalResource + new Date().getTime();
+                scope.options = scope.aModalOptions || AEditConfig.currentOptions;
 
                 element.on("click", function () {
                     var template = cache.get(resource_name) || '';

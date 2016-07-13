@@ -8,7 +8,7 @@ angular
             var inputTagEnd = '';
 
             if(options && options.modal_link)
-                text = '<a a-modal-resource="modalResource" on-save="save()" href>' + text + '</a>';
+                text = '<a a-modal-resource="modalResource" a-modal-options="modalOptions" on-save="save()" href>' + text + '</a>';
             else if(type == 'textarea'){
                 text = '<pre ng-if="$parent.ngModel">{{$parent.ngModel}}</pre>';
 
@@ -55,6 +55,7 @@ angular
                 isNew: '=?',
                 isEdit: '=?',
                 modalResource: '=?',
+                modalOptions: '=?',
                 hasError: '=?',
                 //callbacks
                 ngChange: '&',
@@ -206,7 +207,7 @@ angular
             };
             if(type == 'multiselect'){
                 uiSelect.tags = 'multiple close-on-select="false" ';
-                uiSelect.match = '$item.name || $item.title';
+                uiSelect.match = '$item[$parent.nameField] || $item.name || $item[$parent.orNameField]';
             }
             if(options.adder){
                 uiSelect.subClasses = 'btn-group select-adder';
@@ -223,7 +224,7 @@ angular
                         '</ui-select-match>' +
 
                         '<ui-select-choices repeat="item.id as item in $parent.list | filter: $select.search track by $index">' +
-                            '<div ng-bind-html="item.name || item.title | highlight: $select.search"></div>' +
+                            '<div ng-bind-html="(item[$parent.nameField] || item.name || item[$parent.orNameField]) | highlight: $select.search"></div>' +
                         '</ui-select-choices>' +
                     '</ui-select>';
 
@@ -273,6 +274,8 @@ angular
                 onSave: '&',
                 //sub
                 adder: '=?',
+                nameField: '@',
+                orNameField: '@',
                 placeholder: '@',
                 name: '@',
                 type: '@' //select or multiselect
@@ -347,11 +350,11 @@ angular
                     if(Array.isArray(newVal)){
                         var names = [];
                         newVal.forEach(function(val){
-                            names.push(AEditHelpers.getNameById(scope.list, val));
+                            names.push(AEditHelpers.getNameById(scope.list, val, scope.nameField, scope.orNameField));
                         });
                         scope.selectedName = names.join(', ');
                     } else {
-                        scope.selectedName = AEditHelpers.getNameById(scope.list, newVal);
+                        scope.selectedName = AEditHelpers.getNameById(scope.list, newVal, scope.nameField, scope.orNameField);
                     }
 
                     scope.ngModelStr = scope.selectedName;

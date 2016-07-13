@@ -78,11 +78,18 @@ angular.module('a-edit')
                     'is-new="' + (config.is_new ? 'true': 'false') + '" '+
                     'placeholder="' + ((config.always_edit ? field.new_placeholder : field.placeholder) || '') + '" ';
 
-                if(field.type == 'file' || field.type == 'multifile')
+                if(directive == 'file-upload')
                     output += 'uploader="' + item_name + '.' + field_name + '__uploader" ';
 
-                if(field.modal && !config.already_modal && field.modal == 'self')
+                if(directive == 'select-input'){
+                    output += 'name-field="' + (field.name_field || '') + '" ';
+                    output += 'or-name-field="' + field.or_name_field + '" ';
+                }
+
+                if(field.modal && !config.already_modal && field.modal == 'self'){
                     output += 'modal-resource="' + item_name + '" ';
+                    output += 'modal-options="actualOptions" ';
+                }
 
                 output += '></ae-' + directive + '>';
 
@@ -130,7 +137,7 @@ angular.module('a-edit')
                 }
                 return true;
             },
-            getNameById: function (list, val){
+            getNameById: function (list, val, nameField, orNameField){
                 var resultName = '';
 
                 if(!list || !list.length)
@@ -139,7 +146,7 @@ angular.module('a-edit')
                 list.some(function(obj){
                     var result = obj.id == val;
                     if(result)
-                        resultName = obj.name || obj.title;
+                        resultName = obj[nameField] || obj.name || obj[orNameField];
                     return result;
                 });
                 return resultName;
