@@ -4,7 +4,7 @@ angular
     .directive('aeTextInput', ['$timeout', '$compile', function($timeout, $compile) {
         function getTemplateByType(type, options){
             var text = '{{$parent.ngModel}}';
-            var inputTagBegin = '<input type="text"';
+            var inputTagBegin = '<input type="text" ';
             var inputTagEnd = '';
 
             if(options && options.modal_link)
@@ -12,17 +12,18 @@ angular
             else if(type == 'textarea'){
                 text = '<pre ng-if="$parent.ngModel">{{$parent.ngModel}}</pre>';
 
-                inputTagBegin = '<textarea';
+                inputTagBegin = '<textarea ';
                 inputTagEnd = '</textarea>';
             } else if(type == 'password'){
                 text = '<small>[password hidden]</small>';
 
                 inputTagBegin = '' +
                     '<a href ng-click="changePassword = true" ng-show="!isNew && !changePassword">Change password</a>' +
-                    '<div ng-show="changePassword || isNew"><input type="password"';
+                    '<div ng-show="changePassword || isNew"><input type="password" ';
                 inputTagEnd = '</div>';
             }
 
+            inputTagBegin += 'ng-change="ngChange()" ';
 
             return '' +
             '<div ng-if="!isEdit">' +
@@ -366,6 +367,8 @@ angular
                 };
 
                 if(scope.adder){
+                    scope.new_object = {};
+
                     var popoverTemplate = '' +
                         '<div ng-click="popoverContentClick($event)">';
 
@@ -377,7 +380,7 @@ angular
                                 '</div>' +
                                 '<div>' +
                                     AEditHelpers.generateDirectiveByConfig(field, {
-                                        item_name: 'new_object',
+                                        item_name: '$parent.new_object',
                                         lists_container: 'lists',
                                         always_edit: true,
                                         is_new: true
@@ -388,6 +391,10 @@ angular
 
                         if(field.resource){
                             scope[field.name + '_resource'] = field.resource;
+                        }
+
+                        if(field.type == 'multiselect'){
+                            scope.new_object[field.name] = [];
                         }
                     });
 
