@@ -70,6 +70,7 @@ angular
                 search: true,
                 create: true,
                 edit: true,
+                delete: true,
                 paginate: true,
                 bold_headers: true,
                 modal_adder: false,
@@ -216,7 +217,7 @@ angular
                         '<td class="controls">' +
                             '<icon-button ng-show="item.is_edit" type="primary" glyphicon="floppy-disk" ng-click="save(item)"></icon-button>' +
                             '<icon-button ng-hide="item.is_edit" type="warning" glyphicon="pencil" ng-click="item.is_edit = true"></icon-button>' +
-                            '<icon-button type="danger" glyphicon="remove" ng-click="deleteConfirm(item)"></icon-button>' +
+                            ( scope.actualOptions.delete ? '<icon-button type="danger" glyphicon="remove" ng-click="deleteConfirm(item)"></icon-button>' : '' ) +
                         '</td>';
                 }
 
@@ -363,10 +364,16 @@ angular
                     }
                 }
 
-                //
+                // local json mode
                 if(mode != 'remote'){
                     if(item.is_new){
-                        item.json_id = scope.ngModel.length + 1;
+
+                        item.json_id = 1;
+                        scope.ngModel.forEach(function(local_item){
+                            if(local_item.json_id > item.json_id)
+                                item.json_id = local_item.json_id + 1;
+                        });
+
                         scope.ngModel.unshift(item);
                         scope.new_item = angular.copy(new_item);
                     }
