@@ -18,13 +18,14 @@ angular
                 search: true,
                 create: true,
                 edit: true,
-                boldHeaders: true,
-                modalAdder: false,
+                paginate: true,
+                bold_headers: true,
+                modal_adder: false,
                 resource: null,
-                orderBy: '-id',
-                defaultAttrs: {},
-                modalIndex: 0,
-                searchDebounce: 200,
+                order_by: '-id',
+                default_attrs: {},
+                modal_index: 0,
+                search_debounce: 200,
                 fields: [],
                 lists: {}
             };
@@ -37,6 +38,15 @@ angular
 
             var mode = 'local';
 
+            //request options for get list
+            scope.gridRequestOptions = {};
+            //actual options of grid controls
+            scope.gridOptions = {};
+
+            scope.gridOptions.current_page = 1;
+
+            var variables = angular.extend({}, AEditConfig.grid_options.request_variables, AEditConfig.grid_options.response_variables);
+
             // *************************************************************
             // TEMPLATE INIT
             // *************************************************************
@@ -46,14 +56,19 @@ angular
                     return;
 
                 scope.actualOptions = angular.extend({}, defaultOptions, scope.options);
-                AEditConfig.currentOptions = scope.actualOptions;
+                AEditConfig.current_options = scope.actualOptions;
+                
+                angular.extend(scope.gridOptions, AEditConfig.grid_options, scope.actualOptions);
 
-                if(scope.actualOptions.resource)
+                if(scope.actualOptions.resource){
                     mode = 'remote';
+                    if(scope.actualOptions.get_list)
+                        scope.getList();
+                }
 
                 var tplSearch =
                     '<div class="input-group">' +
-                        '<input type="text" class="form-control" ng-model="searchQuery" placeholder="Search" ng-change="search()" ng-model-options="{ debounce: ' + scope.actualOptions.searchDebounce + ' }"/>' +
+                        '<input type="text" class="form-control" ng-model="searchQuery" placeholder="Search" ng-change="search()" ng-model-options="{ debounce: ' + scope.actualOptions.search_debounce + ' }"/>' +
                         '<span class="input-group-btn">' +
                             '<button class="btn btn-default" ng-click="clearSearch()"><i class="glyphicon glyphicon-remove"></i></button>' +
                         '</span>' +
@@ -75,12 +90,12 @@ angular
 
 
                 scope.actualOptions.fields.forEach(function(field, index){
-                    if(field.resource && field.list){
+                    if(field.resource && field.list && field.list != 'self'){
                         if(!scope.actualOptions.lists[field.list]){
                             scope.actualOptions.lists[field.list] = [];
 
-                            AEditHelpers.getResourceQuery(field.resource, 'get').then(function(list){
-                                scope.actualOptions.lists[field.list] = list;
+                            AEditHelpers.getResourceQuery(field.resource, 'get').then(function(response){
+                                scope.actualOptions.lists[field.list] = response[variables['list']] || response;
                             });
                         }
                     }
@@ -88,7 +103,11 @@ angular
                     if(field.table_hide)
                         return;
 
-                    var headerEl = scope.actualOptions.boldHeaders ? 'th' : 'td';
+                    if(field.resource){
+                        scope[field.name + '_resource'] = field.resource;
+                    }
+
+                    var headerEl = scope.actualOptions.bold_headers ? 'th' : 'td';
                     tplHead += '<' + headerEl + '>' + field.label + '</' + headerEl + '>';
 
                     var style = 'style="';
@@ -160,7 +179,7 @@ angular
 
                 if(scope.actualOptions.create){
 
-                    if(scope.actualOptions.modalAdder)
+                    if(scope.actualOptions.modal_adder)
                         tplHtml += '<button class="btn btn-success" ng-click=""><span class="glyphicon glyphicon-plus"></span> Add</button>';
                     else
                         tableHtml += tplBodyNewItem;
@@ -168,12 +187,65 @@ angular
 
                 tableHtml += tplBodyItem;
 
+                if(scope.actualOptions.paginate) {
+                    tableHtml += '<uib-pagination total-items="gridOptions.total_items" items-per-page="gridOptions.items_per_page" ng-model="gridOptions.current_page" ng-change="getList()"></uib-pagination>';
+                }
+
                 var template = angular.element(tplHtml + tableHtml);
 
                 var linkFn = $compile(template)(scope);
                 element.html(linkFn);
             });
 
+            // *************************************************************
+            // GET LIST, SEARCH, PAGINATION AND SORTING
+            // *************************************************************
+
+            scope.getList = function(query){
+                if(scope.searchQuery)
+                    scope.gridRequestOptions[variables['query']] = scope.searchQuery;
+
+                scope.gridRequestOptions[variables['offset']] = (scope.gridOptions.current_page - 1) * scope.gridOptions.items_per_page;
+                scope.gridRequestOptions[variables['limit']] = scope.gridOptions.items_per_page;
+
+                angular.extend(scope.gridRequestOptions, scope.gridOptions.additional_request_params);
+
+                AEditHelpers.getResourceQuery(scope.actualOptions.resource, 'search', scope.gridRequestOptions).then(function(response){
+                    scope.ngModel = response[variables['list']] || response;
+
+                    var meta_info = response[variables['meta_info']];
+                    if(meta_info){
+                        scope.gridOptions.total_items = meta_info[variables['total_count']];
+                        scope.gridOptions.filter_items = meta_info[variables['filter_count']];
+                    } else {
+                        console.error('[AEGrid] For pagination needs some meta info in response!');
+                    }
+                });
+            };
+
+            // *************************************************************
+            // CLIENT SEARCH
+            // *************************************************************
+
+            scope.search = function(){
+                if(mode != 'local'){
+                    scope.filtredList = scope.ngModel;
+                    return;
+                }
+
+                if(!scope.searchQuery)
+                    scope.filtredList = scope.ngModel;
+                else
+                    scope.filtredList = $filter('filter')(scope.ngModel, scope.searchQuery);
+
+                if(scope.actualOptions.order_by)
+                    scope.filtredList = $filter('orderBy')(scope.filtredList, scope.actualOptions.order_by);
+            };
+
+            scope.clearSearch = function(){
+                scope.searchQuery = '';
+                scope.filtredList = scope.ngModel;
+            };
 
             // *************************************************************
             // CREATE OR UPDATE
@@ -185,6 +257,7 @@ angular
 
                 item.errors || (item.errors = {});
 
+                // validation - check required fields and password
                 scope.actualOptions.fields.forEach(function(field){
                     //if field empty and required - add to errors, else delete from errors
                     if(field.required && !item[field.name])
@@ -201,9 +274,11 @@ angular
                         delete item[field.name];
                 });
 
+                // if there some errors
                 if(!AEditHelpers.isEmptyObject(item.errors))
                     return;
 
+                // actions after save
                 function saveCallbacks(item){
                     if(scope.onSave)
                         $timeout(scope.onSave);
@@ -227,6 +302,7 @@ angular
                     }
                 }
 
+                //
                 if(mode != 'remote'){
                     if(item.is_new){
                         item.json_id = scope.ngModel.length + 1;
@@ -239,33 +315,36 @@ angular
                     return;
                 }
 
-                var upload_item = angular.copy(item);
+                var request_object = angular.copy(item);
 
-                var uploaders = Object.keys(upload_item).filter(function(k){ return ~k.indexOf("__uploader") });
+                // check for files from file uploader
+                var uploaders = Object.keys(request_object).filter(function(k){ return ~k.indexOf("__uploader") });
+                // if exists - upload each file and set to *field*_ids array database object of file
+                // TODO: realize mode for take paths of files(not ids of database rows with paths)
                 if(uploaders.length){
 
                     uploaders.forEach(function(key){
 
                         function sendAll(){
                             var prop_name = key.replace('__uploader','');
-                            if(!upload_item[prop_name]){
+                            if(!request_object[prop_name]){
                                 sendItem();
                                 return;
                             }
 
-                            upload_item[prop_name.substring(0, prop_name.length - 1) + '_ids'] = upload_item[prop_name].map(function(obj){
+                            request_object[prop_name.substring(0, prop_name.length - 1) + '_ids'] = request_object[prop_name].map(function(obj){
                                 return obj.id;
                             });
-                            delete upload_item[key];
-                            delete upload_item[prop_name];
+                            delete request_object[key];
+                            delete request_object[prop_name];
                             sendItem();
                         }
 
-                        if(!upload_item[key].queue.length){
+                        if(!request_object[key].queue.length){
                             sendAll();
                         } else {
-                            upload_item[key].onSuccessItem = function(){
-                                if(!upload_item[key].queue.length){
+                            request_object[key].onSuccessItem = function(){
+                                if(!request_object[key].queue.length){
                                     sendAll();
                                 }
                             };
@@ -276,21 +355,22 @@ angular
                 }
 
                 function sendItem(){
-                    if('id' in upload_item && upload_item.id){
-                        var query = AEditHelpers.getResourceQuery(upload_item, 'update');
-                        
-                        query.then(function(updated_item){
+                    if('id' in request_object && request_object.id){
+                        // update if id field exist
+                        AEditHelpers.getResourceQuery(request_object, 'update').then(function(updated_item){
                             angular.extend(item, updated_item);
 
                             saveCallbacks(item);
                         });
                     } else {
-                        angular.forEach(scope.actualOptions.defaultAttrs, function(value, attr){
-                            upload_item[attr] = value;
+                        //create if id not exist
+                        angular.forEach(scope.actualOptions.default_attrs, function(value, attr){
+                            request_object[attr] = value;
                         });
 
-                        var query = AEditHelpers.getResourceQuery(new scope.actualOptions.resource(upload_item), 'create');
-                        query.then(function(created_item){
+                        var newResource = new scope.actualOptions.resource(request_object);
+
+                        AEditHelpers.getResourceQuery(newResource, 'create').then(function(created_item){
                             created_item.is_new = true;
 
                             scope.ngModel.unshift(created_item);
@@ -321,31 +401,10 @@ angular
                 }
 
                 if(confirm('Do you want delete object "' + item.name + '"?')){
-                    var query = AEditHelpers.getResourceQuery(item, 'delete');
-                    
-                    query.then(function(){
+                    AEditHelpers.getResourceQuery(item, 'delete').then(function(){
                         deleteCallbacks();
                     });
                 }
-            };
-
-            // *************************************************************
-            // SEARCH
-            // *************************************************************
-
-            scope.search = function(){
-                if(!scope.searchQuery)
-                    scope.filtredList = scope.ngModel;
-                else
-                    scope.filtredList = $filter('filter')(scope.ngModel, scope.searchQuery);
-
-                if(scope.actualOptions.orderBy)
-                    scope.filtredList = $filter('orderBy')(scope.filtredList, scope.actualOptions.orderBy);
-            };
-
-            scope.clearSearch = function(){
-                scope.searchQuery = '';
-                scope.filtredList = scope.ngModel;
             };
 
             // *************************************************************

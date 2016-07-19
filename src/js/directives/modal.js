@@ -17,7 +17,7 @@ angular
             link: function (scope, element, attrs) {
 
                 var resource_name = attrs.aModalResource + new Date().getTime();
-                scope.options = scope.aModalOptions || AEditConfig.currentOptions;
+                scope.options = scope.aModalOptions || AEditConfig.current_options;
 
                 element.on("click", function () {
                     var template = cache.get(resource_name) || '';

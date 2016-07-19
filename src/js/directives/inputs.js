@@ -332,11 +332,12 @@ angular
                 });
 
                 scope.$watch('list', function(){
+
                     scope.setSelectedName(scope.ngModel);
                 });
 
                 function getListByResource(){
-                    if(!scope.ngResource)
+                    if(!scope.ngResource || (scope.list && scope.list.length))
                         return;
 
                     AEditHelpers.getResourceQuery(scope.ngResource, 'get').then(function(list){
@@ -348,18 +349,47 @@ angular
                 scope.$watch('refreshListOn', getListByResource);
 
                 scope.setSelectedName = function (newVal){
+                    if(!scope.list || !scope.list.length)
+                        return;
+
                     if(Array.isArray(newVal)){
+                        // if ngModel - array of ids
                         var names = [];
-                        newVal.forEach(function(val){
-                            names.push(AEditHelpers.getNameById(scope.list, val, scope.nameField, scope.orNameField));
+                        newVal.forEach(function(id){
+                            // get from current list by id
+                            var result_name = AEditHelpers.getNameById(scope.list, id, scope.nameField, scope.orNameField);
+                            if(result_name){
+                                names.push(result_name);
+                            } else if(scope.ngResource){
+                                // if object with id not exist in current list - get from server
+                                getNameFromServer(id).then(function(name){
+                                    names.push(name);
+                                    scope.selectedName = names.join(', ');
+                                    scope.ngModelStr = scope.selectedName;
+                                })
+                            }
                         });
                         scope.selectedName = names.join(', ');
                     } else {
+                        // get from current list by id
                         scope.selectedName = AEditHelpers.getNameById(scope.list, newVal, scope.nameField, scope.orNameField);
-                    }
 
+                        // if object with id not exist in current list - get from server
+                        if(!scope.selectedName && newVal && scope.ngResource){
+                            getNameFromServer(newVal).then(function(name){
+                                scope.selectedName = name;
+                                scope.ngModelStr = scope.selectedName;
+                            })
+                        }
+                    }
                     scope.ngModelStr = scope.selectedName;
                 };
+
+                function getNameFromServer(id){
+                    return AEditHelpers.getResourceQuery(scope.ngResource, 'show', {id: id}).then(function(object){
+                        return object[scope.nameField] || object.name || object[scope.orNameField];
+                    });
+                }
 
                 scope.save = function(){
                     if(scope.onSave)

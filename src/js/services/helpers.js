@@ -83,7 +83,7 @@ angular.module('a-edit')
 
                 if(directive == 'select-input'){
                     output += 'name-field="' + (field.name_field || '') + '" ';
-                    output += 'or-name-field="' + field.or_name_field + '" ';
+                    output += 'or-name-field="' + (field.name_field || '') + '" ';
                 }
 
                 if(field.modal && !config.already_modal && field.modal == 'self'){
@@ -95,15 +95,19 @@ angular.module('a-edit')
 
                 return output;
             },
-            getResourceQuery: function(obj, action){
+            getResourceQuery: function(obj, action, options){
+                options = options || {};
                 
                 var possibleFunctions;
                 switch(action){
+                    case 'search':
+                        possibleFunctions = ['get'];
+                        break;
                     case 'get':
                         possibleFunctions = ['query', 'get'];
                         break;
                     case 'show':
-                        possibleFunctions = ['$get'];
+                        possibleFunctions = ['$get', 'get'];
                         break;
                     case 'create':
                         possibleFunctions = ['$save', 'create'];
@@ -119,7 +123,7 @@ angular.module('a-edit')
                 var query;
                 possibleFunctions.some(function(functionName){
                     if(obj[functionName])
-                        query = obj[functionName]();
+                        query = obj[functionName](options);
                     
                     return obj[functionName];
                 });
