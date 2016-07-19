@@ -141,12 +141,14 @@ angular
                             '<tr ng-repeat="item in filtredList track by item.' + (mode == 'remote' ? 'id' : 'json_id') + '">';
 
 
+                var select_list_request_options = {};
+                select_list_request_options[variables['limit']] = scope.gridOptions.select_items_per_page;
                 scope.actualOptions.fields.forEach(function(field, index){
                     if(field.resource && field.list && field.list != 'self'){
                         if(!scope.actualOptions.lists[field.list]){
                             scope.actualOptions.lists[field.list] = [];
 
-                            AEditHelpers.getResourceQuery(field.resource, 'get').then(function(response){
+                            AEditHelpers.getResourceQuery(field.resource, 'get', select_list_request_options).then(function(response){
                                 scope.actualOptions.lists[field.list] = response[variables['list']] || response;
                             });
                         }
@@ -189,7 +191,8 @@ angular
                             readonly: field.readonly || !scope.actualOptions.edit,
                             always_edit: is_new,
                             is_new: is_new,
-                            list_variable: list_variable
+                            list_variable: list_variable,
+                            get_list: false
                         });
                     }
 
@@ -810,6 +813,7 @@ angular
                 onSave: '&',
                 //sub
                 adder: '=?',
+                getList: '=?',
                 nameField: '@',
                 orNameField: '@',
                 placeholder: '@',
@@ -872,7 +876,7 @@ angular
                 });
 
                 function getListByResource(){
-                    if(!scope.ngResource || (scope.list && scope.list.length))
+                    if(!scope.ngResource || !scope.getList || (scope.list && scope.list.length))
                         return;
 
                     AEditHelpers.getResourceQuery(scope.ngResource, 'get').then(function(list){
@@ -1239,7 +1243,8 @@ angular.module('a-edit')
                 total_count: 'total_count',
                 filter_count: 'filter_count'
             },
-            items_per_page: 5
+            items_per_page: 5,
+            select_items_per_page: 2
         };
 
         return this;
@@ -1292,6 +1297,9 @@ angular.module('a-edit')
 
                 if(field.required)
                     output += 'required="true" ';
+
+                if('get_list' in config)
+                    output += 'get-list="' + config.get_list + '" ';
 
                 if(field.url)
                     output += 'url="' + field.url + '" ';

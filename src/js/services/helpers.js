@@ -46,6 +46,9 @@ angular.module('a-edit')
                 if(field.required)
                     output += 'required="true" ';
 
+                if('get_list' in config)
+                    output += 'get-list="' + config.get_list + '" ';
+
                 if(field.url)
                     output += 'url="' + field.url + '" ';
 

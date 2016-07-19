@@ -22,7 +22,8 @@ angular.module('a-edit')
                 total_count: 'total_count',
                 filter_count: 'filter_count'
             },
-            items_per_page: 5
+            items_per_page: 5,
+            select_items_per_page: 2
         };
 
         return this;

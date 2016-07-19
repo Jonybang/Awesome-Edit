@@ -275,6 +275,7 @@ angular
                 onSave: '&',
                 //sub
                 adder: '=?',
+                getList: '=?',
                 nameField: '@',
                 orNameField: '@',
                 placeholder: '@',
@@ -337,7 +338,7 @@ angular
                 });
 
                 function getListByResource(){
-                    if(!scope.ngResource || (scope.list && scope.list.length))
+                    if(!scope.ngResource || !scope.getList || (scope.list && scope.list.length))
                         return;
 
                     AEditHelpers.getResourceQuery(scope.ngResource, 'get').then(function(list){
