@@ -70,6 +70,7 @@ angular
                 search: true,
                 create: true,
                 edit: true,
+                delete: true,
                 paginate: true,
                 bold_headers: true,
                 modal_adder: false,
@@ -213,7 +214,7 @@ angular
                         '<td class="controls">' +
                             '<icon-button ng-show="item.is_edit" type="primary" glyphicon="floppy-disk" ng-click="save(item)"></icon-button>' +
                             '<icon-button ng-hide="item.is_edit" type="warning" glyphicon="pencil" ng-click="item.is_edit = true"></icon-button>' +
-                            '<icon-button type="danger" glyphicon="remove" ng-click="deleteConfirm(item)"></icon-button>' +
+                            ( scope.actualOptions.delete ? '<icon-button type="danger" glyphicon="remove" ng-click="deleteConfirm(item)"></icon-button>' : '' ) +
                         '</td>';
                 }
 
