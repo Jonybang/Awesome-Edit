@@ -197,7 +197,7 @@ angular
         };
     }])
 
-    .directive('aeSelectInput', ['$timeout', '$compile', '$templateCache', 'AEditHelpers', function($timeout, $compile, $templateCache, AEditHelpers) {
+    .directive('aeSelectInput', ['$timeout', '$compile', '$templateCache', 'AEditHelpers' ,'AEditConfig', function($timeout, $compile, $templateCache, AEditHelpers, AEditConfig) {
         function getTemplateByType(type, options){
             options = options || {};
 
@@ -224,7 +224,7 @@ angular
                             '{{' + uiSelect.match + '}}' +
                         '</ui-select-match>' +
 
-                        '<ui-select-choices repeat="item.id as item in $parent.list | filter: $select.search track by $index">' +
+                        '<ui-select-choices refresh="getListByResource($select.search)" repeat="item.id as item in $parent.local_list | filter: $select.search track by $index">' +
                             '<div ng-bind-html="(item[$parent.nameField] || item.name || item[$parent.orNameField]) | highlight: $select.search"></div>' +
                         '</ui-select-choices>' +
                     '</ui-select>';
@@ -283,6 +283,8 @@ angular
                 type: '@' //select or multiselect
             },
             link: function (scope, element, attrs, ngModel) {
+                var variables = angular.extend({}, AEditConfig.grid_options.request_variables, AEditConfig.grid_options.response_variables);
+
                 scope.options = {
                     value: scope.ngModel
                 };
@@ -332,25 +334,34 @@ angular
                     scope.setSelectedName(newVal);
                 });
 
-                scope.$watch('list', function(){
-
+                scope.$watch('list', function(list){
+                    scope.local_list = list;
                     scope.setSelectedName(scope.ngModel);
                 });
 
-                function getListByResource(){
-                    if(!scope.ngResource || !scope.getList || (scope.list && scope.list.length))
+                function initListGetByResource(){
+                    if(!scope.ngResource || !scope.getList || (scope.local_list && scope.local_list.length))
                         return;
 
-                    AEditHelpers.getResourceQuery(scope.ngResource, 'get').then(function(list){
-                        scope.list = list;
-                    });
+                    scope.getListByResource();
                 }
+                scope.getListByResource = function (query){
+                    var request_options = {};
+                    if(query)
+                        request_options[variables['query']] = query;
 
-                scope.$watch('ngResource', getListByResource);
-                scope.$watch('refreshListOn', getListByResource);
+                    request_options[variables['limit']] = AEditConfig.select_options.items_per_page;
+
+                    AEditHelpers.getResourceQuery(scope.ngResource, 'get', request_options).then(function(list){
+                        scope.local_list = list;
+                    });
+                };
+
+                scope.$watch('ngResource', initListGetByResource);
+                scope.$watch('refreshListOn', initListGetByResource);
 
                 scope.setSelectedName = function (newVal){
-                    if(!scope.list || !scope.list.length)
+                    if(!scope.local_list || !scope.local_list.length)
                         return;
 
                     if(Array.isArray(newVal)){
@@ -358,7 +369,7 @@ angular
                         var names = [];
                         newVal.forEach(function(id){
                             // get from current list by id
-                            var result_name = AEditHelpers.getNameById(scope.list, id, scope.nameField, scope.orNameField);
+                            var result_name = AEditHelpers.getNameById(scope.local_list, id, scope.nameField, scope.orNameField);
                             if(result_name){
                                 names.push(result_name);
                             } else if(scope.ngResource){
@@ -373,7 +384,7 @@ angular
                         scope.selectedName = names.join(', ');
                     } else {
                         // get from current list by id
-                        scope.selectedName = AEditHelpers.getNameById(scope.list, newVal, scope.nameField, scope.orNameField);
+                        scope.selectedName = AEditHelpers.getNameById(scope.local_list, newVal, scope.nameField, scope.orNameField);
 
                         // if object with id not exist in current list - get from server
                         if(!scope.selectedName && newVal && scope.ngResource){
@@ -446,7 +457,7 @@ angular
                 scope.saveToList = function(new_object){
                     scope.popover.is_open = false;
                     AEditHelpers.getResourceQuery(new scope.ngResource(new_object), 'create').then(function(object){
-                        scope.list.unshift(object);
+                        scope.local_list.unshift(object);
 
                         if(angular.isArray(scope.ngModel))
                             scope.ngModel.push(object.id);

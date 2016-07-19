@@ -21,6 +21,7 @@ angular
                 paginate: true,
                 bold_headers: true,
                 modal_adder: false,
+                ajax_handler: false,
                 resource: null,
                 order_by: '-id',
                 default_attrs: {},
@@ -59,6 +60,7 @@ angular
                 AEditConfig.current_options = scope.actualOptions;
                 
                 angular.extend(scope.gridOptions, AEditConfig.grid_options, scope.actualOptions);
+                scope.gridOptions.select_options = angular.extend({}, AEditConfig.grid_options, scope.actualOptions);
 
                 if(scope.actualOptions.resource){
                     mode = 'remote';
@@ -90,7 +92,7 @@ angular
 
 
                 var select_list_request_options = {};
-                select_list_request_options[variables['limit']] = scope.gridOptions.select_items_per_page;
+                select_list_request_options[variables['limit']] = scope.gridOptions.select_options.items_per_page;
                 scope.actualOptions.fields.forEach(function(field, index){
                     if(field.resource && field.list && field.list != 'self'){
                         if(!scope.actualOptions.lists[field.list]){
@@ -140,7 +142,8 @@ angular
                             always_edit: is_new,
                             is_new: is_new,
                             list_variable: list_variable,
-                            get_list: false
+                            get_list: false,
+                            ajax_search: AEditConfig.se
                         });
                     }
 
@@ -205,6 +208,9 @@ angular
             // *************************************************************
 
             scope.getList = function(query){
+                if(!scope.actualOptions.ajax_handler)
+                    return;
+
                 if(scope.searchQuery)
                     scope.gridRequestOptions[variables['query']] = scope.searchQuery;
 
@@ -231,7 +237,7 @@ angular
             // *************************************************************
 
             scope.search = function(){
-                if(mode != 'local'){
+                if(mode != 'local' && scope.actualOptions.ajax_handler){
                     scope.filtredList = scope.ngModel;
                     return;
                 }
