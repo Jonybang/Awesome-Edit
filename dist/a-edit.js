@@ -358,10 +358,16 @@ angular
                     }
                 }
 
-                //
+                // local json mode
                 if(mode != 'remote'){
                     if(item.is_new){
-                        item.json_id = scope.ngModel.length + 1;
+
+                        item.json_id = 1;
+                        scope.ngModel.forEach(function(local_item){
+                            if(local_item.json_id > item.json_id)
+                                item.json_id = local_item.json_id + 1;
+                        });
+
                         scope.ngModel.unshift(item);
                         scope.new_item = angular.copy(new_item);
                     }
