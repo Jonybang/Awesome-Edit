@@ -71,7 +71,7 @@ angular
 
                 var tplSearch =
                     '<div class="input-group">' +
-                        '<input type="text" class="form-control" ng-model="searchQuery" placeholder="Search" ng-change="search()" ng-model-options="{ debounce: ' + scope.actualOptions.search_debounce + ' }"/>' +
+                        '<input type="text" class="form-control" ng-model="searchQuery" placeholder="Search" ng-model-options="{ debounce: ' + scope.actualOptions.search_debounce + ' }"/>' +
                         '<span class="input-group-btn">' +
                             '<button class="btn btn-default" ng-click="clearSearch()"><i class="glyphicon glyphicon-remove"></i></button>' +
                         '</span>' +
@@ -195,7 +195,7 @@ angular
                 tableHtml += tplBodyItem;
 
                 if(scope.actualOptions.paginate) {
-                    tableHtml += '<uib-pagination total-items="gridOptions.total_items" items-per-page="gridOptions.items_per_page" ng-model="gridOptions.current_page" ng-change="getList()"></uib-pagination>';
+                    tableHtml += '<uib-pagination total-items="gridOptions.filter_items" items-per-page="gridOptions.items_per_page" ng-model="gridOptions.current_page" ng-change="getList()"></uib-pagination>';
                 }
 
                 var template = angular.element(tplHtml + tableHtml);
@@ -208,7 +208,7 @@ angular
             // GET LIST, SEARCH, PAGINATION AND SORTING
             // *************************************************************
 
-            scope.getList = function(query){
+            scope.getList = function(){
                 if(!scope.actualOptions.ajax_handler)
                     return;
 
@@ -237,20 +237,25 @@ angular
             // CLIENT SEARCH
             // *************************************************************
 
-            scope.search = function(){
+            scope.search = function(newQuery, oldQuery){
+                scope.filtredList = scope.ngModel;
+
+                if(newQuery == oldQuery)
+                    return;
+
                 if(mode != 'local' && scope.actualOptions.ajax_handler){
-                    scope.filtredList = scope.ngModel;
+                    scope.getList();
                     return;
                 }
 
-                if(!scope.searchQuery)
-                    scope.filtredList = scope.ngModel;
-                else
+                if(scope.searchQuery)
                     scope.filtredList = $filter('filter')(scope.ngModel, scope.searchQuery);
 
                 if(scope.actualOptions.order_by)
                     scope.filtredList = $filter('orderBy')(scope.filtredList, scope.actualOptions.order_by);
             };
+
+            scope.$watch('searchQuery', scope.search);
 
             scope.clearSearch = function(){
                 scope.searchQuery = '';
