@@ -905,6 +905,7 @@ angular
 
                     AEditHelpers.getResourceQuery(scope.ngResource, 'get', request_options).then(function(list){
                         scope.local_list = list;
+                        scope.setSelectedName(scope.ngModel);
                     });
                 };
 
