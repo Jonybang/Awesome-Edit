@@ -370,7 +370,7 @@ angular
 
                         item.json_id = 1;
                         scope.ngModel.forEach(function(local_item){
-                            if(local_item.json_id > item.json_id)
+                            if(local_item.json_id >= item.json_id)
                                 item.json_id = local_item.json_id + 1;
                         });
 
