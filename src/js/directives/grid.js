@@ -378,9 +378,11 @@ angular
                 }
 
                 function sendItem(){
+                    var resource = new scope.actualOptions.resource(request_object);
+
                     if('id' in request_object && request_object.id){
                         // update if id field exist
-                        AEditHelpers.getResourceQuery(request_object, 'update').then(function(updated_item){
+                        AEditHelpers.getResourceQuery(resource, 'update').then(function(updated_item){
                             angular.extend(item, updated_item);
 
                             saveCallbacks(item);
@@ -391,9 +393,7 @@ angular
                             request_object[attr] = value;
                         });
 
-                        var newResource = new scope.actualOptions.resource(request_object);
-
-                        AEditHelpers.getResourceQuery(newResource, 'create').then(function(created_item){
+                        AEditHelpers.getResourceQuery(resource, 'create').then(function(created_item){
                             created_item.is_new = true;
 
                             scope.ngModel.unshift(created_item);

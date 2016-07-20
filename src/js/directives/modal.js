@@ -1,23 +1,23 @@
 angular
     .module('a-edit')
 
-    .directive('aModalResource', ['$timeout', '$log', '$cacheFactory', 'AEditHelpers', 'AEditConfig', '$uibModal', function($timeout, $log, $cacheFactory, AEditHelpers, AEditConfig, $uibModal) {
+    .directive('aeObjectModal', ['$timeout', '$log', '$cacheFactory', 'AEditHelpers', 'AEditConfig', '$uibModal', function($timeout, $log, $cacheFactory, AEditHelpers, AEditConfig, $uibModal) {
         var cache = $cacheFactory('aModal.Templates');
 
         return {
             restrict: 'A',
             scope: {
                 //require
-                aModalResource: '=',
-                aModalOptions: '=?',
+                aeObjectModal: '=',
+                modalResourceOptions: '=?',
                 isEdit: '=?',
                 //callbacks
                 onSave: '&'
             },
             link: function (scope, element, attrs) {
 
-                var resource_name = attrs.aModalResource + new Date().getTime();
-                scope.options = scope.aModalOptions || AEditConfig.current_options;
+                var resource_name = attrs.aeObjectModal + new Date().getTime();
+                scope.options = scope.modalResourceOptions || AEditConfig.current_options;
 
                 element.on("click", function () {
                     var template = cache.get(resource_name) || '';
@@ -58,7 +58,8 @@ angular
                         resolve: {
                             data: function () {
                                 return {
-                                    object: angular.copy(scope.aModalResource),
+                                    object: angular.copy(scope.aeObjectModal),
+                                    resource: scope.options.resource,
                                     lists: scope.options.lists,
                                     isEdit: scope.isEdit
                                 };
@@ -67,8 +68,9 @@ angular
                         controller: ['$scope', '$uibModalInstance', 'data', function($scope, $uibModalInstance, data) {
                             angular.extend($scope, data);
 
-                            AEditHelpers.getResourceQuery($scope.object, 'show').then(function(object){
-                                angular.extend($scope.object, object);
+
+                            AEditHelpers.getResourceQuery(new scope.options.resource($scope.object), 'show').then(function(object){
+                                $scope.object = object;
                                 $scope.object.is_edit = data.isEdit;
                                 console.log('modal controller', $scope.object);
                             });
@@ -85,7 +87,7 @@ angular
                     });
 
                     modalInstance.result.then(function (object) {
-                        angular.extend(scope.aModalResource, object);
+                        angular.extend(scope.aeObjectModal, object);
                         
                         if(scope.onSave)
                             $timeout(scope.onSave);

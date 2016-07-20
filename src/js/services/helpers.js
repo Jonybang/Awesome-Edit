@@ -90,7 +90,7 @@ angular.module('a-edit')
                 }
 
                 if(field.modal && !config.already_modal && field.modal == 'self'){
-                    output += 'modal-resource="' + item_name + '" ';
+                    output += 'modal-object="' + item_name + '" ';
                     output += 'modal-options="actualOptions" ';
                 }
 
