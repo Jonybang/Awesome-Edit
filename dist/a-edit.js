@@ -466,6 +466,8 @@ angular
 
                 if(scope.searchQuery)
                     scope.gridRequestOptions[variables['query']] = scope.searchQuery;
+                else
+                    delete scope.gridRequestOptions[variables['query']];
 
                 scope.gridRequestOptions[variables['offset']] = (scope.gridOptions.current_page - 1) * scope.gridOptions.items_per_page;
                 scope.gridRequestOptions[variables['limit']] = scope.gridOptions.items_per_page;
