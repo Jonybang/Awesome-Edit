@@ -1376,7 +1376,7 @@ angular.module('a-edit')
 
                 if(directive == 'select-input'){
                     output += 'name-field="' + (field.name_field || '') + '" ';
-                    output += 'or-name-field="' + (field.name_field || '') + '" ';
+                    output += 'or-name-field="' + (field.or_name_field || '') + '" ';
                 }
 
                 if(field.modal && !config.already_modal && field.modal == 'self'){
