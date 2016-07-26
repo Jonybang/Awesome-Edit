@@ -782,7 +782,7 @@ angular
                             '{{' + uiSelect.match + '}}' +
                         '</ui-select-match>' +
 
-                        '<ui-select-choices refresh="getListByResource($select.search)" repeat="item.id as item in $parent.local_list | filter: $select.search track by $index">' +
+                        '<ui-select-choices refresh="getListByResource($select.search)" refresh-delay="{{refreshDelay}}" repeat="item.id as item in $parent.local_list | filter: $select.search track by $index">' +
                             '<div ng-bind-html="(item[$parent.nameField] || item.name || item[$parent.orNameField]) | highlight: $select.search"></div>' +
                         '</ui-select-choices>' +
                     '</ui-select>';
@@ -843,6 +843,7 @@ angular
             link: function (scope, element, attrs, ngModel) {
                 var variables = angular.extend({}, AEditConfig.grid_options.request_variables, AEditConfig.grid_options.response_variables);
 
+                scope.refreshDelay = AEditConfig.select_options.refresh_delay;
                 scope.options = {
                     value: scope.ngModel
                 };
@@ -1282,7 +1283,8 @@ angular.module('a-edit')
 
         this.select_options = {
             ajax_handler: true,
-            items_per_page: 15
+            items_per_page: 15,
+            refresh_delay: 200
         };
 
         return this;
