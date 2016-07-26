@@ -28,7 +28,8 @@ angular.module('a-edit')
         this.select_options = {
             ajax_handler: true,
             items_per_page: 15,
-            refresh_delay: 200
+            refresh_delay: 200,
+            reset_search_input: true
         };
 
         return this;

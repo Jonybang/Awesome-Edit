@@ -777,7 +777,7 @@ angular
                     '<span ng-if="!isEdit">{{selectedName}}</span>' +
                     '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
 
-                    '<ui-select ' + uiSelect.tags + ' ng-model="options.value" ng-if="isEdit" ng-click="changer()" class="input-small">' +
+                    '<ui-select ' + uiSelect.tags + ' ng-model="options.value" ng-if="isEdit" ng-click="changer()" class="input-small" reset-search-input="{{resetSearchInput}}" on-select="onSelect($select)">' +
                         '<ui-select-match placeholder="">' +
                             '{{' + uiSelect.match + '}}' +
                         '</ui-select-match>' +
@@ -831,6 +831,7 @@ angular
                 //callbacks
                 ngChange: '&',
                 onSave: '&',
+                onSelect: '&',
                 //sub
                 adder: '=?',
                 getList: '=?',
@@ -844,6 +845,14 @@ angular
                 var variables = angular.extend({}, AEditConfig.grid_options.request_variables, AEditConfig.grid_options.response_variables);
 
                 scope.refreshDelay = AEditConfig.select_options.refresh_delay;
+                scope.resetSearchInput = AEditConfig.select_options.reset_search_input;
+                scope.onSelect = function($select){
+                    //fix ui-select bug
+                    if(scope.resetSearchInput)
+                        $select.search = '';
+
+                    $timeout(scope.onSelect);
+                };
                 scope.options = {
                     value: scope.ngModel
                 };
@@ -1284,7 +1293,8 @@ angular.module('a-edit')
         this.select_options = {
             ajax_handler: true,
             items_per_page: 15,
-            refresh_delay: 200
+            refresh_delay: 200,
+            reset_search_input: true
         };
 
         return this;
