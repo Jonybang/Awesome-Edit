@@ -1,23 +1,18 @@
 // Code goes here
 angular
   .module('app', ['a-edit', 'ngResource', 'example-backend'])
-  
-  .run(['AEditConfig', function(AEditConfig) {
-      AEditConfig.templates_path = '../js/templates/';
-  }])
-  
+
   .controller('myController', ['$scope', '$timeout', '$resource', 'AEditConfig', function($scope, $timeout, $resource, AEditConfig) {
     
     var ItemResource = $resource('/api/items/:itemId', {itemId:'@id'});
-    
-    ItemResource.query(function(data){
-        $scope.list = data;
-    });
+
+    $scope.list = [];
     
     $scope.aGridOptions = {
       caption: 'Enter - save, double click - edit.',
       orderBy: '-id',
-      model: ItemResource,
+      resource: ItemResource,
+      get_list: true,
       fields: [
         {
           name: 'id',
@@ -60,4 +55,4 @@ angular
       }
     };
     
-  }])
+  }]);

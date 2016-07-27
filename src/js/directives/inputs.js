@@ -219,12 +219,12 @@ angular
                     '<span ng-if="!isEdit">{{selectedName}}</span>' +
                     '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
 
-                    '<ui-select ' + uiSelect.tags + ' ng-model="options.value" ng-if="isEdit" ng-click="changer()" class="input-small">' +
+                    '<ui-select ' + uiSelect.tags + ' ng-model="options.value" ng-if="isEdit" ng-click="changer()" class="input-small" reset-search-input="{{resetSearchInput}}" on-select="onSelect($select)">' +
                         '<ui-select-match placeholder="">' +
                             '{{' + uiSelect.match + '}}' +
                         '</ui-select-match>' +
 
-                        '<ui-select-choices refresh="getListByResource($select.search)" repeat="item.id as item in $parent.local_list | filter: $select.search track by $index">' +
+                        '<ui-select-choices refresh="getListByResource($select.search)" refresh-delay="{{refreshDelay}}" repeat="item.id as item in $parent.local_list | filter: $select.search track by $index">' +
                             '<div ng-bind-html="(item[$parent.nameField] || item.name || item[$parent.orNameField]) | highlight: $select.search"></div>' +
                         '</ui-select-choices>' +
                     '</ui-select>';
@@ -273,6 +273,7 @@ angular
                 //callbacks
                 ngChange: '&',
                 onSave: '&',
+                onSelect: '&',
                 //sub
                 adder: '=?',
                 getList: '=?',
@@ -285,6 +286,15 @@ angular
             link: function (scope, element, attrs, ngModel) {
                 var variables = angular.extend({}, AEditConfig.grid_options.request_variables, AEditConfig.grid_options.response_variables);
 
+                scope.refreshDelay = AEditConfig.select_options.refresh_delay;
+                scope.resetSearchInput = AEditConfig.select_options.reset_search_input;
+                scope.onSelect = function($select){
+                    //fix ui-select bug
+                    if(scope.resetSearchInput && $select)
+                        $select.search = '';
+
+                    $timeout(scope.onSelect);
+                };
                 scope.options = {
                     value: scope.ngModel
                 };
@@ -346,6 +356,9 @@ angular
                     scope.getListByResource();
                 }
                 scope.getListByResource = function (query){
+                    if(!scope.ngResource)
+                        return;
+
                     var request_options = {};
                     if(query)
                         request_options[variables['query']] = query;
