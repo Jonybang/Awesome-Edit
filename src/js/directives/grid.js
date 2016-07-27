@@ -423,8 +423,8 @@ angular
                     return;
                 }
 
-                if(confirm('Do you want delete object "' + item.name + '"?')){
-                    AEditHelpers.getResourceQuery(item, 'delete').then(function(){
+                if(confirm('Do you want delete object "' + (item.name || item.key || item.title) + '"?')){
+                    AEditHelpers.getResourceQuery(new scope.actualOptions.resource(item), 'delete').then(function(){
                         deleteCallbacks();
                     });
                 }
