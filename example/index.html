@@ -13,10 +13,10 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
 
-    <script src="https://code.angularjs.org/1.5.6/angular.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.6/angular-sanitize.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.6/angular-resource.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.6/angular-mocks.js"></script>
+    <script src="https://code.angularjs.org/1.5.8/angular.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular-sanitize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular-resource.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.8/angular-mocks.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.2.5/ui-bootstrap-tpls.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-select/0.16.1/select.min.js"></script>
     
@@ -38,7 +38,7 @@
 	<div class="container">
 		 <h1>Awesome Edit Grid!</h1>
     
-		<a-grid ng-model="list" options="aGridOptions"></a-grid>
+		<ae-grid ng-model="list" options="aGridOptions"></ae-grid>
 		
 		<uib-alert ng-if="status" type="success" close="status = ''">{{status}}</uib-alert>
 		<pre>{{list | json }}</pre>

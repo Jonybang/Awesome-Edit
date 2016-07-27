@@ -1,6 +1,6 @@
 // Code goes here
 angular
-  .module('a-edit', ['ui.bootstrap', 'angularMoment', 'ui.select', 'ngSanitize', 'wiz.markdown'])
+  .module('a-edit', ['ui.bootstrap', 'angularMoment', 'ui.select', 'ngSanitize'])
   
   .run(['amMoment', 'uiSelectConfig', '$templateCache', function(amMoment, uiSelectConfig, $templateCache) {
     amMoment.changeLocale('ru');

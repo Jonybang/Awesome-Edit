@@ -290,7 +290,7 @@ angular
                 scope.resetSearchInput = AEditConfig.select_options.reset_search_input;
                 scope.onSelect = function($select){
                     //fix ui-select bug
-                    if(scope.resetSearchInput)
+                    if(scope.resetSearchInput && $select)
                         $select.search = '';
 
                     $timeout(scope.onSelect);
@@ -356,6 +356,9 @@ angular
                     scope.getListByResource();
                 }
                 scope.getListByResource = function (query){
+                    if(!scope.ngResource)
+                        return;
+
                     var request_options = {};
                     if(query)
                         request_options[variables['query']] = query;

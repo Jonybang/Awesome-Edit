@@ -19,7 +19,7 @@ angular
                 create: true,
                 edit: true,
                 delete: true,
-                paginate: true,
+                paginate: false,
                 bold_headers: true,
                 modal_adder: false,
                 ajax_handler: false,
@@ -198,10 +198,9 @@ angular
                     tableHtml += '<uib-pagination total-items="gridOptions.filter_items" items-per-page="gridOptions.items_per_page" ng-model="gridOptions.current_page" ng-change="getList()"></uib-pagination>';
                 }
 
-                var template = angular.element(tplHtml + tableHtml);
+                var template = angular.element('<div>' + tplHtml + tableHtml + '</div>');
 
-                var linkFn = $compile(template)(scope);
-                element.html(linkFn);
+                angular.element(element).append($compile(template)(scope));
             });
 
             // *************************************************************
@@ -209,20 +208,27 @@ angular
             // *************************************************************
 
             scope.getList = function(){
-                if(!scope.actualOptions.ajax_handler)
-                    return;
+                var query_name = 'get';
 
-                if(scope.searchQuery)
-                    scope.gridRequestOptions[variables['query']] = scope.searchQuery;
-                else
-                    delete scope.gridRequestOptions[variables['query']];
+                if(scope.actualOptions.ajax_handler){
 
-                scope.gridRequestOptions[variables['offset']] = (scope.gridOptions.current_page - 1) * scope.gridOptions.items_per_page;
-                scope.gridRequestOptions[variables['limit']] = scope.gridOptions.items_per_page;
+                    if(scope.searchQuery)
+                        scope.gridRequestOptions[variables['query']] = scope.searchQuery;
+                    else
+                        delete scope.gridRequestOptions[variables['query']];
 
-                angular.extend(scope.gridRequestOptions, scope.gridOptions.additional_request_params);
+                    if(scope.actualOptions.paginate){
+                        scope.gridRequestOptions[variables['offset']] = (scope.gridOptions.current_page - 1) * scope.gridOptions.items_per_page;
+                        scope.gridRequestOptions[variables['limit']] = scope.gridOptions.items_per_page;
+                    }
 
-                AEditHelpers.getResourceQuery(scope.actualOptions.resource, 'search', scope.gridRequestOptions).then(function(response){
+                    angular.extend(scope.gridRequestOptions, scope.gridOptions.additional_request_params);
+
+                    query_name = 'search';
+                }
+
+
+                AEditHelpers.getResourceQuery(scope.actualOptions.resource, query_name, scope.gridRequestOptions).then(function(response){
                     scope.ngModel = response[variables['list']] || response;
 
                     var meta_info = response[variables['meta_info']];
@@ -242,10 +248,10 @@ angular
             scope.search = function(newQuery, oldQuery){
                 scope.filtredList = scope.ngModel;
 
-                if(newQuery == oldQuery)
+                if(newQuery == oldQuery && scope.actualOptions.ajax_handler)
                     return;
 
-                if(mode != 'local' && scope.actualOptions.ajax_handler){
+                if(scope.actualOptions.ajax_handler){
                     scope.getList();
                     return;
                 }

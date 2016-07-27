@@ -116,7 +116,7 @@ angular.module('a-edit')
                         possibleFunctions = ['$save', 'create'];
                         break;
                     case 'update':
-                        possibleFunctions = ['$update', 'update'];
+                        possibleFunctions = ['$update', 'update', '$save'];
                         break;
                     case 'delete':
                         possibleFunctions = ['$delete', 'delete'];
