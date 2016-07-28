@@ -219,7 +219,7 @@ angular
                     '<span ng-if="!isEdit">{{selectedName}}</span>' +
                     '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
 
-                    '<ui-select ' + uiSelect.tags + ' ng-model="options.value" ng-if="isEdit" ng-click="changer()" class="input-small" reset-search-input="{{resetSearchInput}}" on-select="onSelect($select)">' +
+                    '<ui-select ' + uiSelect.tags + ' ng-model="options.value" ng-if="isEdit" ng-click="changer()" class="input-small" reset-search-input="{{resetSearchInput}}" on-select="onSelectItem($select)">' +
                         '<ui-select-match placeholder="">' +
                             '{{' + uiSelect.match + '}}' +
                         '</ui-select-match>' +
@@ -288,7 +288,7 @@ angular
 
                 scope.refreshDelay = AEditConfig.select_options.refresh_delay;
                 scope.resetSearchInput = AEditConfig.select_options.reset_search_input;
-                scope.onSelect = function($select){
+                scope.onSelectItem = function($select){
                     //fix ui-select bug
                     if(scope.resetSearchInput && $select)
                         $select.search = '';
@@ -388,10 +388,11 @@ angular
                                 names.push(result_name);
                             } else if(scope.ngResource){
                                 // if object with id not exist in current list - get from server
-                                getNameFromServer(id).then(function(name){
-                                    names.push(name);
+                                getObjectFromServer(id).then(function(object){
+                                    names.push(getNameFromObj(object));
                                     scope.selectedName = names.join(', ');
                                     scope.ngModelStr = scope.selectedName;
+                                    scope.local_list.push(object)
                                 })
                             }
                         });
@@ -402,19 +403,21 @@ angular
 
                         // if object with id not exist in current list - get from server
                         if(!scope.selectedName && newVal && scope.ngResource){
-                            getNameFromServer(newVal).then(function(name){
-                                scope.selectedName = name;
+                            getObjectFromServer(newVal).then(function(object){
+                                scope.selectedName = getNameFromObj(object);
                                 scope.ngModelStr = scope.selectedName;
+                                scope.local_list.push(object);
                             })
                         }
                     }
                     scope.ngModelStr = scope.selectedName;
                 };
 
-                function getNameFromServer(id){
-                    return AEditHelpers.getResourceQuery(scope.ngResource, 'show', {id: id}).then(function(object){
-                        return object[scope.nameField] || object.name || object[scope.orNameField];
-                    });
+                function getObjectFromServer(id){
+                    return AEditHelpers.getResourceQuery(scope.ngResource, 'show', {id: id});
+                }
+                function getNameFromObj(obj){
+                    return obj[scope.nameField] || obj.name || obj[scope.orNameField];
                 }
 
                 scope.save = function(){
