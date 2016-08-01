@@ -34,7 +34,8 @@ angular
                 ' class="form-control input-sm" placeholder="{{$parent.placeholder}}"' +
                 ' ng-model="$parent.ngModel" ' + (type != 'textarea' ? 'ng-enter="$parent.save()"' : '') +
                 ' ng-model-options="$parent.ngModelOptions || {}"' +
-                ' ng-style="{ \'width\' : $parent.width + \'px\'}">' +
+                ' ng-style="{ \'width\' : $parent.width + \'px\'}"' +
+                ' ng-disabled="$parent.ngDisabled == 1" >' +
                 inputTagEnd +
             '</div>';
         }
@@ -58,6 +59,7 @@ angular
                 modalObject: '=?',
                 modalOptions: '=?',
                 hasError: '=?',
+                ngDisabled: '=?',
                 //callbacks
                 ngChange: '&',
                 onSave: '&',
