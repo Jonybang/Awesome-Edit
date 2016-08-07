@@ -217,6 +217,9 @@ angular
                     else
                         delete scope.gridRequestOptions[variables['query']];
 
+                    if(scope.actualOptions.order_by)
+                        scope.gridRequestOptions[variables['sort']] = scope.actualOptions.order_by;
+
                     if(scope.actualOptions.paginate){
                         scope.gridRequestOptions[variables['offset']] = (scope.gridOptions.current_page - 1) * scope.gridOptions.items_per_page;
                         scope.gridRequestOptions[variables['limit']] = scope.gridOptions.items_per_page;
