@@ -198,9 +198,15 @@ angular
                     tableHtml += '<uib-pagination total-items="gridOptions.filter_items" items-per-page="gridOptions.items_per_page" ng-model="gridOptions.current_page" ng-change="getList()"></uib-pagination>';
                 }
 
+                angular.element(element).html('');
+
                 var template = angular.element('<div>' + tplHtml + tableHtml + '</div>');
 
                 angular.element(element).append($compile(template)(scope));
+            });
+            
+            scope.$watchCollection('options.lists', function(new_lists) {
+                angular.extend(scope.actualOptions.lists, new_lists);
             });
 
             // *************************************************************
@@ -414,7 +420,6 @@ angular
                     }
                 }
             };
-
             // *************************************************************
             // DELETE
             // *************************************************************

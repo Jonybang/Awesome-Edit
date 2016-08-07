@@ -17,6 +17,7 @@ angular.module('a-edit')
 
                 switch(field.type){
                     case 'select':
+                    case 'textselect':
                     case 'multiselect':
                         directive = 'select-input';
                         break;
@@ -87,6 +88,7 @@ angular.module('a-edit')
                 if(directive == 'select-input'){
                     output += 'name-field="' + (field.name_field || '') + '" ';
                     output += 'or-name-field="' + (field.or_name_field || '') + '" ';
+                    output += 'adder="' + (field.adder || 'false') + '" ';
                 }
 
                 if(field.modal && !config.already_modal && field.modal == 'self'){
