@@ -45,3 +45,18 @@ pre {
   word-wrap: break-word;
   /* Internet Explorer 5.5+ */
 }
+.ui-select-bootstrap.ng-empty .clear-btn, .ui-select-multiple .clear-btn{
+  display: none;
+}
+.clear-btn {
+  position: absolute;
+  right: 20px;
+  z-index: 999;
+  top: 7px;
+  font-size: 18px;
+}
+
+/*.clear-btn-offset {*/
+  /*position: absolute;*/
+  /*left: 14px;*/
+/*}*/

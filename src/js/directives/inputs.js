@@ -230,6 +230,7 @@ angular
                     '<div ng-if="isEdit">' +
                         '<ui-select ' + uiSelect.attributes + ' ng-model="options.value" ng-click="changer()" class="input-small" reset-search-input="{{resetSearchInput}}" on-select="onSelectItem($select)">' +
                             '<ui-select-match placeholder="">' +
+                                '<a class="close clear-btn" ng-click="clearInput($event)"><span>×</span></a>' +
                                 '{{' + uiSelect.match + '}}' +
                             '</ui-select-match>' +
 
@@ -295,18 +296,14 @@ angular
                 type: '@' //select or multiselect
             },
             link: function (scope, element, attrs, ngModel) {
+                //=============================================================
+                // Config
+                //=============================================================
                 var variables = angular.extend({}, AEditConfig.grid_options.request_variables, AEditConfig.grid_options.response_variables);
 
                 scope.refreshDelay = AEditConfig.select_options.refresh_delay;
                 scope.resetSearchInput = AEditConfig.select_options.reset_search_input;
 
-                scope.onSelectItem = function($select){
-                    //fix ui-select bug
-                    if(scope.resetSearchInput && $select)
-                        $select.search = '';
-
-                    $timeout(scope.onSelect);
-                };
                 scope.options = {
                     value: scope.ngModel
                 };
@@ -315,6 +312,9 @@ angular
                 if(scope.adder)
                     scope.full_type += '-adder';
 
+                //=============================================================
+                // Compile
+                //=============================================================
                 var template = typeTemplates[scope.full_type],
                     templateElement;
 
@@ -330,16 +330,42 @@ angular
                     templateElement = null;
                 });
 
+                //=============================================================
+                // Output validation
+                //=============================================================
                 scope.$watch('hasError', function(hasError){
                     scope.input_class = hasError ? "has-error" : '';
                 });
 
+                //=============================================================
+                // Callbacks
+                //=============================================================
+                scope.onSelectItem = function($select){
+                    //fix ui-select bug
+                    if(scope.resetSearchInput && $select)
+                        $select.search = '';
+
+                    $timeout(scope.onSelect);
+                    $timeout(scope.ngChange);
+                };
+                scope.clearInput = function($event){
+                    $event.stopPropagation();
+                    scope.ngModel = scope.type == 'multiselect' ? [] : null;
+                    $timeout(scope.ngChange);
+                };
+                scope.save = function(){
+                    if(scope.onSave)
+                        $timeout(scope.onSave);
+                };
+
+                //=============================================================
+                // Hotfix for work with ngModel and ui-select
+                //=============================================================
                 scope.changer = function() {
                     ngModel.$setViewValue(scope.options.value)
                 };
 
                 scope.$watch('ngModel', function(newVal){
-
                     if(scope.options.value == newVal)
                         return;
 
@@ -356,11 +382,9 @@ angular
                     scope.setSelectedName(newVal);
                 });
 
-                scope.$watch('list', function(list){
-                    scope.local_list = list;
-                    scope.setSelectedName(scope.ngModel);
-                });
-
+                //=============================================================
+                // Init select list
+                //=============================================================
                 function initListGetByResource(){
                     if(!scope.ngResource || !scope.getList || (scope.local_list && scope.local_list.length))
                         return;
@@ -386,6 +410,13 @@ angular
                 scope.$watch('ngResource', initListGetByResource);
                 scope.$watch('refreshListOn', initListGetByResource);
 
+                //=============================================================
+                // Output non edit mode
+                //=============================================================
+                scope.$watch('list', function(list){
+                    scope.local_list = list;
+                    scope.setSelectedName(scope.ngModel);
+                });
                 scope.setSelectedName = function (newVal){
                     if(!scope.local_list || !scope.local_list.length)
                         return;
@@ -437,11 +468,9 @@ angular
                     return obj[scope.nameField] || obj.name || obj[scope.orNameField];
                 }
 
-                scope.save = function(){
-                    if(scope.onSave)
-                        $timeout(scope.onSave);
-                };
-
+                //=============================================================
+                // Compile Adder button
+                //=============================================================
                 if(scope.adder){
                     scope.new_object = {};
 
@@ -491,6 +520,9 @@ angular
                     $templateCache.put(scope.popover.template_name, popoverTemplate);
                 }
 
+                //=============================================================
+                // Add new item to select list by adder
+                //=============================================================
                 scope.saveToList = function(new_object){
                     scope.popover.is_open = false;
 
