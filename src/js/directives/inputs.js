@@ -414,7 +414,7 @@ angular
                 // Output non edit mode
                 //=============================================================
                 scope.$watch('list', function(list){
-                    scope.local_list = list;
+                    scope.local_list = angular.copy(list);
                     scope.setSelectedName(scope.ngModel);
                 });
                 scope.setSelectedName = function (newVal){

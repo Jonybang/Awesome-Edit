@@ -29,7 +29,8 @@ angular
                 modal_index: 0,
                 search_debounce: 200,
                 fields: [],
-                lists: {}
+                lists: {},
+                callbacks: {}
             };
 
             var new_item = {
@@ -315,8 +316,14 @@ angular
                     if(scope.onSave)
                         $timeout(scope.onSave);
 
+                    if(scope.actualOptions.callbacks.onSave)
+                        $timeout(scope.actualOptions.callbacks.onSave);
+
                     if(scope.ngChange)
                         $timeout(scope.ngChange);
+
+                    if(scope.actualOptions.callbacks.onChange)
+                        $timeout(scope.actualOptions.callbacks.onChange);
 
                     scope.search();
 
@@ -431,6 +438,9 @@ angular
                     scope.ngModel.splice(index, 1);
                     if(scope.ngChange)
                         $timeout(scope.ngChange);
+
+                    if(scope.actualOptions.callbacks.onChange)
+                        $timeout(scope.actualOptions.callbacks.onChange);
                 }
                 if(mode != 'remote'){
                     deleteCallbacks();
