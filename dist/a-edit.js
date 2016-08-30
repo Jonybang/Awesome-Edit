@@ -400,11 +400,12 @@ angular
                 // local json mode
                 if(mode != 'remote'){
                     if(item.is_new){
+                        var track_by = scope.actualOptions.track_by;
 
-                        item.json_id = 1;
+                        item[track_by] = 1;
                         scope.ngModel.forEach(function(local_item){
-                            if(local_item.json_id >= item.json_id)
-                                item.json_id = local_item.json_id + 1;
+                            if(local_item[track_by] >= item[track_by])
+                                item[track_by] = local_item[track_by] + 1;
                         });
 
                         scope.ngModel.unshift(item);
@@ -519,9 +520,10 @@ angular
                     return;
 
                 if(mode == 'local'){
+                    var track_by = scope.actualOptions.track_by;
                     list.forEach(function(item, index){
-                        if(!item.json_id)
-                            item.json_id = list.length + index + 1;
+                        if(!item[track_by])
+                            item[track_by] = list.length + index + 1;
                     })
                 }
 
