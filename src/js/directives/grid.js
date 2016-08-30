@@ -25,6 +25,7 @@ angular
                 ajax_handler: false,
                 resource: null,
                 order_by: '-id',
+                track_by: '',
                 default_attrs: {},
                 modal_index: 0,
                 search_debounce: 200,
@@ -88,9 +89,12 @@ angular
                         '<tbody>' +
                             '<tr>';
 
+                if(!scope.actualOptions.track_by)
+                    scope.actualOptions.track_by = mode == 'remote' ? 'id' : 'json_id';
+
                 var tplBodyItem =
                         '<tbody>' +
-                            '<tr ng-repeat="item in filtredList track by item.' + (mode == 'remote' ? 'id' : 'json_id') + '">';
+                            '<tr ng-repeat="item in filtredList track by item.' + scope.actualOptions.track_by + '">';
 
 
                 var select_list_request_options = {};
