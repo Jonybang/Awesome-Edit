@@ -45,3 +45,13 @@ pre {
   word-wrap: break-word;
   /* Internet Explorer 5.5+ */
 }
+
+.ui-select-match span.close {
+  position: absolute;
+  right: 20px;
+  float: none;
+}
+
+.ui-select-container.ng-empty .ui-select-match span.close {
+  display: none;
+}
