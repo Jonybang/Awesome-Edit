@@ -1434,7 +1434,12 @@ angular.module('a-edit')
                         break;
                 }
 
-                output += '<ae-' + directive + ' ';
+                if(field.directive)
+                    directive = field.directive;
+                else
+                    directive = 'ae-' + directive;
+
+                output += '<' + directive + ' ';
 
                 output += 'type="' + (field.type || '') + '" ' +
                     'input-name="' + (field.input_name || '') + '" ';
@@ -1480,10 +1485,10 @@ angular.module('a-edit')
                     'is-new="' + (config.is_new ? 'true': 'false') + '" '+
                     'placeholder="' + ((config.always_edit ? field.new_placeholder : field.placeholder) || '') + '" ';
 
-                if(directive == 'file-upload')
+                if(directive == 'ae-file-upload')
                     output += 'uploader="' + item_name + '.' + field_name + '__uploader" ';
 
-                if(directive == 'select-input'){
+                if(directive == 'ae-select-input'){
                     output += 'name-field="' + (field.name_field || '') + '" ';
                     output += 'or-name-field="' + (field.or_name_field || '') + '" ';
                     output += 'adder="' + (field.adder || 'false') + '" ';
@@ -1494,7 +1499,7 @@ angular.module('a-edit')
                     output += 'modal-options="actualOptions" ';
                 }
 
-                output += '></ae-' + directive + '>';
+                output += '></' + directive + '>';
 
                 return output;
             },
