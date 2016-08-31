@@ -126,9 +126,9 @@ angular
                     style += '"';
 
                     //for new item row
-                    tplBodyNewItem += '<td><div ' + style + ' >';
+                    tplBodyNewItem += '<td ' + style + ' ><div>';
                     //for regular item row
-                    tplBodyItem += '<td ng-dblclick="item.is_edit = !item.is_edit"><div ' + style + ' >';
+                    tplBodyItem += '<td ' + style + ' ng-dblclick="item.is_edit = !item.is_edit"><div>';
 
                     function getFieldDirective(is_new) {
                         var item_name = (is_new ? 'new_' : '' ) + 'item';
@@ -470,7 +470,7 @@ angular
                 if(mode == 'local'){
                     var track_by = scope.actualOptions.track_by;
                     list.forEach(function(item, index){
-                        if(!item[track_by])
+                        if(!item[track_by] || item[track_by] == 0)
                             item[track_by] = list.length + index + 1;
                     })
                 }
