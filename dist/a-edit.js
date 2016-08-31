@@ -168,6 +168,9 @@ angular
                     if(field.resource){
                         scope[field.name + '_resource'] = field.resource;
                     }
+                    if(field.fields){
+                        scope[field.name + '_fields'] = field.fields;
+                    }
 
                     var headerEl = scope.actualOptions.bold_headers ? 'th' : 'td';
                     tplHead += '<' + headerEl + '>' + field.label + '</' + headerEl + '>';
@@ -1473,6 +1476,9 @@ angular.module('a-edit')
 
                 if(field.resource)
                     output += 'ng-resource="' + field.name + '_resource" ';
+
+                if(field.fields)
+                    output += 'ng-resource-fields="' + field.name + '_fields" ';
 
                 if(config.list_variable)
                     output += 'list="' + config.list_variable + '" ';

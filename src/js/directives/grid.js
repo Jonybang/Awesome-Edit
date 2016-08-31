@@ -116,6 +116,9 @@ angular
                     if(field.resource){
                         scope[field.name + '_resource'] = field.resource;
                     }
+                    if(field.fields){
+                        scope[field.name + '_fields'] = field.fields;
+                    }
 
                     var headerEl = scope.actualOptions.bold_headers ? 'th' : 'td';
                     tplHead += '<' + headerEl + '>' + field.label + '</' + headerEl + '>';
