@@ -648,6 +648,7 @@ angular
                 modalOptions: '=?',
                 hasError: '=?',
                 ngDisabled: '=?',
+                defaultValue: '@',
                 //callbacks
                 ngChange: '&',
                 onSave: '&',
@@ -681,6 +682,13 @@ angular
                 scope.$watch('hasError', function(hasError){
                     scope.input_class = hasError ? "has-error" : '';
                 });
+
+                function setDefaultValue (){
+                    if(!scope.ngModel && scope.defaultValue)
+                        scope.ngModel = scope.defaultValue;
+                }
+                scope.$watch('ngModel', setDefaultValue);
+                scope.$watch('defaultValue', setDefaultValue);
 
                 scope.save = function(){
                     if(scope.required && !scope.ngModel){
@@ -1487,6 +1495,7 @@ angular.module('a-edit')
                     'has-error="' + item_name + '.errors.' + field_name + '" ' +
                     'ng-model-str="' + item_name + '.' +  field_name + '_str" ' +
                     'ng-model-sub-str="' + item_name + '.' +  field_name + '_sub_str" ' +
+                    (field.default_value ? 'default-value="' + field.default_value + '" ' : '') +
                     'is-edit="' + is_edit + '" '+
                     'is-new="' + (config.is_new ? 'true': 'false') + '" '+
                     'placeholder="' + ((config.always_edit ? field.new_placeholder : field.placeholder) || '') + '" ';

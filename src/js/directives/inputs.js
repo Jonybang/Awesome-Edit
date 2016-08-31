@@ -60,6 +60,7 @@ angular
                 modalOptions: '=?',
                 hasError: '=?',
                 ngDisabled: '=?',
+                defaultValue: '@',
                 //callbacks
                 ngChange: '&',
                 onSave: '&',
@@ -93,6 +94,13 @@ angular
                 scope.$watch('hasError', function(hasError){
                     scope.input_class = hasError ? "has-error" : '';
                 });
+
+                function setDefaultValue (){
+                    if(!scope.ngModel && scope.defaultValue)
+                        scope.ngModel = scope.defaultValue;
+                }
+                scope.$watch('ngModel', setDefaultValue);
+                scope.$watch('defaultValue', setDefaultValue);
 
                 scope.save = function(){
                     if(scope.required && !scope.ngModel){
