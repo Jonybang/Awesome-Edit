@@ -126,9 +126,9 @@ angular
                     style += '"';
 
                     //for new item row
-                    tplBodyNewItem += '<td ' + style + ' ><div>';
+                    tplBodyNewItem += '<td ' + style + ' ><div ' + style + ' >';
                     //for regular item row
-                    tplBodyItem += '<td ' + style + ' ng-dblclick="item.is_edit = !item.is_edit"><div>';
+                    tplBodyItem += '<td ' + style + ' ng-dblclick="item.is_edit = !item.is_edit"><div ' + style + ' >';
 
                     function getFieldDirective(is_new) {
                         var item_name = (is_new ? 'new_' : '' ) + 'item';

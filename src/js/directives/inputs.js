@@ -95,12 +95,13 @@ angular
                     scope.input_class = hasError ? "has-error" : '';
                 });
 
-                function setDefaultValue (){
+                function setDefaultValue(){
                     if(!scope.ngModel && scope.defaultValue)
                         scope.ngModel = scope.defaultValue;
                 }
-                scope.$watch('ngModel', setDefaultValue);
-                scope.$watch('defaultValue', setDefaultValue);
+                setDefaultValue();
+                //scope.$watch('ngModel', setDefaultValue);
+                //scope.$watch('defaultValue', setDefaultValue);
 
                 scope.save = function(){
                     if(scope.required && !scope.ngModel){
