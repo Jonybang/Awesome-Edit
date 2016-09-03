@@ -61,3 +61,7 @@ pre {
 .ui-select-container.ng-empty .ui-select-match a.close {
   display: none;
 }
+
+.ui-select-multiple.ui-select-bootstrap input.ui-select-search {
+  width: 100% !important;
+}
