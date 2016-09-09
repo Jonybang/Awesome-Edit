@@ -10,9 +10,9 @@ angular
     
     $templateCache.put('a-edit-date-input.html', '\
             <div class="date-input">\
-            <span ng-if="!isEdit">{{ngModelStr}}</span>\
+            <span ng-if="viewMode">{{ngModelStr}}</span>\
             \
-            <div ng-if="isEdit" class="input-group">\
+            <div ng-if="!viewMode" class="input-group">\
                 <input\
                         type="text"\
                         class="form-control input-sm"\
@@ -38,8 +38,8 @@ angular
     ');
 
     $templateCache.put('a-edit-bool-input.html', '\
-        <span ng-if="!isEdit" ng-class="[\'glyphicon\',{\'glyphicon-check\': $parent.fakeModel, \'glyphicon-unchecked\': !$parent.fakeModel}]"></span>\
-        <input ng-if="isEdit" ng-model="$parent.fakeModel" type="checkbox" class="form-control" name="{{$parent.name}}" ng-change="$parent.change()">\
+        <span ng-if="viewMode" ng-class="[\'glyphicon\',{\'glyphicon-check\': $parent.fakeModel, \'glyphicon-unchecked\': !$parent.fakeModel}]"></span>\
+        <input ng-if="!viewMode" ng-model="$parent.fakeModel" type="checkbox" class="form-control" name="{{$parent.name}}" ng-change="$parent.change()">\
     ');
 
     $templateCache.put('a-edit-popover-image.html', '\

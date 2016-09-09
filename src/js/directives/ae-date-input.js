@@ -9,7 +9,7 @@ angular
                 ngModel: '=',
                 ngModelStr: '=?',
                 ngModelSubStr: '=?',
-                isEdit: '=',
+                viewMode: '=',
                 //callbacks
                 ngChange: '&',
                 onSave: '&',

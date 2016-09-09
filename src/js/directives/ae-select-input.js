@@ -9,12 +9,13 @@ angular
                 //attributes: '',
                 //match: 'selectedName',
                 //itemId: 'item.id',
-                itemName: '(item[$parent.nameField] || item.name || item[$parent.orNameField])',
+                itemName: 'getNameFromObj(item)',
                 //subClasses: ''
             };
 
-            return '' +
+            return '<span ng-if="viewMode">{{getNameFromObj(options.selected)}}</span>' +
             '<md-autocomplete ' +
+                'ng-if="!viewMode" ' +
                 'md-search-text="options.search" ' +
                 'md-items="item in getListByResource(options.search)" ' +
                 'ng-disabled="ngDisabled" ' +
@@ -47,10 +48,10 @@ angular
 
             var template = '' +
                 '<div class="select-input-container ' + uiSelect.subClasses + ' {{input_class}}">' +
-                '<span ng-if="!isEdit">{{selectedName}}</span>' +
+                '<span ng-if="viewMode">{{selectedName}}</span>' +
                 '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
 
-                '<div ng-if="isEdit">' +
+                '<div ng-if="!viewMode">' +
                 '<ui-select ' + uiSelect.attributes + ' ng-model="options.value" ng-click="changer()" class="input-small" reset-search-input="{{resetSearchInput}}" on-select="onSelectItem($select)">' +
                 '<ui-select-match placeholder="">' +
                 '<a class="close clear-btn" ng-click="clearInput($event)"><span>×</span></a>' +
@@ -98,7 +99,7 @@ angular
                 list: '=?',
                 ngModel: '=',
                 ngModelStr: '=?',
-                isEdit: '=?',
+                viewMode: '=?',
                 hasError: '=?',
 
                 ngResource: '=?',
@@ -178,15 +179,6 @@ angular
                     scope.fakeModel = newVal;
 
                     scope.setSelected();
-                    scope.setSelectedName(newVal);
-                });
-
-                //TODO: optimize
-                scope.$watch(function() {
-                    return ngModel.$viewValue;
-                }, function(newVal) {
-                    scope.ngModel = newVal;
-                    scope.setSelectedName(newVal);
                 });
 
                 //=============================================================
@@ -210,7 +202,8 @@ angular
 
                     return AEditHelpers.getResourceQuery(scope.ngResource, 'get', request_options).then(function(list){
                         scope.local_list = list;
-                        scope.setSelectedName(scope.ngModel);
+
+                        scope.setSelected();
                         return list;
                     });
                 };
@@ -223,68 +216,68 @@ angular
                 //=============================================================
                 scope.$watch('list', function(list){
                     scope.local_list = angular.copy(list);
-                    scope.setSelectedName(scope.ngModel);
+                    scope.setSelected();
                 });
+
                 scope.setSelected = function(){
                     if(!scope.local_list || !scope.local_list.length)
                         return;
 
-                    if(scope.type == 'mutiselect' && scope.fakeModel.length){
-                        scope.fakeModel = selected ? selected.map(function(item){return item.id;}) : [];
-                    } else if(scope.type == 'select')  {
-                        scope.fakeModel = selected ? selected.id : null;
-                    }
-                };
-                scope.setSelectedName = function (newVal){
-                    if(!scope.local_list || !scope.local_list.length)
-                        return;
-
                     if(scope.type == 'textselect'){
-                        scope.selectedName = newVal ? newVal : '';
+                        scope.selectedName = scope.ngModel ? scope.ngModel : '';
                         return;
                     }
 
-                    if(Array.isArray(newVal)){
-                        // if ngModel - array of ids
-                        var names = [];
-                        newVal.forEach(function(id){
-                            // get from current list by id
-                            var result_name = AEditHelpers.getNameById(scope.local_list, id, scope.nameField, scope.orNameField);
-                            if(result_name){
-                                names.push(result_name);
-                            } else if(scope.ngResource){
-                                // if object with id not exist in current list - get from server
-                                getObjectFromServer(id).then(function(object){
-                                    names.push(getNameFromObj(object));
-                                    scope.selectedName = names.join(', ');
-                                    scope.ngModelStr = scope.selectedName;
-                                    scope.local_list.push(object)
+                    if(scope.type == 'mutiselect' && scope.ngModel.length){
+                        if(scope.options.selected && scope.options.selected.length)
+                            return;
+
+                        scope.options.selected = [];
+
+                        scope.ngModel.forEach(function(id, index){
+                            var foundItem = null;
+                            scope.local_list.some(function(item){
+                                if(item.id == id)
+                                    foundItem = item;
+
+                                return item.id == id;
+                            });
+
+                            if(foundItem){
+                                scope.options.selected[index] = foundItem;
+                            } else {
+                                getObjectFromServer(id).then(function(serverItem){
+                                    scope.options.selected[index] = serverItem;
                                 })
                             }
                         });
-                        scope.selectedName = names.join(', ');
-                    } else {
-                        // get from current list by id
-                        scope.selectedName = AEditHelpers.getNameById(scope.local_list, newVal, scope.nameField, scope.orNameField);
+                    } else if(scope.type == 'select' && scope.ngModel)  {
+                        if(scope.options.selected)
+                            return;
 
-                        // if object with id not exist in current list - get from server
-                        if(!scope.selectedName && newVal && scope.ngResource){
-                            getObjectFromServer(newVal).then(function(object){
-                                scope.selectedName = getNameFromObj(object);
-                                scope.ngModelStr = scope.selectedName;
-                                scope.local_list.push(object);
+                        var found = scope.local_list.some(function(item){
+                            if(item.id == scope.ngModel)
+                                scope.options.selected = item;
+
+                            return item.id == scope.ngModel;
+                        });
+                        if(!found){
+                            getObjectFromServer(scope.ngModel).then(function(serverItem){
+                                scope.options.selected = serverItem;
                             })
                         }
                     }
-                    scope.ngModelStr = scope.selectedName;
                 };
 
                 function getObjectFromServer(id){
                     return AEditHelpers.getResourceQuery(scope.ngResource, 'show', {id: id});
                 }
-                function getNameFromObj(obj){
+                scope.getNameFromObj = function(obj){
+                    if(!obj)
+                        return '';
+
                     return obj[scope.nameField] || obj.name || obj[scope.orNameField];
-                }
+                };
 
                 //=============================================================
                 // Compile Adder button

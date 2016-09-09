@@ -7,7 +7,7 @@ angular
             scope: {
                 //require
                 ngModel: '=',
-                isEdit: '=',
+                viewMode: '=',
                 //callbacks
                 ngChange: '&',
                 onSave: '&',
