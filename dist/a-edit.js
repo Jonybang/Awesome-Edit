@@ -864,13 +864,34 @@ angular
         function getTemplateByType(type, options){
             options = options || {};
 
-            var uiSelect = {
-                attributes: '',
-                match: 'selectedName',
-                itemId: 'item.id',
+            var mdSelect = {
+                //attributes: '',
+                //match: 'selectedName',
+                //itemId: 'item.id',
                 itemName: '(item[$parent.nameField] || item.name || item[$parent.orNameField])',
-                subClasses: ''
+                //subClasses: ''
             };
+
+            return '' +
+            '<md-autocomplete ' +
+                'md-search-text="options.search" ' +
+                'md-items="item in getListByResource(options.search)" ' +
+                'ng-disabled="ngDisabled" ' +
+                'md-selected-item="options.selected" ' +
+                'md-search-text-change="getListByResource(options.search)" ' +
+                'md-selected-item-change="selectedItemChange(item)" ' +
+                'md-item-text="' + mdSelect.itemName + '" ' +
+                'md-min-length="0" ' +
+                'placeholder="{{placeholder}}"> ' +
+                    '<md-item-template> ' +
+                        '<span md-highlight-text="options.search" md-highlight-flags="^i">{{' + mdSelect.itemName + '}}</span> ' +
+                    '</md-item-template>' +
+                    '<md-not-found>' +
+                        'No items matching "{{options.search}}" were found.' +
+                        '<a ng-click="newItem(options.search)">Create a new one!</a>' +
+                    '</md-not-found>' +
+            '</md-autocomplete>';
+
             if(type == 'multiselect'){
                 uiSelect.attributes = 'multiple close-on-select="false"';
                 uiSelect.match = '$item[$parent.nameField] || $item.name || $item[$parent.orNameField]';
@@ -967,72 +988,55 @@ angular
                 scope.resetSearchInput = AEditConfig.select_options.reset_search_input;
 
                 scope.options = {
-                    value: scope.ngModel
+                    selected: null,
+                    search: ''
                 };
 
                 scope.full_type = scope.type = scope.type || 'select';
                 if(scope.adder)
                     scope.full_type += '-adder';
 
+                scope.fakeModel = scope.ngModel;
+
                 //=============================================================
                 // Compile
                 //=============================================================
-                var template = typeTemplates[scope.full_type],
-                    templateElement;
 
-                template(scope, function (clonedElement, scope) {
-                    templateElement = clonedElement;
-                    element.append(templateElement);
-                });
-
-                template = null;
-
-                element.on("$destroy", function () {
-                    templateElement.remove();
-                    templateElement = null;
+                typeTemplates[scope.type](scope, function (clonedElement, scope) {
+                    element.empty();
+                    element.append(clonedElement);
                 });
 
                 //=============================================================
                 // Output validation
                 //=============================================================
-                scope.$watch('hasError', function(hasError){
-                    scope.input_class = hasError ? "has-error" : '';
-                });
+                //scope.$watch('hasError', function(hasError){
+                //    scope.input_class = hasError ? "has-error" : '';
+                //});
 
                 //=============================================================
                 // Callbacks
                 //=============================================================
-                scope.onSelectItem = function($select){
-                    //fix ui-select bug
-                    if(scope.resetSearchInput && $select)
-                        $select.search = '';
-
+                scope.selectedItemChange = function(selected){
                     $timeout(scope.onSelect);
                     $timeout(scope.ngChange);
-                };
-                scope.clearInput = function($event){
-                    $event.stopPropagation();
-                    scope.ngModel = scope.type == 'multiselect' ? [] : null;
-                    $timeout(scope.ngChange);
-                };
-                scope.save = function(){
-                    if(scope.onSave)
-                        $timeout(scope.onSave);
-                };
 
-                //=============================================================
-                // Hotfix for work with ngModel and ui-select
-                //=============================================================
-                scope.changer = function() {
-                    ngModel.$setViewValue(scope.options.value)
+                    if(scope.type == 'mutiselect'){
+                        scope.fakeModel = selected ? selected.map(function(item){return item.id;}) : [];
+                    } else if(scope.type == 'select')  {
+                        scope.fakeModel = selected ? selected.id : null;
+                    }
+
+                    scope.ngModel = scope.fakeModel;
                 };
 
                 scope.$watch('ngModel', function(newVal){
-                    if(scope.options.value == newVal)
+                    if(scope.fakeModel == newVal)
                         return;
 
-                    scope.options.value = newVal;
+                    scope.fakeModel = newVal;
 
+                    scope.setSelected();
                     scope.setSelectedName(newVal);
                 });
 
@@ -1063,9 +1067,10 @@ angular
 
                     request_options[variables['limit']] = AEditConfig.select_options.items_per_page;
 
-                    AEditHelpers.getResourceQuery(scope.ngResource, 'get', request_options).then(function(list){
+                    return AEditHelpers.getResourceQuery(scope.ngResource, 'get', request_options).then(function(list){
                         scope.local_list = list;
                         scope.setSelectedName(scope.ngModel);
+                        return list;
                     });
                 };
 
@@ -1079,6 +1084,16 @@ angular
                     scope.local_list = angular.copy(list);
                     scope.setSelectedName(scope.ngModel);
                 });
+                scope.setSelected = function(){
+                    if(!scope.local_list || !scope.local_list.length)
+                        return;
+
+                    if(scope.type == 'mutiselect' && scope.fakeModel.length){
+                        scope.fakeModel = selected ? selected.map(function(item){return item.id;}) : [];
+                    } else if(scope.type == 'select')  {
+                        scope.fakeModel = selected ? selected.id : null;
+                    }
+                };
                 scope.setSelectedName = function (newVal){
                     if(!scope.local_list || !scope.local_list.length)
                         return;
