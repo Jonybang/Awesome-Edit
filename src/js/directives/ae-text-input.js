@@ -24,13 +24,16 @@ angular
 
             inputTagBegin += 'ng-change="ngChange()" ';
 
+            inputTagBegin = '<md-input-container flex="grow"><label>{{$parent.label}}</label>' + inputTagBegin;
+            inputTagEnd += '</md-input-container>';
+
             return '' +
                 '<div ng-if="!isEdit">' +
                 text +
                 '</div>' +
-                '<div ng-if="isEdit" ng-class="input_class">' +
+                '<div ng-if="isEdit" ng-class="input_class" layout>' +
                 inputTagBegin +
-                ' class="form-control input-sm" placeholder="{{$parent.placeholder}}"' +
+                ' placeholder="{{$parent.placeholder}}" ' +
                 ' ng-model="$parent.ngModel" ' + (type != 'textarea' ? 'ng-enter="$parent.save()"' : '') +
                 ' ng-model-options="$parent.ngModelOptions || {}"' +
                 ' ng-style="{ \'width\' : $parent.width + \'px\'}"' +
@@ -64,6 +67,7 @@ angular
                 ngChange: '&',
                 onSave: '&',
                 //sub
+                label: '@',
                 placeholder: '@',
                 name: '@',
                 width: '@',
@@ -114,4 +118,4 @@ angular
                 }
             }
         };
-    }])
+    }]);
