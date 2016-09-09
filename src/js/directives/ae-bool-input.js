@@ -12,7 +12,8 @@ angular
                 ngChange: '&',
                 onSave: '&',
                 //sub
-                name: '@'
+                name: '@',
+                label: '@'
             },
             link: function (scope, element) {
 

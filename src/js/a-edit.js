@@ -37,10 +37,10 @@ angular
         </div>\
     ');
 
-    $templateCache.put('a-edit-bool-input.html', '\
+    $templateCache.put('a-edit-bool-input.html', '<div>\
         <span ng-if="viewMode" ng-class="[\'glyphicon\',{\'glyphicon-check\': $parent.fakeModel, \'glyphicon-unchecked\': !$parent.fakeModel}]"></span>\
-        <input ng-if="!viewMode" ng-model="$parent.fakeModel" type="checkbox" class="form-control" name="{{$parent.name}}" ng-change="$parent.change()">\
-    ');
+        <md-checkbox ng-if="!viewMode" ng-model="$parent.fakeModel" ng-change="$parent.change()">{{$parent.label}}</md-checkbox>\
+    </div>');
 
     $templateCache.put('a-edit-popover-image.html', '\
         <a target="_blank" href="{{::image}}" uib-popover-template="imagePopoverPath" popover-placement="left" popover-trigger="mouseenter">\
