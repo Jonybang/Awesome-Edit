@@ -913,7 +913,8 @@ angular
                     '</button>';
             }
 
-            template += '</div>' +
+            template +=
+                '</div>' +
                 '</div>';
             return template;
         }
