@@ -13,7 +13,8 @@ angular.module('a-edit')
                 offset: '_offset',
                 limit: '_limit',
                 sort: '_sort',
-                page: '_page'
+                page: '_page',
+                id_not_in: 'id-not-in'
             },
             additional_request_params:{},
             response_variables: {

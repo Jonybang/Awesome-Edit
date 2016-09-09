@@ -13,82 +13,52 @@ angular
                 //subClasses: ''
             };
 
-            return '<span ng-if="viewMode">{{getNameFromObj(options.selected)}}</span>' +
-            '<md-autocomplete ' +
-                'ng-if="!viewMode" ' +
-                'md-search-text="options.search" ' +
-                'md-items="item in getListByResource(options.search)" ' +
-                'ng-disabled="ngDisabled" ' +
-                'md-selected-item="options.selected" ' +
-                'md-search-text-change="getListByResource(options.search)" ' +
-                'md-selected-item-change="selectedItemChange(item)" ' +
-                'md-item-text="' + mdSelect.itemName + '" ' +
-                'md-min-length="0" ' +
-                'placeholder="{{placeholder}}"> ' +
-                    '<md-item-template> ' +
-                        '<span md-highlight-text="options.search" md-highlight-flags="^i">{{' + mdSelect.itemName + '}}</span> ' +
-                    '</md-item-template>' +
-                    '<md-not-found>' +
-                        'No items matching "{{options.search}}" were found.' +
-                        '<a ng-click="newItem(options.search)">Create a new one!</a>' +
-                    '</md-not-found>' +
-            '</md-autocomplete>';
-
-            if(type == 'multiselect'){
-                uiSelect.attributes = 'multiple close-on-select="false"';
-                uiSelect.match = '$item[$parent.nameField] || $item.name || $item[$parent.orNameField]';
-            }
-            if(type == 'textselect'){
-                uiSelect.itemId = '';
-                uiSelect.itemName = 'item';
-            }
-            if(options.adder){
-                uiSelect.subClasses = 'btn-group select-adder';
+            var template = '';
+            if(type == 'select') {
+                template += '<span ng-if="viewMode">{{getNameFromObj(options.selected)}}</span>';
             }
 
-            var template = '' +
-                '<div class="select-input-container ' + uiSelect.subClasses + ' {{input_class}}">' +
-                '<span ng-if="viewMode">{{selectedName}}</span>' +
-                '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
-
-                '<div ng-if="!viewMode">' +
-                '<ui-select ' + uiSelect.attributes + ' ng-model="options.value" ng-click="changer()" class="input-small" reset-search-input="{{resetSearchInput}}" on-select="onSelectItem($select)">' +
-                '<ui-select-match placeholder="">' +
-                '<a class="close clear-btn" ng-click="clearInput($event)"><span>×</span></a>' +
-                '{{' + uiSelect.match + '}}' +
-                '</ui-select-match>' +
-
-                '<ui-select-choices refresh="getListByResource($select.search)" refresh-delay="{{refreshDelay}}" repeat="' + (uiSelect.itemId ? uiSelect.itemId + ' as ' : '') + 'item in $parent.local_list | filter: $select.search track by $index">' +
-                '<div ng-bind-html="' + uiSelect.itemName + ' | highlight: $select.search"></div>' +
-                '</ui-select-choices>' +
-                '</ui-select>';
-
-            if(options.adder){
+            if(type == 'multiselect') {
                 template += '' +
-                    '<button type="button" class="btn btn-success" ng-click="popover.is_open = true"' +
-                    ' uib-popover-template="popover.template_name"' +
-                    ' uib-popover-title="Add object"' +
-                    ' popover-placement="top"' +
-                    ' popover-append-to-body="true"' +
-                    ' popover-is-open="popover.is_open"' +
-                    ' popover-trigger="none">' +
-                    '<span class="glyphicon glyphicon-plus"></span>' +
-                    '</button>';
+                    '<md-chips ng-model="options.selected">' +
+                        '<md-chip-template>' +
+                            '<span>{{getNameFromObj($chip)}}</span>' +
+                        '</md-chip-template>';
             }
 
             template +=
-                '</div>' +
-                '</div>';
+                        '<md-autocomplete ' +
+                            (type == 'select' ? 'ng-if="!viewMode" md-selected-item="options.selected" ' : ' ') +
+                            'md-search-text="options.search" ' +
+                            'md-items="item in local_list" ' +
+                            'ng-disabled="ngDisabled" ' +
+                            'md-search-text-change="getListByResource(options.search)" ' +
+                            'md-selected-item-change="selectedItemChange(item)" ' +
+                            'md-item-text="' + mdSelect.itemName + '" ' +
+                            'md-min-length="0" ' +
+                            'placeholder="{{placeholder}}"> ' +
+                                '<md-item-template> ' +
+                                    '<span md-highlight-text="options.search" md-highlight-flags="^i">{{' + mdSelect.itemName + '}}</span> ' +
+                                '</md-item-template>' +
+                                '<md-not-found>' +
+                                    'No items matching "{{options.search}}" were found.' +
+                                    '<a ng-click="newItem(options.search)">Create a new one!</a>' +
+                                '</md-not-found>' +
+                        '</md-autocomplete>';
+
+
+            if(type == 'multiselect') {
+                template += '' +
+                    '</md-chips>';
+            }
+
             return template;
         }
 
         var typeTemplates = {
-            'select': $compile(getTemplateByType('')),
-            'select-adder': $compile(getTemplateByType('', {adder: true})),
+            'select': $compile(getTemplateByType('select')),
             'textselect': $compile(getTemplateByType('textselect')),
-            'textselect-adder': $compile(getTemplateByType('textselect', {adder: true})),
-            'multiselect': $compile(getTemplateByType('multiselect')),
-            'multiselect-adder': $compile(getTemplateByType('multiselect', {adder: true}))
+            'multiselect': $compile(getTemplateByType('multiselect'))
         };
 
         return {
@@ -130,7 +100,7 @@ angular
                 scope.resetSearchInput = AEditConfig.select_options.reset_search_input;
 
                 scope.options = {
-                    selected: null,
+                    selected: scope.type == 'multiselect' ? [] : null,
                     search: ''
                 };
 
@@ -159,17 +129,21 @@ angular
                 //=============================================================
                 // Callbacks
                 //=============================================================
-                scope.selectedItemChange = function(selected){
+                scope.selectedItemChange = function(){
                     $timeout(scope.onSelect);
                     $timeout(scope.ngChange);
 
-                    if(scope.type == 'mutiselect'){
-                        scope.fakeModel = selected ? selected.map(function(item){return item.id;}) : [];
-                    } else if(scope.type == 'select')  {
-                        scope.fakeModel = selected ? selected.id : null;
+                    if(scope.type == 'select')  {
+                        scope.fakeModel =  scope.options.selected ?  scope.options.selected.id : null;
+                    } else if(scope.type == 'multiselect'){
+                        scope.fakeModel = scope.options.selected ?  scope.options.selected.map(function(item){return item.id;}) : [];
                     }
 
                     scope.ngModel = scope.fakeModel;
+
+                    //scope.options.search = '';
+
+                    scope.getListByResource();
                 };
 
                 scope.$watch('ngModel', function(newVal){
@@ -190,15 +164,21 @@ angular
 
                     scope.getListByResource();
                 }
+
                 scope.getListByResource = function (query){
                     if(!scope.ngResource)
                         return;
 
                     var request_options = {};
-                    if(query)
-                        request_options[variables['query']] = query;
+                    if(scope.options.search)
+                        request_options[variables['query']] = scope.options.search;
+                    else
+                        delete request_options[variables['query']];
 
                     request_options[variables['limit']] = AEditConfig.select_options.items_per_page;
+
+                    if(scope.type == 'multiselect')
+                        request_options[variables['id_not_in']] = scope.ngModel && scope.ngModel.length ? scope.ngModel.join(',') : [];
 
                     return AEditHelpers.getResourceQuery(scope.ngResource, 'get', request_options).then(function(list){
                         scope.local_list = list;
@@ -228,7 +208,7 @@ angular
                         return;
                     }
 
-                    if(scope.type == 'mutiselect' && scope.ngModel.length){
+                    if(scope.type == 'multiselect' && scope.ngModel.length){
                         if(scope.options.selected && scope.options.selected.length)
                             return;
 
