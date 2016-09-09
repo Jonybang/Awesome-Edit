@@ -152,7 +152,7 @@ angular
                             is_new: is_new,
                             list_variable: list_variable,
                             get_list: false,
-                            ajax_search: AEditConfig.se
+                            ajax_search: AEditConfig.search
                         });
                     }
 

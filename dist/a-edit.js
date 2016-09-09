@@ -52,6 +52,220 @@ angular
 
 angular
     .module('a-edit')
+    .directive('aeBoolInput', ['$timeout', '$filter', function($timeout, $filter) {
+        return {
+            restrict: 'E',
+            templateUrl: 'a-edit-bool-input.html',
+            scope: {
+                //require
+                ngModel: '=',
+                isEdit: '=',
+                //callbacks
+                ngChange: '&',
+                onSave: '&',
+                //sub
+                name: '@'
+            },
+            link: function (scope, element) {
+
+                scope.$watch('ngModel', function(ngModel){
+                    scope.fakeModel = ngModel == 1;
+                });
+
+                scope.change = function(){
+                    scope.ngModel =  scope.fakeModel;
+
+                    if(scope.ngChange)
+                        $timeout(scope.ngChange);
+                };
+            }
+        };
+    }]);
+angular
+    .module('a-edit')
+    .directive('aeDateInput', ['$timeout', '$filter', function($timeout, $filter) {
+        return {
+            restrict: 'E',
+            templateUrl: 'a-edit-date-input.html',
+            scope: {
+                //require
+                ngModel: '=',
+                ngModelStr: '=?',
+                ngModelSubStr: '=?',
+                isEdit: '=',
+                //callbacks
+                ngChange: '&',
+                onSave: '&',
+                //sub
+                placeholder: '@',
+                name: '@'
+            },
+            link: function (scope, element) {
+
+                scope.getDayClass = function(obj) {
+                    if (obj.mode === 'day') {
+                        var day = new Date(obj.date).getDay();
+                        if (day == 0 || day == 6)
+                            return 'day-off';
+                    }
+                };
+
+                scope.options = {
+                    startingDay: 1,
+                    customClass: scope.getDayClass,
+                    todayText: '',
+                    currentText:'',
+                    clearText: '',
+                    closeText: 'Close',
+                    appendToBody: false
+                };
+
+                scope.save = function(){
+                    if(scope.onSave)
+                        $timeout(scope.onSave);
+                };
+
+                scope.change = function(){
+                    setStr();
+
+                    if(scope.ngChange)
+                        $timeout(scope.ngChange);
+                };
+                function setStr(){
+                    if(scope.ngModel){
+                        scope.ngModelStr = $filter('amDateFormat')(scope.ngModel, 'D MMM. YYYY');
+                        scope.ngModelSubStr = $filter('amDateFormat')(scope.ngModel, 'DD.MM.YYYY');
+                    }
+                }
+
+                scope.$watch('ngModel', setStr);
+            }
+        };
+    }]);
+angular
+    .module('a-edit')
+
+    .directive('aeFileUpload', ['$timeout', '$compile', 'FileUploader', function($timeout, $compile, FileUploader) {
+
+        function getTemplateByType(type){
+            var result = '';
+            if(type == 'multifile'){
+                result +='<ul class="list-unstyled">' +
+                    '<li ng-repeat="item in ngModel">';
+            }
+
+            result += '<popover-image ng-model="' + (type == 'multifile' ? 'item' : 'ngModel') + '.file" text="' + (type == 'multifile' ? 'item' : 'ngModel') + '.name"></popover-image>';
+
+            if(type == 'multifile'){
+                result +=   '</li>' +
+                    '</ul>';
+            }
+
+            result +=   '<ul ng-if="isEdit" class="list-unstyled">' +
+                '<li ng-repeat="item in uploader.queue">' +
+                '<popover-image ng-model="item.file" text="item.file.name"></popover-image>' +
+                '<a href ng-click="item.remove()"><span class="glyphicon glyphicon-remove"></span></a>' +
+                '</li>' +
+                '</ul>' +
+                '<span ng-if="isEdit && uploader" class="btn btn-sm btn-default btn-file">' +
+                'Р—Р°РіСЂСѓР·РёС‚СЊ' +
+                '<input type="file" nv-file-select uploader="uploader" ' + (type == 'multifile' ? 'multiple': '') + ' />' +
+                '</span>';
+
+            return result;
+        }
+
+        var typeTemplates = {
+            'file': $compile(getTemplateByType('file')),
+            'multifile': $compile(getTemplateByType('multifile'))
+        };
+
+        return {
+            restrict: 'E',
+            require: 'ngModel',
+            scope: {
+                ngModel: '=',
+                isEdit: '=?',
+                uploader: '=',
+                //callbacks
+                ngChange: '&',
+                onSave: '&',
+                //sub
+                inputName: '@',
+                url: '@',
+                type: '@'
+            },
+            link: function (scope, element, attrs, ngModel) {
+
+                var template = typeTemplates[scope.type || 'file'],
+                    templateElement;
+
+                template(scope, function (clonedElement, scope) {
+                    templateElement = clonedElement;
+                    element.append(templateElement);
+                });
+
+                template = null;
+
+                element.on("$destroy", function () {
+                    templateElement.remove();
+                    templateElement = null;
+                });
+
+                function initUploader(){
+                    scope.uploader = new FileUploader();
+                    scope.uploader.url = scope.url;
+                    scope.uploader.alias = scope.inputName;
+                    scope.uploader.autoUpload = true;
+                    scope.uploader.removeAfterUpload = true;
+
+                    scope.uploader.onAfterAddingFile = function(item){
+                        setImageSrc(item);
+                    };
+                    scope.uploader.onSuccessItem = function(item, response){
+                        if(!scope.ngModel)
+                            scope.ngModel = [];
+
+                        scope.ngModel.push(response);
+                        console.log(scope.ngModel);
+                    };
+                }
+
+                if(scope.isEdit)
+                    initUploader();
+
+                function setImageSrc (item){
+                    var reader = new FileReader();
+
+                    reader.onload = (function(theFile) {
+                        return function(e) {
+                            item.image_src = e.target.result;
+                            scope.$apply();
+                        };
+                    })(item._file);
+
+                    reader.readAsDataURL(item._file);
+                }
+
+                scope.save = function(){
+                    if(scope.onSave)
+                        $timeout(scope.onSave);
+                };
+
+                scope.$watch('ngModel', function(newVal){
+                    if(!newVal && scope.isEdit)
+                        initUploader();
+                });
+                scope.$watch('isEdit', function(newVal){
+                    if(newVal)
+                        initUploader();
+                })
+            }
+        };
+    }]);
+
+angular
+    .module('a-edit')
     .directive('aeGrid', ['$timeout', '$compile', '$filter', 'AEditHelpers', 'AEditConfig', function($timeout, $compile, $filter, AEditHelpers, AEditConfig) {
     return {
         restrict: 'E',
@@ -204,7 +418,7 @@ angular
                             is_new: is_new,
                             list_variable: list_variable,
                             get_list: false,
-                            ajax_search: AEditConfig.se
+                            ajax_search: AEditConfig.search
                         });
                     }
 
@@ -540,264 +754,111 @@ angular
 angular
     .module('a-edit')
 
-    .directive('iconButton', ['$timeout', function($timeout) {
+    .directive('aeObjectModal', ['$timeout', '$log', '$cacheFactory', 'AEditHelpers', 'AEditConfig', '$uibModal', function($timeout, $log, $cacheFactory, AEditHelpers, AEditConfig, $uibModal) {
+        var cache = $cacheFactory('aModal.Templates');
+
         return {
-            restrict: 'E',
-            template: '<button type="button" class="btn btn-{{type}} btn-{{size || \'xs\'}}" ng-click="click()">' +
-            '<span class="glyphicon glyphicon-{{glyphicon}}" aria-hidden="true"></span>' +
-            '</button>',
-            scope: {
-                type: '@',
-                size: '@',
-                glyphicon: '@'
-            },
-            link: function (scope, element) {
-
-            }
-        };
-    }])
-
-    .directive('ngEnter', function() {
-        return function(scope, element, attrs) {
-            element.bind("keydown keypress", function(event) {
-                if(event.which === 13) {
-                    scope.$apply(function(){
-                        scope.$eval(attrs.ngEnter);
-                    });
-
-                    event.preventDefault();
-                }
-            });
-        };
-    })
-
-    .directive('popoverImage', ['$timeout', '$filter', function($timeout, $filter) {
-        return {
-            restrict: 'E',
-            templateUrl: 'a-edit-popover-image.html',
+            restrict: 'A',
             scope: {
                 //require
-                ngModel: '=',
-                text: '=?'
+                aeObjectModal: '=',
+                modalResourceOptions: '=?',
+                isEdit: '=?',
+                //callbacks
+                onSave: '&'
             },
-            link: function (scope, element) {
-                scope.text = scope.text || scope.ngModel.name;
-                scope.image = scope.ngModel.image_src || scope.ngModel.file || scope.ngModel;
+            link: function (scope, element, attrs) {
 
-                scope.imagePopoverPath = 'a-edit-image-popover.html';
+                var resource_name = attrs.aeObjectModal + new Date().getTime();
+                scope.options = scope.modalResourceOptions || AEditConfig.current_options;
+
+                element.on("click", function () {
+                    var template = cache.get(resource_name) || '';
+                    if(!template){
+                        template +=
+                            '<div class="modal-header">' +
+                                '<button ng-click="cancel()" class="close pull-right"><span>&times;</span></button>' +
+                                '<h3 class="modal-title">Awesome modal!</h3>' +
+                            '</div>' +
+                            '<div class="modal-body">' +
+                                '<button type="button" class="btn btn-warning btn-sm pull-right" ng-click="object.is_edit = !object.is_edit">' +
+                                    '<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>' +
+                                '</button>' +
+                                '<dl class="dl-horizontal">';
+                        
+                        scope.options.fields.forEach(function(field){
+                            template += '<dt>' + field.label + '</dt>';
+                            template += '<dd>' + AEditHelpers.generateDirectiveByConfig(field, {
+                                item_name: 'object',
+                                lists_container: 'lists',
+                                already_modal: true
+                            }) + '</dd>';
+                        });
+                        
+                        template +=
+                                '</dl>' +
+                            '</div>' +
+                            '<div class="modal-footer">' +
+                                '<button class="btn btn-primary" type="button" ng-click="ok()">OK</button>' +
+                            '</div>';
+                            
+                        cache.put(resource_name, template);
+                    }
+
+                    var modalInstance = $uibModal.open({
+                        animation: true,
+                        template: template,
+                        resolve: {
+                            data: function () {
+                                return {
+                                    object: angular.copy(scope.aeObjectModal),
+                                    resource: scope.options.resource,
+                                    lists: scope.options.lists,
+                                    isEdit: scope.isEdit
+                                };
+                            }
+                        },
+                        controller: ['$scope', '$uibModalInstance', 'data', function($scope, $uibModalInstance, data) {
+                            angular.extend($scope, data);
+
+
+                            AEditHelpers.getResourceQuery(new scope.options.resource($scope.object), 'show').then(function(object){
+                                $scope.object = object;
+                                $scope.object.is_edit = data.isEdit;
+                                console.log('modal controller', $scope.object);
+                            });
+                            
+                            $scope.ok = function () {
+                                $scope.object.is_edit = false;
+                                $uibModalInstance.close($scope.object);
+                            };
+                            $scope.cancel = function () {
+                                $uibModalInstance.dismiss('cancel');
+                            };
+                        }],
+                        size: 'lg'
+                    });
+
+                    modalInstance.result.then(function (object) {
+                        angular.extend(scope.aeObjectModal, object);
+                        
+                        if(scope.onSave)
+                            $timeout(scope.onSave);
+                    }, function () {
+                        $log.info('Modal dismissed at: ' + new Date());
+                    });
+                });
+
+                scope.save = function(){
+                    if(scope.onSave)
+                        $timeout(scope.onSave);
+                }
             }
         };
     }]);
 
 angular
     .module('a-edit')
-
-    .directive('aeTextInput', ['$timeout', '$compile', function($timeout, $compile) {
-        function getTemplateByType(type, options){
-            var text = '{{$parent.ngModel}}';
-            var inputTagBegin = '<input type="text" ';
-            var inputTagEnd = '';
-
-            if(options && options.modal_link)
-                text = '<a ae-object-modal="modalObject" modal-resource-options="modalOptions" on-save="save()" href>' + text + '</a>';
-            else if(type == 'textarea'){
-                text = '<pre ng-if="$parent.ngModel">{{$parent.ngModel}}</pre>';
-
-                inputTagBegin = '<textarea ';
-                inputTagEnd = '</textarea>';
-            } else if(type == 'password'){
-                text = '<small>[password hidden]</small>';
-
-                inputTagBegin = '' +
-                    '<a href ng-click="changePassword = true" ng-show="!isNew && !changePassword">Change password</a>' +
-                    '<div ng-show="changePassword || isNew"><input type="password" ';
-                inputTagEnd = '</div>';
-            }
-
-            inputTagBegin += 'ng-change="ngChange()" ';
-
-            return '' +
-            '<div ng-if="!isEdit">' +
-                text +
-            '</div>' +
-            '<div ng-if="isEdit" ng-class="input_class">' +
-                inputTagBegin +
-                ' class="form-control input-sm" placeholder="{{$parent.placeholder}}"' +
-                ' ng-model="$parent.ngModel" ' + (type != 'textarea' ? 'ng-enter="$parent.save()"' : '') +
-                ' ng-model-options="$parent.ngModelOptions || {}"' +
-                ' ng-style="{ \'width\' : $parent.width + \'px\'}"' +
-                ' ng-disabled="$parent.ngDisabled == 1" >' +
-                inputTagEnd +
-            '</div>';
-        }
-
-        var typeTemplates = {
-            'text': $compile(getTemplateByType('text')),
-            'password': $compile(getTemplateByType('password')),
-            'text_modal_link': $compile(getTemplateByType('text', {modal_link: true})),
-            'textarea': $compile(getTemplateByType('textarea'))
-        };
-
-        return {
-            restrict: 'E',
-            scope: {
-                //require
-                ngModel: '=',
-                ngModelOptions: '=?',
-                ngModelStr: '=?',
-                isNew: '=?',
-                isEdit: '=?',
-                modalObject: '=?',
-                modalOptions: '=?',
-                hasError: '=?',
-                ngDisabled: '=?',
-                defaultValue: '@',
-                //callbacks
-                ngChange: '&',
-                onSave: '&',
-                //sub
-                placeholder: '@',
-                name: '@',
-                width: '@',
-                required: '@',
-                type: '@' //text or textarea
-            },
-            link: function (scope, element, attrs) {
-                scope.type = scope.type || 'text';
-                if(attrs.modalObject && scope.type == 'text')
-                    scope.type = "text_modal_link";
-
-                var template = typeTemplates[scope.type],
-                    templateElement;
-
-                template(scope, function (clonedElement, scope) {
-                    templateElement = clonedElement;
-                    element.append(templateElement);
-                });
-
-                template = null;
-
-                element.on("$destroy", function () {
-                    templateElement.remove();
-                    templateElement = null;
-                });
-
-                scope.$watch('hasError', function(hasError){
-                    scope.input_class = hasError ? "has-error" : '';
-                });
-
-                function setDefaultValue(){
-                    if(!scope.ngModel && scope.defaultValue)
-                        scope.ngModel = scope.defaultValue;
-                }
-                setDefaultValue();
-                //scope.$watch('ngModel', setDefaultValue);
-                //scope.$watch('defaultValue', setDefaultValue);
-
-                scope.save = function(){
-                    if(scope.required && !scope.ngModel){
-                        scope.input_class = "has-error";
-                        return;
-                    }
-
-                    scope.input_class = '';
-                    if(scope.onSave)
-                        $timeout(scope.onSave);
-                }
-            }
-        };
-    }])
-
-    .directive('aeBoolInput', ['$timeout', '$filter', function($timeout, $filter) {
-        return {
-            restrict: 'E',
-            templateUrl: 'a-edit-bool-input.html',
-            scope: {
-                //require
-                ngModel: '=',
-                isEdit: '=',
-                //callbacks
-                ngChange: '&',
-                onSave: '&',
-                //sub
-                name: '@'
-            },
-            link: function (scope, element) {
-
-                scope.$watch('ngModel', function(ngModel){
-                    scope.fakeModel = ngModel == 1;
-                });
-
-                scope.change = function(){
-                    scope.ngModel =  scope.fakeModel;
-
-                    if(scope.ngChange)
-                        $timeout(scope.ngChange);
-                };
-            }
-        };
-    }])
-
-
-    .directive('aeDateInput', ['$timeout', '$filter', function($timeout, $filter) {
-        return {
-            restrict: 'E',
-            templateUrl: 'a-edit-date-input.html',
-            scope: {
-                //require
-                ngModel: '=',
-                ngModelStr: '=?',
-                ngModelSubStr: '=?',
-                isEdit: '=',
-                //callbacks
-                ngChange: '&',
-                onSave: '&',
-                //sub
-                placeholder: '@',
-                name: '@'
-            },
-            link: function (scope, element) {
-
-                scope.getDayClass = function(obj) {
-                    if (obj.mode === 'day') {
-                        var day = new Date(obj.date).getDay();
-                        if (day == 0 || day == 6)
-                            return 'day-off';
-                    }
-                };
-
-                scope.options = {
-                    startingDay: 1,
-                    customClass: scope.getDayClass,
-                    todayText: '',
-                    currentText:'',
-                    clearText: '',
-                    closeText: 'Close',
-                    appendToBody: false
-                };
-
-                scope.save = function(){
-                    if(scope.onSave)
-                        $timeout(scope.onSave);
-                };
-
-                scope.change = function(){
-                    setStr();
-
-                    if(scope.ngChange)
-                        $timeout(scope.ngChange);
-                };
-                function setStr(){
-                    if(scope.ngModel){
-                        scope.ngModelStr = $filter('amDateFormat')(scope.ngModel, 'D MMM. YYYY');
-                        scope.ngModelSubStr = $filter('amDateFormat')(scope.ngModel, 'DD.MM.YYYY');
-                    }
-                }
-
-                scope.$watch('ngModel', setStr);
-            }
-        };
-    }])
 
     .directive('aeSelectInput', ['$timeout', '$compile', '$templateCache', 'AEditHelpers' ,'AEditConfig', function($timeout, $compile, $templateCache, AEditHelpers, AEditConfig) {
         function getTemplateByType(type, options){
@@ -824,31 +885,31 @@ angular
 
             var template = '' +
                 '<div class="select-input-container ' + uiSelect.subClasses + ' {{input_class}}">' +
-                    '<span ng-if="!isEdit">{{selectedName}}</span>' +
-                    '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
+                '<span ng-if="!isEdit">{{selectedName}}</span>' +
+                '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
 
-                    '<div ng-if="isEdit">' +
-                        '<ui-select ' + uiSelect.attributes + ' ng-model="options.value" ng-click="changer()" class="input-small" reset-search-input="{{resetSearchInput}}" on-select="onSelectItem($select)">' +
-                            '<ui-select-match placeholder="">' +
-                                '<a class="close clear-btn" ng-click="clearInput($event)"><span>×</span></a>' +
-                                '{{' + uiSelect.match + '}}' +
-                            '</ui-select-match>' +
+                '<div ng-if="isEdit">' +
+                '<ui-select ' + uiSelect.attributes + ' ng-model="options.value" ng-click="changer()" class="input-small" reset-search-input="{{resetSearchInput}}" on-select="onSelectItem($select)">' +
+                '<ui-select-match placeholder="">' +
+                '<a class="close clear-btn" ng-click="clearInput($event)"><span>×</span></a>' +
+                '{{' + uiSelect.match + '}}' +
+                '</ui-select-match>' +
 
-                            '<ui-select-choices refresh="getListByResource($select.search)" refresh-delay="{{refreshDelay}}" repeat="' + (uiSelect.itemId ? uiSelect.itemId + ' as ' : '') + 'item in $parent.local_list | filter: $select.search track by $index">' +
-                                '<div ng-bind-html="' + uiSelect.itemName + ' | highlight: $select.search"></div>' +
-                            '</ui-select-choices>' +
-                        '</ui-select>';
+                '<ui-select-choices refresh="getListByResource($select.search)" refresh-delay="{{refreshDelay}}" repeat="' + (uiSelect.itemId ? uiSelect.itemId + ' as ' : '') + 'item in $parent.local_list | filter: $select.search track by $index">' +
+                '<div ng-bind-html="' + uiSelect.itemName + ' | highlight: $select.search"></div>' +
+                '</ui-select-choices>' +
+                '</ui-select>';
 
             if(options.adder){
                 template += '' +
                     '<button type="button" class="btn btn-success" ng-click="popover.is_open = true"' +
-                        ' uib-popover-template="popover.template_name"' +
-                        ' uib-popover-title="Add object"' +
-                        ' popover-placement="top"' +
-                        ' popover-append-to-body="true"' +
-                        ' popover-is-open="popover.is_open"' +
-                        ' popover-trigger="none">' +
-                            '<span class="glyphicon glyphicon-plus"></span>' +
+                    ' uib-popover-template="popover.template_name"' +
+                    ' uib-popover-title="Add object"' +
+                    ' popover-placement="top"' +
+                    ' popover-append-to-body="true"' +
+                    ' popover-is-open="popover.is_open"' +
+                    ' popover-trigger="none">' +
+                    '<span class="glyphicon glyphicon-plus"></span>' +
                     '</button>';
             }
 
@@ -1083,18 +1144,18 @@ angular
                     scope.ngResourceFields.forEach(function(field){
                         popoverTemplate += '' +
                             '<div class="form-group col-md-12 row">' +
-                                '<div>' +
-                                    '<label>' + field.label + '</label>' +
-                                '</div>' +
-                                '<div>' +
-                                    AEditHelpers.generateDirectiveByConfig(field, {
-                                        item_name: '$parent.new_object',
-                                        lists_container: 'lists',
-                                        always_edit: true,
-                                        is_new: true
-                                        //already_modal: true
-                                    }) +
-                                '</div>' +
+                            '<div>' +
+                            '<label>' + field.label + '</label>' +
+                            '</div>' +
+                            '<div>' +
+                            AEditHelpers.generateDirectiveByConfig(field, {
+                                item_name: '$parent.new_object',
+                                lists_container: 'lists',
+                                always_edit: true,
+                                is_new: true
+                                //already_modal: true
+                            }) +
+                            '</div>' +
                             '</div>';
 
                         if(field.resource){
@@ -1107,10 +1168,10 @@ angular
                     });
 
                     popoverTemplate += '' +
-                            '<div class="form-group col-md-12 row">' +
-                                '<button type="submit" class="btn btn-primary" ng-click="$parent.saveToList(new_object);">Save</button>' +
-                                '<button class="btn btn-danger pull-right" ng-click="$parent.popover.is_open = false">Close</button>' +
-                            '</div>' +
+                        '<div class="form-group col-md-12 row">' +
+                        '<button type="submit" class="btn btn-primary" ng-click="$parent.saveToList(new_object);">Save</button>' +
+                        '<button class="btn btn-danger pull-right" ng-click="$parent.popover.is_open = false">Close</button>' +
+                        '</div>' +
                         '</div>';
 
                     scope.popover = {
@@ -1150,61 +1211,89 @@ angular
                 }
             }
         };
-    }])
+    }]);
+angular
+    .module('a-edit')
+    .directive('aeTextInput', ['$timeout', '$compile', function($timeout, $compile) {
+        function getTemplateByType(type, options){
+            var text = '{{$parent.ngModel}}';
+            var inputTagBegin = '<input type="text" ';
+            var inputTagEnd = '';
 
-    .directive('aeFileUpload', ['$timeout', '$compile', 'FileUploader', function($timeout, $compile, FileUploader) {
+            if(options && options.modal_link)
+                text = '<a ae-object-modal="modalObject" modal-resource-options="modalOptions" on-save="save()" href>' + text + '</a>';
+            else if(type == 'textarea'){
+                text = '<pre ng-if="$parent.ngModel">{{$parent.ngModel}}</pre>';
 
-        function getTemplateByType(type){
-            var result = '';
-            if(type == 'multifile'){
-                result +='<ul class="list-unstyled">' +
-                            '<li ng-repeat="item in ngModel">';
+                inputTagBegin = '<textarea ';
+                inputTagEnd = '</textarea>';
+            } else if(type == 'password'){
+                text = '<small>[password hidden]</small>';
+
+                inputTagBegin = '' +
+                    '<a href ng-click="changePassword = true" ng-show="!isNew && !changePassword">Change password</a>' +
+                    '<div ng-show="changePassword || isNew"><input type="password" ';
+                inputTagEnd = '</div>';
             }
 
-            result += '<popover-image ng-model="' + (type == 'multifile' ? 'item' : 'ngModel') + '.file" text="' + (type == 'multifile' ? 'item' : 'ngModel') + '.name"></popover-image>';
+            inputTagBegin += 'ng-change="ngChange()" ';
 
-            if(type == 'multifile'){
-                result +=   '</li>' +
-                        '</ul>';
-            }
+            inputTagBegin = '<md-input-container flex="grow"><label>{{$parent.label}}</label>' + inputTagBegin;
+            inputTagEnd += '</md-input-container>';
 
-            result +=   '<ul ng-if="isEdit" class="list-unstyled">' +
-                            '<li ng-repeat="item in uploader.queue">' +
-                                '<popover-image ng-model="item.file" text="item.file.name"></popover-image>' +
-                                '<a href ng-click="item.remove()"><span class="glyphicon glyphicon-remove"></span></a>' +
-                            '</li>' +
-                        '</ul>' +
-                        '<span ng-if="isEdit && uploader" class="btn btn-sm btn-default btn-file">' +
-                            'Р—Р°РіСЂСѓР·РёС‚СЊ' +
-                            '<input type="file" nv-file-select uploader="uploader" ' + (type == 'multifile' ? 'multiple': '') + ' />' +
-                        '</span>';
-
-            return result;
+            return '' +
+                '<div ng-if="!isEdit">' +
+                text +
+                '</div>' +
+                '<div ng-if="isEdit" ng-class="input_class" layout>' +
+                inputTagBegin +
+                ' placeholder="{{$parent.placeholder}}" ' +
+                ' ng-model="$parent.ngModel" ' + (type != 'textarea' ? 'ng-enter="$parent.save()"' : '') +
+                ' ng-model-options="$parent.ngModelOptions || {}"' +
+                ' ng-style="{ \'width\' : $parent.width + \'px\'}"' +
+                ' ng-disabled="$parent.ngDisabled == 1" >' +
+                inputTagEnd +
+                '</div>';
         }
 
         var typeTemplates = {
-            'file': $compile(getTemplateByType('file')),
-            'multifile': $compile(getTemplateByType('multifile'))
+            'text': $compile(getTemplateByType('text')),
+            'password': $compile(getTemplateByType('password')),
+            'text_modal_link': $compile(getTemplateByType('text', {modal_link: true})),
+            'textarea': $compile(getTemplateByType('textarea'))
         };
 
         return {
             restrict: 'E',
-            require: 'ngModel',
             scope: {
+                //require
                 ngModel: '=',
+                ngModelOptions: '=?',
+                ngModelStr: '=?',
+                isNew: '=?',
                 isEdit: '=?',
-                uploader: '=',
+                modalObject: '=?',
+                modalOptions: '=?',
+                hasError: '=?',
+                ngDisabled: '=?',
+                defaultValue: '@',
                 //callbacks
                 ngChange: '&',
                 onSave: '&',
                 //sub
-                inputName: '@',
-                url: '@',
-                type: '@'
+                label: '@',
+                placeholder: '@',
+                name: '@',
+                width: '@',
+                required: '@',
+                type: '@' //text or textarea
             },
-            link: function (scope, element, attrs, ngModel) {
+            link: function (scope, element, attrs) {
+                scope.type = scope.type || 'text';
+                if(attrs.modalObject && scope.type == 'text')
+                    scope.type = "text_modal_link";
 
-                var template = typeTemplates[scope.type || 'file'],
+                var template = typeTemplates[scope.type],
                     templateElement;
 
                 template(scope, function (clonedElement, scope) {
@@ -1219,54 +1308,47 @@ angular
                     templateElement = null;
                 });
 
-                function initUploader(){
-                    scope.uploader = new FileUploader();
-                    scope.uploader.url = scope.url;
-                    scope.uploader.alias = scope.inputName;
-                    scope.uploader.autoUpload = true;
-                    scope.uploader.removeAfterUpload = true;
+                scope.$watch('hasError', function(hasError){
+                    scope.input_class = hasError ? "has-error" : '';
+                });
 
-                    scope.uploader.onAfterAddingFile = function(item){
-                        setImageSrc(item);
-                    };
-                    scope.uploader.onSuccessItem = function(item, response){
-                        if(!scope.ngModel)
-                            scope.ngModel = [];
-
-                        scope.ngModel.push(response);
-                        console.log(scope.ngModel);
-                    };
+                function setDefaultValue(){
+                    if(!scope.ngModel && scope.defaultValue)
+                        scope.ngModel = scope.defaultValue;
                 }
-
-                if(scope.isEdit)
-                    initUploader();
-
-                function setImageSrc (item){
-                    var reader = new FileReader();
-
-                    reader.onload = (function(theFile) {
-                        return function(e) {
-                            item.image_src = e.target.result;
-                            scope.$apply();
-                        };
-                    })(item._file);
-
-                    reader.readAsDataURL(item._file);
-                }
+                setDefaultValue();
+                //scope.$watch('ngModel', setDefaultValue);
+                //scope.$watch('defaultValue', setDefaultValue);
 
                 scope.save = function(){
+                    if(scope.required && !scope.ngModel){
+                        scope.input_class = "has-error";
+                        return;
+                    }
+
+                    scope.input_class = '';
                     if(scope.onSave)
                         $timeout(scope.onSave);
-                };
+                }
+            }
+        };
+    }]);
 
-                scope.$watch('ngModel', function(newVal){
-                    if(!newVal && scope.isEdit)
-                        initUploader();
-                });
-                scope.$watch('isEdit', function(newVal){
-                    if(newVal)
-                        initUploader();
-                })
+angular
+    .module('a-edit')
+    .directive('iconButton', ['$timeout', function($timeout) {
+        return {
+            restrict: 'E',
+            template: '<button type="button" class="btn btn-{{type}} btn-{{size || \'xs\'}}" ng-click="click()">' +
+            '<span class="glyphicon glyphicon-{{glyphicon}}" aria-hidden="true"></span>' +
+            '</button>',
+            scope: {
+                type: '@',
+                size: '@',
+                glyphicon: '@'
+            },
+            link: function (scope, element) {
+
             }
         };
     }]);
@@ -1274,105 +1356,35 @@ angular
 angular
     .module('a-edit')
 
-    .directive('aeObjectModal', ['$timeout', '$log', '$cacheFactory', 'AEditHelpers', 'AEditConfig', '$uibModal', function($timeout, $log, $cacheFactory, AEditHelpers, AEditConfig, $uibModal) {
-        var cache = $cacheFactory('aModal.Templates');
+    .directive('ngEnter', function() {
+        return function(scope, element, attrs) {
+            element.bind("keydown keypress", function(event) {
+                if(event.which === 13) {
+                    scope.$apply(function(){
+                        scope.$eval(attrs.ngEnter);
+                    });
 
+                    event.preventDefault();
+                }
+            });
+        };
+    });
+angular
+    .module('a-edit')
+    .directive('popoverImage', ['$timeout', '$filter', function($timeout, $filter) {
         return {
-            restrict: 'A',
+            restrict: 'E',
+            templateUrl: 'a-edit-popover-image.html',
             scope: {
                 //require
-                aeObjectModal: '=',
-                modalResourceOptions: '=?',
-                isEdit: '=?',
-                //callbacks
-                onSave: '&'
+                ngModel: '=',
+                text: '=?'
             },
-            link: function (scope, element, attrs) {
+            link: function (scope, element) {
+                scope.text = scope.text || scope.ngModel.name;
+                scope.image = scope.ngModel.image_src || scope.ngModel.file || scope.ngModel;
 
-                var resource_name = attrs.aeObjectModal + new Date().getTime();
-                scope.options = scope.modalResourceOptions || AEditConfig.current_options;
-
-                element.on("click", function () {
-                    var template = cache.get(resource_name) || '';
-                    if(!template){
-                        template +=
-                            '<div class="modal-header">' +
-                                '<button ng-click="cancel()" class="close pull-right"><span>&times;</span></button>' +
-                                '<h3 class="modal-title">Awesome modal!</h3>' +
-                            '</div>' +
-                            '<div class="modal-body">' +
-                                '<button type="button" class="btn btn-warning btn-sm pull-right" ng-click="object.is_edit = !object.is_edit">' +
-                                    '<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>' +
-                                '</button>' +
-                                '<dl class="dl-horizontal">';
-                        
-                        scope.options.fields.forEach(function(field){
-                            template += '<dt>' + field.label + '</dt>';
-                            template += '<dd>' + AEditHelpers.generateDirectiveByConfig(field, {
-                                item_name: 'object',
-                                lists_container: 'lists',
-                                already_modal: true
-                            }) + '</dd>';
-                        });
-                        
-                        template +=
-                                '</dl>' +
-                            '</div>' +
-                            '<div class="modal-footer">' +
-                                '<button class="btn btn-primary" type="button" ng-click="ok()">OK</button>' +
-                            '</div>';
-                            
-                        cache.put(resource_name, template);
-                    }
-
-                    var modalInstance = $uibModal.open({
-                        animation: true,
-                        template: template,
-                        resolve: {
-                            data: function () {
-                                return {
-                                    object: angular.copy(scope.aeObjectModal),
-                                    resource: scope.options.resource,
-                                    lists: scope.options.lists,
-                                    isEdit: scope.isEdit
-                                };
-                            }
-                        },
-                        controller: ['$scope', '$uibModalInstance', 'data', function($scope, $uibModalInstance, data) {
-                            angular.extend($scope, data);
-
-
-                            AEditHelpers.getResourceQuery(new scope.options.resource($scope.object), 'show').then(function(object){
-                                $scope.object = object;
-                                $scope.object.is_edit = data.isEdit;
-                                console.log('modal controller', $scope.object);
-                            });
-                            
-                            $scope.ok = function () {
-                                $scope.object.is_edit = false;
-                                $uibModalInstance.close($scope.object);
-                            };
-                            $scope.cancel = function () {
-                                $uibModalInstance.dismiss('cancel');
-                            };
-                        }],
-                        size: 'lg'
-                    });
-
-                    modalInstance.result.then(function (object) {
-                        angular.extend(scope.aeObjectModal, object);
-                        
-                        if(scope.onSave)
-                            $timeout(scope.onSave);
-                    }, function () {
-                        $log.info('Modal dismissed at: ' + new Date());
-                    });
-                });
-
-                scope.save = function(){
-                    if(scope.onSave)
-                        $timeout(scope.onSave);
-                }
+                scope.imagePopoverPath = 'a-edit-image-popover.html';
             }
         };
     }]);
