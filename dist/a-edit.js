@@ -885,35 +885,36 @@ angular
 
             var template = '' +
                 '<div class="select-input-container ' + uiSelect.subClasses + ' {{input_class}}">' +
-                '<span ng-if="!isEdit">{{selectedName}}</span>' +
-                '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
+                    '<span ng-if="!isEdit">{{selectedName}}</span>' +
+                    '<input type="hidden" name="{{name}}" ng-bind="ngModel" class="form-control" required />' +
 
-                '<div ng-if="isEdit">' +
-                '<ui-select ' + uiSelect.attributes + ' ng-model="options.value" ng-click="changer()" class="input-small" reset-search-input="{{resetSearchInput}}" on-select="onSelectItem($select)">' +
-                '<ui-select-match placeholder="">' +
-                '<a class="close clear-btn" ng-click="clearInput($event)"><span>×</span></a>' +
-                '{{' + uiSelect.match + '}}' +
-                '</ui-select-match>' +
+                    '<div ng-if="isEdit">' +
+                        '<ui-select ' + uiSelect.attributes + ' ng-model="options.value" ng-click="changer()" class="input-small" reset-search-input="{{resetSearchInput}}" on-select="onSelectItem($select)">' +
+                            '<ui-select-match placeholder="">' +
+                                '<a class="close clear-btn" ng-click="clearInput($event)"><span>×</span></a>' +
+                                '{{' + uiSelect.match + '}}' +
+                            '</ui-select-match>' +
 
-                '<ui-select-choices refresh="getListByResource($select.search)" refresh-delay="{{refreshDelay}}" repeat="' + (uiSelect.itemId ? uiSelect.itemId + ' as ' : '') + 'item in $parent.local_list | filter: $select.search track by $index">' +
-                '<div ng-bind-html="' + uiSelect.itemName + ' | highlight: $select.search"></div>' +
-                '</ui-select-choices>' +
-                '</ui-select>';
+                            '<ui-select-choices refresh="getListByResource($select.search)" refresh-delay="{{refreshDelay}}" repeat="' + (uiSelect.itemId ? uiSelect.itemId + ' as ' : '') + 'item in $parent.local_list | filter: $select.search track by $index">' +
+                                '<div ng-bind-html="' + uiSelect.itemName + ' | highlight: $select.search"></div>' +
+                            '</ui-select-choices>' +
+                        '</ui-select>';
 
             if(options.adder){
                 template += '' +
-                    '<button type="button" class="btn btn-success" ng-click="popover.is_open = true"' +
-                    ' uib-popover-template="popover.template_name"' +
-                    ' uib-popover-title="Add object"' +
-                    ' popover-placement="top"' +
-                    ' popover-append-to-body="true"' +
-                    ' popover-is-open="popover.is_open"' +
-                    ' popover-trigger="none">' +
-                    '<span class="glyphicon glyphicon-plus"></span>' +
-                    '</button>';
+                        '<button type="button" class="btn btn-success" ng-click="popover.is_open = true"' +
+                            ' uib-popover-template="popover.template_name"' +
+                            ' uib-popover-title="Add object"' +
+                            ' popover-placement="top"' +
+                            ' popover-append-to-body="true"' +
+                            ' popover-is-open="popover.is_open"' +
+                            ' popover-trigger="none">' +
+                                '<span class="glyphicon glyphicon-plus"></span>' +
+                        '</button>';
             }
 
-            template += '</div>' +
+            template +=
+                    '</div>' +
                 '</div>';
             return template;
         }
@@ -1238,16 +1239,13 @@ angular
 
             inputTagBegin += 'ng-change="ngChange()" ';
 
-            inputTagBegin = '<md-input-container flex="grow"><label>{{$parent.label}}</label>' + inputTagBegin;
-            inputTagEnd += '</md-input-container>';
-
             return '' +
                 '<div ng-if="!isEdit">' +
                 text +
                 '</div>' +
-                '<div ng-if="isEdit" ng-class="input_class" layout>' +
+                '<div ng-if="isEdit" ng-class="input_class">' +
                 inputTagBegin +
-                ' placeholder="{{$parent.placeholder}}" ' +
+                ' class="form-control input-sm" placeholder="{{$parent.placeholder}}"' +
                 ' ng-model="$parent.ngModel" ' + (type != 'textarea' ? 'ng-enter="$parent.save()"' : '') +
                 ' ng-model-options="$parent.ngModelOptions || {}"' +
                 ' ng-style="{ \'width\' : $parent.width + \'px\'}"' +
@@ -1281,7 +1279,6 @@ angular
                 ngChange: '&',
                 onSave: '&',
                 //sub
-                label: '@',
                 placeholder: '@',
                 name: '@',
                 width: '@',
@@ -1332,7 +1329,7 @@ angular
                 }
             }
         };
-    }]);
+    }])
 
 angular
     .module('a-edit')
