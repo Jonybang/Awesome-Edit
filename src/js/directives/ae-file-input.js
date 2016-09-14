@@ -17,13 +17,13 @@ angular
                     '</ul>';
             }
 
-            result +=   '<ul ng-if="isEdit" class="list-unstyled">' +
+            result +=   '<ul ng-if="!viewMode" class="list-unstyled">' +
                 '<li ng-repeat="item in uploader.queue">' +
                 '<popover-image ng-model="item.file" text="item.file.name"></popover-image>' +
                 '<a href ng-click="item.remove()"><span class="glyphicon glyphicon-remove"></span></a>' +
                 '</li>' +
                 '</ul>' +
-                '<span ng-if="isEdit && uploader" class="btn btn-sm btn-default btn-file">' +
+                '<span ng-if="!viewMode && uploader" class="btn btn-sm btn-default btn-file">' +
                 'Р—Р°РіСЂСѓР·РёС‚СЊ' +
                 '<input type="file" nv-file-select uploader="uploader" ' + (type == 'multifile' ? 'multiple': '') + ' />' +
                 '</span>';
@@ -41,7 +41,7 @@ angular
             require: 'ngModel',
             scope: {
                 ngModel: '=',
-                isEdit: '=?',
+                viewMode: '=?',
                 uploader: '=',
                 //callbacks
                 ngChange: '&',
@@ -87,7 +87,7 @@ angular
                     };
                 }
 
-                if(scope.isEdit)
+                if(!scope.viewMode)
                     initUploader();
 
                 function setImageSrc (item){
@@ -109,11 +109,11 @@ angular
                 };
 
                 scope.$watch('ngModel', function(newVal){
-                    if(!newVal && scope.isEdit)
+                    if(!newVal && !scope.viewMode)
                         initUploader();
                 });
-                scope.$watch('isEdit', function(newVal){
-                    if(newVal)
+                scope.$watch('viewMode', function(newVal){
+                    if(!newVal)
                         initUploader();
                 })
             }

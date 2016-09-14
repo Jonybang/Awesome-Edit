@@ -7,12 +7,13 @@ angular
             scope: {
                 //require
                 ngModel: '=',
-                isEdit: '=',
+                viewMode: '=',
                 //callbacks
                 ngChange: '&',
                 onSave: '&',
                 //sub
-                name: '@'
+                name: '@',
+                label: '@'
             },
             link: function (scope, element) {
 

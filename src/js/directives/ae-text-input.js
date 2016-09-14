@@ -28,10 +28,10 @@ angular
             inputTagEnd += '</md-input-container>';
 
             return '' +
-                '<div ng-if="!isEdit">' +
+                '<div ng-if="viewMode">' +
                 text +
                 '</div>' +
-                '<div ng-if="isEdit" ng-class="input_class" layout>' +
+                '<div ng-if="!viewMode" ng-class="input_class" layout>' +
                 inputTagBegin +
                 ' placeholder="{{$parent.placeholder}}" ' +
                 ' ng-model="$parent.ngModel" ' + (type != 'textarea' ? 'ng-enter="$parent.save()"' : '') +
@@ -57,7 +57,7 @@ angular
                 ngModelOptions: '=?',
                 ngModelStr: '=?',
                 isNew: '=?',
-                isEdit: '=?',
+                viewMode: '=?',
                 modalObject: '=?',
                 modalOptions: '=?',
                 hasError: '=?',

@@ -10,7 +10,7 @@ angular
                 //require
                 aeObjectModal: '=',
                 modalResourceOptions: '=?',
-                isEdit: '=?',
+                viewMode: '=?',
                 //callbacks
                 onSave: '&'
             },
@@ -61,7 +61,7 @@ angular
                                     object: angular.copy(scope.aeObjectModal),
                                     resource: scope.options.resource,
                                     lists: scope.options.lists,
-                                    isEdit: scope.isEdit
+                                    viewMode: scope.viewMode
                                 };
                             }
                         },
@@ -71,7 +71,7 @@ angular
 
                             AEditHelpers.getResourceQuery(new scope.options.resource($scope.object), 'show').then(function(object){
                                 $scope.object = object;
-                                $scope.object.is_edit = data.isEdit;
+                                $scope.object.is_edit = data.viewMode;
                                 console.log('modal controller', $scope.object);
                             });
                             
