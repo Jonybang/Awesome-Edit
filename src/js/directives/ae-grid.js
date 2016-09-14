@@ -150,6 +150,7 @@ angular
                             readonly: field.readonly || !scope.actualOptions.edit,
                             always_edit: is_new,
                             is_new: is_new,
+                            no_label: true,
                             list_variable: list_variable,
                             get_list: false,
                             ajax_search: AEditConfig.search

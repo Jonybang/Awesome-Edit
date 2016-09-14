@@ -13,7 +13,7 @@ angular
                 //subClasses: ''
             };
 
-            var template = '<label>{{label}}</label>';
+            var template = '<label ng-if="!viewMode">{{label}}</label>';
             if(type == 'select') {
                 template += '<span ng-if="viewMode">{{getNameFromObj(options.selected)}}</span>';
             }

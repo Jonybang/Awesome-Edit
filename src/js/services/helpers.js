@@ -87,7 +87,7 @@ angular.module('a-edit')
                     'ng-model-str="' + item_name + '.' +  field_name + '_str" ' +
                     'ng-model-sub-str="' + item_name + '.' +  field_name + '_sub_str" ' +
                     (field.default_value ? 'default-value="' + field.default_value + '" ' : '') +
-                    'label="' + field.label + '" '+
+                    (config.no_label ? '' : 'label="' + field.label + '" ' )+
                     'view-mode="!' + is_edit + '" '+
                     'is-new="' + (config.is_new ? 'true': 'false') + '" '+
                     'placeholder="' + ((config.always_edit ? field.new_placeholder : field.placeholder) || '') + '" ';
