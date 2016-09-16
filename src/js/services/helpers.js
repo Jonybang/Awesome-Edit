@@ -46,8 +46,8 @@ angular.module('a-edit')
                 output += 'type="' + (field.type || '') + '" ' +
                     'input-name="' + (field.input_name || '') + '" ';
 
-                if(field.width)
-                    output += 'width="' + field.width + '" ';
+                //if(field.width)
+                 //   output += 'width="' + field.width + '" ';
 
                 if(field.required)
                     output += 'required="true" ';
@@ -156,7 +156,7 @@ angular.module('a-edit')
                 }
                 return true;
             },
-            getNameById: function (list, val, nameField, orNameField){
+            getNameById: function(list, val, nameField, orNameField){
                 var resultName = '';
 
                 if(!list || !list.length)
@@ -169,6 +169,9 @@ angular.module('a-edit')
                     return result;
                 });
                 return resultName;
+            },
+            round5: function(x){
+                return Math.floor(x/5)*5;
             }
         };
 

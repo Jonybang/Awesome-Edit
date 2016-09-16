@@ -71,35 +71,55 @@ angular
                         scope.getList();
                 }
 
-                var tplSearch =
-                    '<div class="input-group">' +
-                        '<input type="text" class="form-control" ng-model="searchQuery" placeholder="Search" ng-model-options="{ debounce: ' + scope.actualOptions.search_debounce + ' }"/>' +
-                        '<span class="input-group-btn">' +
-                            '<button class="btn btn-default" ng-click="clearSearch()"><i class="glyphicon glyphicon-remove"></i></button>' +
-                        '</span>' +
-                    '</div>';
+
+                var tplHtml = '' +
+                    '<md-content layout="column" flex="grow" layout-wrap class="padding">' +
+                    '   <md-list flex>' +
+                    '       <md-subheader class="md-no-sticky">';
+
+                if(scope.actualOptions.search){
+                    tplHtml +=
+                        '       <md-input-container class="md-block no-margin" flex="grow">' +
+                        '           <label>Поиск</label>' +
+                        '           <input ng-model="searchQuery" ng-change="getFiles()"  ng-model-options="{ debounce: ' + scope.actualOptions.search_debounce + ' }">' +
+                        '       </md-input-container>';
+                }
+
+                tplHtml += '' +
+                    '           <span>{{actualOptions.caption}}</span>' +
+                    '       </md-subheader>';
 
                 var tplHead =
-                    '<table class="table table-hover bootstrap-table">' +
-                        '<caption>{{actualOptions.caption}}</caption>' +
-                        '<thead>' +
-                            '<tr>';
+                    '<md-list-item class="md-1-line">' +
+                    '   <md-grid-list>';
 
                 var tplBodyNewItem =
-                        '<tbody>' +
-                            '<tr>';
+                        '<md-list-item class="md-1-line">' +
+                        '   <md-content layout="row" flex="grow">' +
+                        '       <md-grid-list>';
 
                 if(!scope.actualOptions.track_by)
                     scope.actualOptions.track_by = mode == 'remote' ? 'id' : 'json_id';
 
                 var tplBodyItem =
-                        '<tbody>' +
-                            '<tr ng-repeat="item in filtredList track by item.' + scope.actualOptions.track_by + '">';
+                        '<md-list-item class="md-1-line word-wrap" ng-repeat="item in filtredList track by item.' + scope.actualOptions.track_by + '">' +
+                        '   <md-content layout layout-fill layout-align="center" flex="grow">' +
+                        '       <md-grid-list>';
 
+                var tableFieldsCount = 0;
+                scope.actualOptions.fields.forEach(function(field){
+                    if(!field.table_hide)
+                        tableFieldsCount++;
+                });
+                //var defaultWidth = Math.ceil(100 / tableFieldsCount-1);
+                var defaultWidth = AEditHelpers.round5(100 / tableFieldsCount);
 
                 var select_list_request_options = {};
                 select_list_request_options[variables['limit']] = scope.gridOptions.select_options.items_per_page;
                 scope.actualOptions.fields.forEach(function(field, index){
+                    if(!field.width)
+                        field.width = defaultWidth;
+
                     if(field.resource && field.list && field.list != 'self'){
                         if(!scope.actualOptions.lists[field.list]){
                             scope.actualOptions.lists[field.list] = [];
@@ -120,18 +140,20 @@ angular
                         scope[field.name + '_fields'] = field.fields;
                     }
 
-                    var headerEl = scope.actualOptions.bold_headers ? 'th' : 'td';
-                    tplHead += '<' + headerEl + '>' + field.label + '</' + headerEl + '>';
-
-                    var style = 'style="';
-                    if(field.width)
-                        style += 'width:' + field.width + ';';
-                    style += '"';
+                    tplHead +=
+                        '<md-grid-tile flex="{{actualOptions.fields[' + index + '].width}}"><sorting ng-model="ajaxGrid.sorting.' + field.name + '" ng-change="getFiles()">' + field.label + '</sorting></md-grid-tile>';
+                    //
+                    //var style = 'style="';
+                    //if(field.width)
+                    //    style += 'width:' + field.width + ';';
+                    //style += '"';
 
                     //for new item row
-                    tplBodyNewItem += '<td ' + style + ' ><div ' + style + ' >';
+                    tplBodyNewItem +=
+                        '<div flex="{{actualOptions.fields[' + index + '].width}}">';
                     //for regular item row
-                    tplBodyItem += '<td ' + style + ' ng-dblclick="item.is_edit = !item.is_edit"><div ' + style + ' >';
+                    tplBodyItem +=
+                        '<div flex="{{actualOptions.fields[' + index + '].width}}" ng-dblclick="item.is_edit = !item.is_edit">';
 
                     function getFieldDirective(is_new) {
                         var item_name = (is_new ? 'new_' : '' ) + 'item';
@@ -157,37 +179,46 @@ angular
                         });
                     }
 
-                    tplBodyNewItem += getFieldDirective(true) + '</div></td>';
-                    tplBodyItem += getFieldDirective(false) + '</div></td>';
+                    tplBodyNewItem += getFieldDirective(true) +
+                        '</div>';
+                    tplBodyItem += getFieldDirective(false) +
+                        '</div>';
                 });
 
                 if(scope.actualOptions.edit){
                     tplHead +=
-                        '<th class="controls"></th>';
+                        '<div flex></div>';
 
                     tplBodyNewItem +=
-                        '<td class="controls">' +
-                            '<icon-button type="primary" glyphicon="floppy-disk" ng-click="save(new_item)" size="sm"></icon-button>' +
-                        '</td>';
+                        '<div flex>' +
+                            '<md-button class="md-fab md-mini md-primary" ng-click="save(new_item)">' +
+                                '<md-icon>save</md-icon>' +
+                            '</md-button>' +
+                        '</div>';
 
                     tplBodyItem +=
-                        '<td class="controls">' +
-                            '<icon-button ng-show="item.is_edit" type="primary" glyphicon="floppy-disk" ng-click="save(item)"></icon-button>' +
-                            '<icon-button ng-hide="item.is_edit" type="warning" glyphicon="pencil" ng-click="item.is_edit = true"></icon-button>' +
-                            ( scope.actualOptions.delete ? '<icon-button type="danger" glyphicon="remove" ng-click="deleteConfirm(item)"></icon-button>' : '' ) +
-                        '</td>';
+                        '<div flex>' +
+                            '<md-menu>' +
+                                '<md-button class="md-icon-button" ng-click="$mdOpenMenu($event)"><md-icon md-menu-origin>more_vert</md-icon></md-button>' +
+                                '<md-menu-content width="4">' +
+                                    '<md-menu-item ng-show="item.is_edit"><md-button ng-click="save(item)"><md-icon md-menu-align-target>save</md-icon>Save</md-button></md-menu-item>' +
+                                    '<md-menu-item ng-hide="item.is_edit"><md-button ng-click="item.is_edit = true"><md-icon md-menu-align-target>mode_edit</md-icon>Edit</md-button></md-menu-item>' +
+                                    (scope.actualOptions.delete ? '<md-menu-item><md-button ng-click="deleteConfirm(item)"><md-icon md-menu-align-target>delete</md-icon>Delete</md-button></md-menu-item>' : '') +
+                                '</md-menu-content>' +
+                            '</md-menu>' +
+                        '</div>';
                 }
 
-                tplHead +='</tr></thead>';
+                tplHead +=
+                    '</md-list-item>';
 
-                tplBodyNewItem +='</tr>';
+                tplBodyNewItem +=
+                        '</md-content>' +
+                    '</md-list-item>';
 
-                tplBodyItem +='</tr></tbody></table>';
-
-                var tplHtml = '';
-
-                if(scope.actualOptions.search)
-                    tplHtml += tplSearch;
+                tplBodyItem +=
+                        '</md-content>' +
+                    '</md-list-item>';
 
                 var tableHtml = '';
 
@@ -209,7 +240,7 @@ angular
 
                 angular.element(element).html('');
 
-                var template = angular.element('<div>' + tplHtml + tableHtml + '</div>');
+                var template = angular.element('<md-content layout flex>' + tplHtml + tableHtml + '</md-content>');
 
                 angular.element(element).append($compile(template)(scope));
             });
