@@ -90,6 +90,7 @@ angular.module('a-edit')
                     (config.no_label ? '' : 'label="' + field.label + '" ' )+
                     'view-mode="!' + is_edit + '" '+
                     'is-new="' + (config.is_new ? 'true': 'false') + '" '+
+                    'ng-class="{\'edit\':' + (config.is_new ? 'true': is_edit) + '}" '+
                     'placeholder="' + ((config.always_edit ? field.new_placeholder : field.placeholder) || '') + '" ';
 
                 if(directive == 'ae-file-upload')

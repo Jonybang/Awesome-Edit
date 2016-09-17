@@ -49,3 +49,39 @@ pre {
 .ui-select-multiple.ui-select-bootstrap input.ui-select-search {
   width: 100% !important;
 }
+ae-grid md-list-item > .md-button.md-no-style > .md-list-item-inner > md-content,
+ae-grid md-list-item > md-content{
+  background: transparent;
+  overflow-y: hidden;
+}
+md-grid-list figure {
+  text-align: left;
+}
+md-grid-list md-grid-tile ae-select-input.edit {
+  position: relative;
+  top: -1px;
+}
+md-grid-tile ae-select-input label {
+  display: none;
+}
+md-grid-list md-grid-tile ae-select-input.edit md-autocomplete {
+  min-width: 10px;
+}
+md-grid-list md-grid-tile ae-text-input.edit {
+  position: relative;
+  top: 17px;
+}
+md-grid-tile ae-text-input:not(.edit),
+md-grid-tile ae-select-input:not(.edit){
+  line-height: 1;
+  display: block!important;
+  text-align: center;
+}
+input:focus,
+select:focus,
+textarea:focus,
+button:focus,
+figure:focus,
+md-grid-tile:focus{
+  outline: none;
+}
