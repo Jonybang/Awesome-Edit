@@ -93,8 +93,11 @@ angular
 
                 var tableFieldsCount = 1;
                 scope.actualOptions.fields.forEach(function(field){
+                    if(!field.colspan)
+                        field.colspan = 1;
+
                     if(!field.table_hide)
-                        tableFieldsCount++;
+                        tableFieldsCount += field.colspan;
                 });
 
                 var md_grid_list = '<md-grid-list flex="grow" md-cols="' + tableFieldsCount + '" md-row-height="' + scope.actualOptions.row_height + '">';
@@ -141,7 +144,7 @@ angular
                     }
 
                     tplHead +=
-                        '<md-grid-tile><sorting ng-model="ajaxGrid.sorting.' + field.name + '" ng-change="getFiles()">' + field.label + '</sorting></md-grid-tile>';
+                        '<md-grid-tile md-colspan="' + field.colspan + '"><sorting ng-model="ajaxGrid.sorting.' + field.name + '" ng-change="getFiles()">' + field.label + '</sorting></md-grid-tile>';
                     //
                     //var style = 'style="';
                     //if(field.width)
@@ -150,10 +153,10 @@ angular
 
                     //for new item row
                     tplBodyNewItem +=
-                        '<md-grid-tile>';
+                        '<md-grid-tile md-colspan="' + field.colspan + '">';
                     //for regular item row
                     tplBodyItem +=
-                        '<md-grid-tile ng-dblclick="editItem(item)">';
+                        '<md-grid-tile md-colspan="' + field.colspan + '" ng-dblclick="editItem(item)">';
 
                     function getFieldDirective(is_new) {
                         var item_name = (is_new ? 'new_' : '' ) + 'item';
