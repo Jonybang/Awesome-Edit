@@ -931,7 +931,7 @@ angular
             };
 
             var template = '<label ng-if="!viewMode">{{label}}</label>';
-            if(type == 'select') {
+            if(type == 'select' || type == 'textselect') {
                 template += '<span ng-if="viewMode">{{getNameFromObj(options.selected)}}</span>';
             }
 
@@ -945,7 +945,7 @@ angular
 
             template +=
                         '<md-autocomplete ' +
-                            (type == 'select' ? 'ng-if="!viewMode" md-selected-item="$parent.options.selected" ' : ' ') +
+                            (type == 'select' || type == 'textselect' ? 'ng-if="!viewMode" md-selected-item="$parent.options.selected" ' : ' ') +
                             'md-search-text="options.search" ' +
                             'md-items="item in local_list" ' +
                             'ng-disabled="ngDisabled" ' +
@@ -1054,6 +1054,8 @@ angular
                         scope.fakeModel =  scope.options.selected ?  scope.options.selected.id : null;
                     } else if(scope.type == 'multiselect'){
                         scope.fakeModel = scope.options.selected ?  scope.options.selected.map(function(item){return item.id;}) : [];
+                    } else if(scope.type == 'textselect'){
+                        scope.fakeModel = scope.options.selected;
                     }
 
                     scope.ngModel = scope.fakeModel;
@@ -1121,7 +1123,7 @@ angular
                         return;
 
                     if(scope.type == 'textselect'){
-                        scope.selectedName = scope.ngModel ? scope.ngModel : '';
+                        scope.options.selected = scope.ngModel ? scope.ngModel : '';
                         return;
                     }
 
@@ -1172,6 +1174,9 @@ angular
                 scope.getNameFromObj = function(obj){
                     if(!obj)
                         return '';
+
+                    if(scope.type == 'textselect')
+                        return obj;
 
                     return obj[scope.nameField] || obj.name || obj[scope.orNameField];
                 };
