@@ -471,10 +471,11 @@ angular
                             '<md-menu>' +
                                 '<md-button class="md-icon-button" ng-click="$mdOpenMenu($event)"><md-icon md-menu-origin>more_vert</md-icon></md-button>' +
                                 '<md-menu-content width="4">' +
-                                    '<md-menu-item ng-show="item.is_edit"><md-button ng-click="save(item)"><md-icon md-menu-align-target>save</md-icon>Save</md-button></md-menu-item>' +
-                                    '<md-menu-item ng-show="item.is_edit"><md-button ng-click="editItem(item)"><md-icon md-menu-align-target>settings_backup_restore</md-icon>Cancel edit</md-button></md-menu-item>' +
-                                    '<md-menu-item ng-hide="item.is_edit"><md-button ng-click="item.is_edit = true"><md-icon md-menu-align-target>mode_edit</md-icon>Edit</md-button></md-menu-item>' +
-                                    (scope.actualOptions.delete ? '<md-menu-item><md-button ng-click="deleteConfirm(item)"><md-icon md-menu-align-target>delete</md-icon>Delete</md-button></md-menu-item>' : '') +
+                                    '<md-menu-item ng-show="item.id"><md-button ng-click="save(item)" ae-object-modal="item" modal-resource-options="actualOptions" on-save="save(item)"><md-icon>open_in_new</md-icon>Open</md-button></md-menu-item>' +
+                                    '<md-menu-item ng-show="item.is_edit"><md-button ng-click="save(item)"><md-icon>save</md-icon>Save</md-button></md-menu-item>' +
+                                    '<md-menu-item ng-show="item.is_edit"><md-button ng-click="editItem(item)"><md-icon>settings_backup_restore</md-icon>Cancel edit</md-button></md-menu-item>' +
+                                    '<md-menu-item ng-hide="item.is_edit"><md-button ng-click="item.is_edit = true"><md-icon>mode_edit</md-icon>Edit</md-button></md-menu-item>' +
+                                    (scope.actualOptions.delete ? '<md-menu-item><md-button ng-click="deleteConfirm(item)"><md-icon>delete</md-icon>Delete</md-button></md-menu-item>' : '') +
                                 '</md-menu-content>' +
                             '</md-menu>' +
                         '</md-grid-tile>';
@@ -806,7 +807,7 @@ angular
 angular
     .module('a-edit')
 
-    .directive('aeObjectModal', ['$timeout', '$log', '$cacheFactory', 'AEditHelpers', 'AEditConfig', '$uibModal', function($timeout, $log, $cacheFactory, AEditHelpers, AEditConfig, $uibModal) {
+    .directive('aeObjectModal', ['$timeout', '$log', '$cacheFactory', 'AEditHelpers', 'AEditConfig', '$mdDialog', function($timeout, $log, $cacheFactory, AEditHelpers, AEditConfig, $mdDialog) {
         var cache = $cacheFactory('aModal.Templates');
 
         return {
@@ -826,72 +827,77 @@ angular
 
                 element.on("click", function () {
                     var template = cache.get(resource_name) || '';
+                    //'<button ng-click="cancel()" class="close pull-right"><span>&times;</span></button>' +
                     if(!template){
                         template +=
-                            '<div class="modal-header">' +
-                                '<button ng-click="cancel()" class="close pull-right"><span>&times;</span></button>' +
-                                '<h3 class="modal-title">Awesome modal!</h3>' +
-                            '</div>' +
-                            '<div class="modal-body">' +
-                                '<button type="button" class="btn btn-warning btn-sm pull-right" ng-click="object.is_edit = !object.is_edit">' +
-                                    '<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>' +
-                                '</button>' +
-                                '<dl class="dl-horizontal">';
+                            '<md-dialog class="ae-object-modal">' +
+                                '<md-toolbar>' +
+                                    '<div class="md-toolbar-tools">' +
+                                        '<h3>Awesome modal!</h3>' +
+
+                                        '<span flex></span>' +
+
+                                        '<md-button class="md-icon-button" ng-click="object.is_edit = !object.is_edit">' +
+                                            '<md-icon>mode_edit</md-icon>' +
+                                        '</md-button>' +
+                                    '</div>' +
+                                '</md-toolbar>' +
+                                '<md-dialog-content class="padding">';
                         
                         scope.options.fields.forEach(function(field){
-                            template += '<dt>' + field.label + '</dt>';
-                            template += '<dd>' + AEditHelpers.generateDirectiveByConfig(field, {
+                            template += '<md-content flex="grow" layout>';
+
+                            template += '<div layout="column" layout-align="center" flex="30" style="text-align: right" class="padding"><label>' + field.label + '</label></div>';
+                            template += '<div layout="column" layout-align="center" flex="70" class="padding">' + AEditHelpers.generateDirectiveByConfig(field, {
                                 item_name: 'object',
                                 lists_container: 'lists',
-                                already_modal: true
-                            }) + '</dd>';
+                                already_modal: true,
+                                no_label: true
+                            }) + '</div>';
+
+                            template += '</md-content>';
                         });
                         
                         template +=
-                                '</dl>' +
-                            '</div>' +
-                            '<div class="modal-footer">' +
-                                '<button class="btn btn-primary" type="button" ng-click="ok()">OK</button>' +
-                            '</div>';
+                                '</md-dialog-content>' +
+                                '<md-dialog-actions>' +
+                                    '<md-button ng-click="ok()" class="md-primary">OK</md-button>' +
+                                '</md-dialog-actions>' +
+                            '</md-dialog>';
                             
                         cache.put(resource_name, template);
                     }
 
-                    var modalInstance = $uibModal.open({
-                        animation: true,
+                    var modalInstance = $mdDialog.show({
+                        clickOutsideToClose: true,
                         template: template,
-                        resolve: {
-                            data: function () {
-                                return {
-                                    object: angular.copy(scope.aeObjectModal),
-                                    resource: scope.options.resource,
-                                    lists: scope.options.lists,
-                                    viewMode: scope.viewMode
-                                };
+                        locals: {
+                            data: {
+                                object: angular.copy(scope.aeObjectModal),
+                                resource: scope.options.resource,
+                                lists: scope.options.lists,
+                                viewMode: scope.viewMode
                             }
                         },
-                        controller: ['$scope', '$uibModalInstance', 'data', function($scope, $uibModalInstance, data) {
+                        controller: ['$scope', '$mdDialog', 'data', function($scope, $mdDialog, data) {
                             angular.extend($scope, data);
-
 
                             AEditHelpers.getResourceQuery(new scope.options.resource($scope.object), 'show').then(function(object){
                                 $scope.object = object;
                                 $scope.object.is_edit = data.viewMode;
-                                console.log('modal controller', $scope.object);
                             });
                             
                             $scope.ok = function () {
                                 $scope.object.is_edit = false;
-                                $uibModalInstance.close($scope.object);
+                                $mdDialog.hide($scope.object);
                             };
                             $scope.cancel = function () {
-                                $uibModalInstance.dismiss('cancel');
+                                $mdDialog.cancel();
                             };
-                        }],
-                        size: 'lg'
+                        }]
                     });
 
-                    modalInstance.result.then(function (object) {
+                    modalInstance.then(function (object) {
                         angular.extend(scope.aeObjectModal, object);
                         
                         if(scope.onSave)

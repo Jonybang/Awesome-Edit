@@ -61,7 +61,9 @@ md-grid-list md-grid-tile ae-select-input.edit {
   position: relative;
   top: -1px;
 }
-md-grid-tile ae-select-input label {
+md-grid-tile ae-select-input label,
+.ae-object-modal ae-select-input label,
+.ae-object-modal ae-text-input label {
   display: none;
 }
 md-grid-list md-grid-tile ae-select-input.edit md-autocomplete {
@@ -84,4 +86,10 @@ button:focus,
 figure:focus,
 md-grid-tile:focus{
   outline: none;
+}
+.padding {
+  padding: 8px;
+}
+.ae-object-modal {
+  min-width: 700px;
 }

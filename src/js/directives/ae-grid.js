@@ -204,10 +204,11 @@ angular
                             '<md-menu>' +
                                 '<md-button class="md-icon-button" ng-click="$mdOpenMenu($event)"><md-icon md-menu-origin>more_vert</md-icon></md-button>' +
                                 '<md-menu-content width="4">' +
-                                    '<md-menu-item ng-show="item.is_edit"><md-button ng-click="save(item)"><md-icon md-menu-align-target>save</md-icon>Save</md-button></md-menu-item>' +
-                                    '<md-menu-item ng-show="item.is_edit"><md-button ng-click="editItem(item)"><md-icon md-menu-align-target>settings_backup_restore</md-icon>Cancel edit</md-button></md-menu-item>' +
-                                    '<md-menu-item ng-hide="item.is_edit"><md-button ng-click="item.is_edit = true"><md-icon md-menu-align-target>mode_edit</md-icon>Edit</md-button></md-menu-item>' +
-                                    (scope.actualOptions.delete ? '<md-menu-item><md-button ng-click="deleteConfirm(item)"><md-icon md-menu-align-target>delete</md-icon>Delete</md-button></md-menu-item>' : '') +
+                                    '<md-menu-item ng-show="item.id"><md-button ng-click="save(item)" ae-object-modal="item" modal-resource-options="actualOptions" on-save="save(item)"><md-icon>open_in_new</md-icon>Open</md-button></md-menu-item>' +
+                                    '<md-menu-item ng-show="item.is_edit"><md-button ng-click="save(item)"><md-icon>save</md-icon>Save</md-button></md-menu-item>' +
+                                    '<md-menu-item ng-show="item.is_edit"><md-button ng-click="editItem(item)"><md-icon>settings_backup_restore</md-icon>Cancel edit</md-button></md-menu-item>' +
+                                    '<md-menu-item ng-hide="item.is_edit"><md-button ng-click="item.is_edit = true"><md-icon>mode_edit</md-icon>Edit</md-button></md-menu-item>' +
+                                    (scope.actualOptions.delete ? '<md-menu-item><md-button ng-click="deleteConfirm(item)"><md-icon>delete</md-icon>Delete</md-button></md-menu-item>' : '') +
                                 '</md-menu-content>' +
                             '</md-menu>' +
                         '</md-grid-tile>';
