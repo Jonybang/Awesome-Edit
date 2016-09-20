@@ -337,9 +337,8 @@ angular
                         scope.getList();
                 }
 
-
                 var tplHtml = '' +
-                    '<md-content layout="row" flex="grow" layout-wrap class="padding">' +
+                    '<md-content layout="row" flex="grow" layout-wrap class="padding ae-grid">' +
                     '   <md-list flex>' +
                     '       <md-subheader class="md-no-sticky">';
 
@@ -386,6 +385,7 @@ angular
 
                 var select_list_request_options = {};
                 select_list_request_options[variables['limit']] = scope.select_options.items_per_page;
+
                 scope.actualOptions.fields.forEach(function(field, index){
 
                     if(field.resource && field.list && field.list != 'self'){
@@ -409,7 +409,7 @@ angular
                     }
 
                     tplHead +=
-                        '<md-grid-tile md-colspan="' + field.colspan + '"><sorting ng-model="ajaxGrid.sorting.' + field.name + '" ng-change="getFiles()">' + field.label + '</sorting></md-grid-tile>';
+                        '<md-grid-tile md-colspan="' + field.colspan + '"><sorting ng-model="ajaxList.sorting.' + field.name + '" ng-change="getList()">' + field.label + '</sorting></md-grid-tile>';
                     //
                     //var style = 'style="';
                     //if(field.width)
@@ -480,15 +480,18 @@ angular
                 }
 
                 tplHead +=
-                    '</md-list-item>';
+                    '</md-grid-list>' +
+                '</md-list-item>';
 
                 tplBodyNewItem +=
-                        '</md-content>' +
-                    '</md-list-item>';
+                        '</md-grid-list>' +
+                    '</md-content>' +
+                '</md-list-item>';
 
                 tplBodyItem +=
-                        '</md-content>' +
-                    '</md-list-item>';
+                        '</md-grid-list>' +
+                    '</md-content>' +
+                '</md-list-item>';
 
                 var tableHtml = '';
 
@@ -512,6 +515,7 @@ angular
                     tplHtml += '<ae-paging ng-model="ajaxList.paging" ng-change="getList()"></ae-paging>';
                 }
 
+                console.log(tplHtml);
                 angular.element(element).html('');
 
                 var template = angular.element('<md-content layout="column" flex>' + tplHtml + '</md-content>');
