@@ -1,7 +1,7 @@
 angular
     .module('a-edit')
 
-    .directive('aeSelectInput', ['$timeout', '$compile', '$templateCache', '$mdDialog', 'AEditHelpers' ,'AEditConfig', function($timeout, $compile, $templateCache, $mdDialog, AEditHelpers, AEditConfig) {
+    .directive('aeSelectInput', ['$timeout', '$compile', '$templateCache', '$mdPanel', 'AEditHelpers' ,'AEditConfig', function($timeout, $compile, $templateCache, $mdPanel, AEditHelpers, AEditConfig) {
         function getTemplateByType(type, options){
             options = options || {};
 
@@ -29,8 +29,9 @@ angular
             template +=
                         '<md-autocomplete ' +
                             (type == 'select' || type == 'textselect' ? 'ng-if="!viewMode" md-selected-item="$parent.options.selected" ' : ' ') +
+                            'id="{{id}}" ' +
                             'md-search-text="options.search" ' +
-                            'md-items="item in local_list" ' +
+                            'md-items="item in local_list | filter:options.search" ' +
                             'ng-disabled="ngDisabled" ' +
                             'md-search-text-change="getListByResource(options.search)" ' +
                             'md-selected-item-change="selectedItemChange(item)" ' +
@@ -41,7 +42,7 @@ angular
                                     '<span md-highlight-text="options.search" md-highlight-flags="^i">{{' + mdSelect.itemName + '}}</span> ' +
                                 '</md-item-template>' +
                                 '<md-not-found>' +
-                                    'Not found. <a ng-click="newItem(options.search)">Create a new one?</a>' +
+                                    'Not found. <a ng-click="newItem(options.search)" ng-show="adder">Create a new one?</a>' +
                                 '</md-not-found>' +
                         '</md-autocomplete>';
 
@@ -91,6 +92,7 @@ angular
                 type: '@' //select or multiselect
             },
             link: function (scope, element, attrs, ngModel) {
+                scope.id = 'ae-edit-select-xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {var r = Math.random()*16|0,v=c=='x'?r:r&0x3|0x8;return v.toString(16);});
                 //=============================================================
                 // Config
                 //=============================================================
@@ -291,30 +293,42 @@ angular
                         }
                     });
 
-                    $mdDialog.show({
-                        clickOutsideToClose: true,
+                    var position = $mdPanel.newPanelPosition()
+                        .relativeTo('#' + scope.id)
+                        .addPanelPosition($mdPanel.xPosition.OFFSET_START, $mdPanel.yPosition.ABOVE);
+
+                    $mdPanel.open({
+                        clickOutsideToClose: false,
+                        position: position,
+                        focusOnOpen: false,
+                        hasBackdrop: true,
+                        panelClass: 'md-background md-hue-3',
                         locals: {
                             data: data
                         },
-                        controller: ['$scope', '$mdDialog', 'data', function ($scope, $mdDialog, data) {
-                            angular.extend($scope, data);
+                        controller: ['$scope', 'mdPanelRef', function ($scope, mdPanelRef) {
                             $scope.save = function() {
-                                $mdDialog.hide($scope.new_object);
+                                mdPanelRef.save($scope.new_object)
+                                mdPanelRef.hide();
                             };
                             $scope.cancel = function() {
-                                $mdDialog.cancel();
+                                mdPanelRef.hide();
                             };
                         }],
                         template: '' +
-                        '<md-dialog>' +
-                            '<md-dialog-content layout="row" class="padding" layout-wrap>' +
+                        '<md-content layout="column">' +
+                            '<md-toolbar class="md-primary"><div class="md-toolbar-tools"><h4>Create new</h4><span class="flex"></span><md-button class="md-icon-button" ng-click="cancel()"><md-icon>close</md-icon></md-button></div></md-toolbar>' +
+                            '<md-content layout="row" class="padding" layout-wrap>' +
                                 inputsHtml +
-                            '</md-dialog-content>' +
-                            '<md-dialog-actions layout="row">' +
+                            '</md-content>' +
+                            '<md-content layout="row">' +
                                 '<md-button ng-click="save()">Save</md-button>' +
-                            '</md-dialog-actions>' +
-                        '</md-dialog>'
-                    }).then(scope.saveToList);
+                                '<md-button ng-click="cancel()">Cancel</md-button>' +
+                            '</md-content>' +
+                        '</md-content>'
+                    }).then(function(mdPanelRef){
+                        mdPanelRef.save = scope.saveToList;
+                    });
                 };
 
                 //=============================================================

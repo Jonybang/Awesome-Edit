@@ -26,7 +26,7 @@ angular
             self.sorting = { };
 
             self.defaultSorting = {
-                updated_at: 'DESC'
+                id: 'DESC'
             };
 
             self.getData = function(is_exclude_params){
