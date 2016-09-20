@@ -100,7 +100,7 @@ md-grid-tile ae-text-input:not(.edit),
 md-grid-tile ae-select-input:not(.edit) {
   line-height: 1;
   display: block!important;
-  text-align: center;
+  text-align: left;
 }
 
 input:focus,
