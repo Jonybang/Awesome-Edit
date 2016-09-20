@@ -69,7 +69,7 @@ angular
                 var tplHtml = '' +
                     '<md-content layout="row" flex="grow" layout-wrap class="padding ae-grid">' +
                     '   <md-list flex>' +
-                    '       <md-subheader class="md-no-sticky">';
+                    '       <md-subheader class="md-no-sticky" ng-show="actualOptions.caption || actualOptions.search">';
 
                 if(scope.actualOptions.search){
                     tplHtml +=
