@@ -213,7 +213,7 @@ angular
                     }
 
                     if(scope.type == 'multiselect' && scope.ngModel && scope.ngModel.length){
-                        if(scope.options.selected && scope.options.selected.length)
+                        if(scope.options.selected && scope.options.selected.length && scope.fakeModel.length == scope.options.selected.length)
                             return;
 
                         scope.options.selected = [];
