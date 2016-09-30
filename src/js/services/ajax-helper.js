@@ -25,9 +25,11 @@ angular
 
             self.sorting = { };
 
-            self.defaultSorting = {
-                id: 'DESC'
-            };
+            self.defaultSorting = {};
+            if(queryOptions && queryOptions._sort)
+                self.defaultSorting[queryOptions._sort.replace("-", "")] = queryOptions._sort.indexOf('-') == -1 ? 'ASC' : 'DESC';
+            else
+                self.defaultSorting['id'] = 'DESC';
 
             self.getData = function(is_exclude_params){
                 self.prepareQuery();

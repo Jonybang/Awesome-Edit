@@ -1,7 +1,7 @@
 angular
     .module('a-edit')
 
-    .directive('aeSelectInput', ['$timeout', '$compile', '$templateCache', '$mdPanel', 'AEditHelpers' ,'AEditConfig', function($timeout, $compile, $templateCache, $mdPanel, AEditHelpers, AEditConfig) {
+    .directive('aeSelectInput', ['$timeout', '$filter', '$compile', '$templateCache', '$mdPanel', 'AEditHelpers' ,'AEditConfig', function($timeout, $filter, $compile, $templateCache, $mdPanel, AEditHelpers, AEditConfig) {
         function getTemplateByType(type, options){
             options = options || {};
 
@@ -137,7 +137,7 @@ angular
                     $timeout(scope.ngChange);
 
                     if(scope.type == 'select')  {
-                        scope.fakeModel =  scope.options.selected ?  scope.options.selected.id : null;
+                        scope.fakeModel = scope.options.selected ?  scope.options.selected.id || scope.options.selected.value : null;
                     } else if(scope.type == 'multiselect'){
                         scope.fakeModel = scope.options.selected ?  scope.options.selected.map(function(item){return item.id;}) : [];
                     } else if(scope.type == 'textselect'){
@@ -172,7 +172,7 @@ angular
 
                 scope.getListByResource = function (query){
                     if(!scope.ngResource)
-                        return;
+                        return $filter('filter')(scope.local_list, query);
 
                     var request_options = {};
                     if(scope.options.search)
@@ -241,12 +241,12 @@ angular
                             return;
 
                         var found = scope.local_list.some(function(item){
-                            if(item.id == scope.ngModel)
+                            if(item.id == scope.ngModel || item.value == scope.ngModel)
                                 scope.options.selected = item;
 
                             return item.id == scope.ngModel;
                         });
-                        if(!found){
+                        if(!found && scope.ngResource){
                             getObjectFromServer(scope.ngModel).then(function(serverItem){
                                 scope.options.selected = serverItem;
                             })
