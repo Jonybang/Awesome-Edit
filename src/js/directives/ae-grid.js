@@ -56,7 +56,10 @@ angular
                 scope.actualOptions = angular.extend({}, defaultOptions, scope.options);
                 AEditConfig.current_options = scope.actualOptions;
 
-                scope.ajaxList = new AEditAjaxHelper(scope.actualOptions.resource);
+                var queryOptions = {};
+                queryOptions[variables.sort] = scope.actualOptions.order_by;
+
+                scope.ajaxList = new AEditAjaxHelper(scope.actualOptions.resource, queryOptions);
 
                 scope.select_options = angular.extend({}, AEditConfig.grid_options, scope.actualOptions);
 
@@ -107,8 +110,9 @@ angular
                 if(!scope.actualOptions.track_by)
                     scope.actualOptions.track_by = mode == 'remote' ? 'id' : 'json_id';
 
+                var track_by = scope.actualOptions.track_by == '$index' ? scope.actualOptions.track_by : 'item.' + scope.actualOptions.track_by;
                 var tplBodyItem =
-                        '<md-list-item ng-click="null" class="md-1-line word-wrap" ng-repeat="item in filtredList track by item.' + scope.actualOptions.track_by + '">' +
+                        '<md-list-item ng-click="null" class="md-1-line word-wrap" ng-repeat="item in filtredList track by ' + track_by + '">' +
                         '   <md-content layout layout-fill layout-align="center" flex="grow">' +
                                 md_grid_list;
 

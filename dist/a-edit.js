@@ -327,7 +327,10 @@ angular
                 scope.actualOptions = angular.extend({}, defaultOptions, scope.options);
                 AEditConfig.current_options = scope.actualOptions;
 
-                scope.ajaxList = new AEditAjaxHelper(scope.actualOptions.resource);
+                var queryOptions = {};
+                queryOptions[variables.sort] = scope.actualOptions.order_by;
+
+                scope.ajaxList = new AEditAjaxHelper(scope.actualOptions.resource, queryOptions);
 
                 scope.select_options = angular.extend({}, AEditConfig.grid_options, scope.actualOptions);
 
@@ -378,8 +381,9 @@ angular
                 if(!scope.actualOptions.track_by)
                     scope.actualOptions.track_by = mode == 'remote' ? 'id' : 'json_id';
 
+                var track_by = scope.actualOptions.track_by == '$index' ? scope.actualOptions.track_by : 'item.' + scope.actualOptions.track_by;
                 var tplBodyItem =
-                        '<md-list-item ng-click="null" class="md-1-line word-wrap" ng-repeat="item in filtredList track by item.' + scope.actualOptions.track_by + '">' +
+                        '<md-list-item ng-click="null" class="md-1-line word-wrap" ng-repeat="item in filtredList track by ' + track_by + '">' +
                         '   <md-content layout layout-fill layout-align="center" flex="grow">' +
                                 md_grid_list;
 
@@ -905,7 +909,7 @@ angular
 angular
     .module('a-edit')
 
-    .directive('aeSelectInput', ['$timeout', '$compile', '$templateCache', '$mdPanel', 'AEditHelpers' ,'AEditConfig', function($timeout, $compile, $templateCache, $mdPanel, AEditHelpers, AEditConfig) {
+    .directive('aeSelectInput', ['$timeout', '$filter', '$compile', '$templateCache', '$mdPanel', 'AEditHelpers' ,'AEditConfig', function($timeout, $filter, $compile, $templateCache, $mdPanel, AEditHelpers, AEditConfig) {
         function getTemplateByType(type, options){
             options = options || {};
 
@@ -1041,7 +1045,7 @@ angular
                     $timeout(scope.ngChange);
 
                     if(scope.type == 'select')  {
-                        scope.fakeModel =  scope.options.selected ?  scope.options.selected.id : null;
+                        scope.fakeModel = scope.options.selected ?  scope.options.selected.id || scope.options.selected.value : null;
                     } else if(scope.type == 'multiselect'){
                         scope.fakeModel = scope.options.selected ?  scope.options.selected.map(function(item){return item.id;}) : [];
                     } else if(scope.type == 'textselect'){
@@ -1076,7 +1080,7 @@ angular
 
                 scope.getListByResource = function (query){
                     if(!scope.ngResource)
-                        return;
+                        return $filter('filter')(scope.local_list, query);
 
                     var request_options = {};
                     if(scope.options.search)
@@ -1145,12 +1149,12 @@ angular
                             return;
 
                         var found = scope.local_list.some(function(item){
-                            if(item.id == scope.ngModel)
+                            if(item.id == scope.ngModel || item.value == scope.ngModel)
                                 scope.options.selected = item;
 
                             return item.id == scope.ngModel;
                         });
-                        if(!found){
+                        if(!found && scope.ngResource){
                             getObjectFromServer(scope.ngModel).then(function(serverItem){
                                 scope.options.selected = serverItem;
                             })
@@ -1478,9 +1482,11 @@ angular
 
             self.sorting = { };
 
-            self.defaultSorting = {
-                id: 'DESC'
-            };
+            self.defaultSorting = {};
+            if(queryOptions && queryOptions._sort)
+                self.defaultSorting[queryOptions._sort.replace("-", "")] = queryOptions._sort.indexOf('-') == -1 ? 'ASC' : 'DESC';
+            else
+                self.defaultSorting['id'] = 'DESC';
 
             self.getData = function(is_exclude_params){
                 self.prepareQuery();
