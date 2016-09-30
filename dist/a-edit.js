@@ -935,7 +935,8 @@ angular
                             (type == 'select' || type == 'textselect' ? 'ng-if="!viewMode" md-selected-item="$parent.options.selected" ' : ' ') +
                             'id="{{id}}" ' +
                             'md-search-text="options.search" ' +
-                            'md-items="item in local_list | filter:options.search" ' +
+                            'md-items="item in getListByResource(options.search)" ' + // | filter:options.search"
+                            'md-no-cache="true" ' +
                             'ng-disabled="ngDisabled" ' +
                             'md-search-text-change="getListByResource(options.search)" ' +
                             'md-selected-item-change="selectedItemChange(item)" ' +
