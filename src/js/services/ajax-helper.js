@@ -7,19 +7,18 @@ angular
 
             self.resource = resource;
 
+            self.paging = {
+                current: 1,
+                per_page: queryOptions && queryOptions._limit ? queryOptions._limit : 10
+            };
+
             self.params = {
-                _limit: 15,
                 _config: 'meta-total-count,meta-filter-count'
             };
 
             if(queryOptions){
                 angular.extend(self.params, queryOptions)
             }
-
-            self.paging = {
-                current: 1,
-                per_page: 10
-            };
 
             self.search = '';
 
