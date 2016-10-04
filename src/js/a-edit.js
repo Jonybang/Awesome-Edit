@@ -1,10 +1,9 @@
 // Code goes here
 angular
-  .module('a-edit', ['ui.bootstrap', 'angularMoment', 'ui.select', 'ngSanitize'])
+  .module('a-edit', ['ngMaterial', 'angularMoment', 'ngSanitize', 'cl.paging'])
   
-  .run(['amMoment', 'uiSelectConfig', '$templateCache', function(amMoment, uiSelectConfig, $templateCache) {
+  .run(['amMoment', '$templateCache', function(amMoment, $templateCache) {
     amMoment.changeLocale('ru');
-    uiSelectConfig.theme = 'bootstrap';
     
     $templateCache.put('a-edit-image-popover.html', '<img class="img-responsive" ng-src="{{::image}}" alt="">');
     
@@ -47,5 +46,10 @@ angular
             {{:: text || image}}\
         </a>\
     ');
-    
+
+      $templateCache.put('a-edit-paging.html', '\
+        <md-content ng-if="ngModel.total_pages > 1">\
+            <cl-paging flex cl-pages="ngModel.total_pages" cl-steps="ngModel.per_page" cl-page-changed="ngChange()" cl-align="center" cl-current-page="ngModel.current"></cl-paging>\
+        </md-content>\
+    ');
   }]);

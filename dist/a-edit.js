@@ -1,10 +1,9 @@
 // Code goes here
 angular
-  .module('a-edit', ['ui.bootstrap', 'angularMoment', 'ui.select', 'ngSanitize'])
+  .module('a-edit', ['ngMaterial', 'angularMoment', 'ngSanitize', 'cl.paging'])
   
-  .run(['amMoment', 'uiSelectConfig', '$templateCache', function(amMoment, uiSelectConfig, $templateCache) {
+  .run(['amMoment', '$templateCache', function(amMoment, $templateCache) {
     amMoment.changeLocale('ru');
-    uiSelectConfig.theme = 'bootstrap';
     
     $templateCache.put('a-edit-image-popover.html', '<img class="img-responsive" ng-src="{{::image}}" alt="">');
     
@@ -47,7 +46,12 @@ angular
             {{:: text || image}}\
         </a>\
     ');
-    
+
+      $templateCache.put('a-edit-paging.html', '\
+        <md-content ng-if="ngModel.total_pages > 1">\
+            <cl-paging flex cl-pages="ngModel.total_pages" cl-steps="ngModel.per_page" cl-page-changed="ngChange()" cl-align="center" cl-current-page="ngModel.current"></cl-paging>\
+        </md-content>\
+    ');
   }]);
 
 angular
@@ -267,7 +271,7 @@ angular
 
 angular
     .module('a-edit')
-    .directive('aeGrid', ['$timeout', '$compile', '$filter', 'AEditHelpers', 'AEditConfig', function($timeout, $compile, $filter, AEditHelpers, AEditConfig) {
+    .directive('aeGrid', ['$timeout', '$compile', '$filter', 'AEditHelpers', 'AEditConfig', 'AEditAjaxHelper', function($timeout, $compile, $filter, AEditHelpers, AEditConfig, AEditAjaxHelper) {
     return {
         restrict: 'E',
         require: 'ngModel',
@@ -310,13 +314,6 @@ angular
 
             var mode = 'local';
 
-            //request options for get list
-            scope.gridRequestOptions = {};
-            //actual options of grid controls
-            scope.gridOptions = {};
-
-            scope.gridOptions.current_page = 1;
-
             var variables = angular.extend({}, AEditConfig.grid_options.request_variables, AEditConfig.grid_options.response_variables);
 
             // *************************************************************
@@ -329,9 +326,13 @@ angular
 
                 scope.actualOptions = angular.extend({}, defaultOptions, scope.options);
                 AEditConfig.current_options = scope.actualOptions;
-                
-                angular.extend(scope.gridOptions, AEditConfig.grid_options, scope.actualOptions);
-                scope.gridOptions.select_options = angular.extend({}, AEditConfig.grid_options, scope.actualOptions);
+
+                var queryOptions = {};
+                queryOptions[variables.sort] = scope.actualOptions.order_by;
+
+                scope.ajaxList = new AEditAjaxHelper(scope.actualOptions.resource, queryOptions);
+
+                scope.select_options = angular.extend({}, AEditConfig.grid_options, scope.actualOptions);
 
                 if(scope.actualOptions.resource){
                     mode = 'remote';
@@ -339,17 +340,16 @@ angular
                         scope.getList();
                 }
 
-
                 var tplHtml = '' +
-                    '<md-content layout="column" flex="grow" layout-wrap class="padding">' +
+                    '<md-content layout="row" flex="grow" layout-wrap class="padding ae-grid">' +
                     '   <md-list flex>' +
-                    '       <md-subheader class="md-no-sticky">';
+                    '       <md-subheader class="md-no-sticky" ng-show="actualOptions.caption || actualOptions.search">';
 
                 if(scope.actualOptions.search){
                     tplHtml +=
                         '       <md-input-container class="md-block no-margin" flex="grow">' +
                         '           <label>Search</label>' +
-                        '           <input ng-model="searchQuery" ng-change="getFiles()"  ng-model-options="{ debounce: ' + scope.actualOptions.search_debounce + ' }">' +
+                        '           <input ng-model="ajaxList.search" ng-model-options="{ debounce: ' + scope.actualOptions.search_debounce + ' }">' +
                         '       </md-input-container>';
                 }
 
@@ -364,7 +364,7 @@ angular
                         field.colspan = 1;
 
                     if(!field.table_hide)
-                        tableFieldsCount += field.colspan;
+                        tableFieldsCount += parseInt(field.colspan);
                 });
 
                 var md_grid_list = '<md-grid-list flex="grow" md-cols="' + tableFieldsCount + '" md-row-height="' + scope.actualOptions.row_height + '">';
@@ -381,13 +381,15 @@ angular
                 if(!scope.actualOptions.track_by)
                     scope.actualOptions.track_by = mode == 'remote' ? 'id' : 'json_id';
 
+                var track_by = scope.actualOptions.track_by == '$index' ? scope.actualOptions.track_by : 'item.' + scope.actualOptions.track_by;
                 var tplBodyItem =
-                        '<md-list-item ng-click="null" class="md-1-line word-wrap" ng-repeat="item in filtredList track by item.' + scope.actualOptions.track_by + '">' +
+                        '<md-list-item ng-click="null" class="md-1-line word-wrap" ng-repeat="item in filtredList track by ' + track_by + '">' +
                         '   <md-content layout layout-fill layout-align="center" flex="grow">' +
                                 md_grid_list;
 
                 var select_list_request_options = {};
-                select_list_request_options[variables['limit']] = scope.gridOptions.select_options.items_per_page;
+                select_list_request_options[variables['limit']] = scope.select_options.items_per_page;
+
                 scope.actualOptions.fields.forEach(function(field, index){
 
                     if(field.resource && field.list && field.list != 'self'){
@@ -411,7 +413,7 @@ angular
                     }
 
                     tplHead +=
-                        '<md-grid-tile md-colspan="' + field.colspan + '"><sorting ng-model="ajaxGrid.sorting.' + field.name + '" ng-change="getFiles()">' + field.label + '</sorting></md-grid-tile>';
+                        '<md-grid-tile md-colspan="' + field.colspan + '"><sorting ng-model="ajaxList.sorting.' + field.name + '" ng-change="getList()">' + field.label + '</sorting></md-grid-tile>';
                     //
                     //var style = 'style="';
                     //if(field.width)
@@ -482,15 +484,18 @@ angular
                 }
 
                 tplHead +=
-                    '</md-list-item>';
+                    '</md-grid-list>' +
+                '</md-list-item>';
 
                 tplBodyNewItem +=
-                        '</md-content>' +
-                    '</md-list-item>';
+                        '</md-grid-list>' +
+                    '</md-content>' +
+                '</md-list-item>';
 
                 tplBodyItem +=
-                        '</md-content>' +
-                    '</md-list-item>';
+                        '</md-grid-list>' +
+                    '</md-content>' +
+                '</md-list-item>';
 
                 var tableHtml = '';
 
@@ -506,13 +511,17 @@ angular
 
                 tableHtml += tplBodyItem;
 
+                tplHtml += tableHtml +
+                        '</md-list>' +
+                    '</md-content>';
+
                 if(scope.actualOptions.paginate) {
-                    tableHtml += '<uib-pagination total-items="gridOptions.filter_items" items-per-page="gridOptions.items_per_page" ng-model="gridOptions.current_page" ng-change="getList()"></uib-pagination>';
+                    tplHtml += '<ae-paging ng-model="ajaxList.paging" ng-change="getList()"></ae-paging>';
                 }
 
                 angular.element(element).html('');
 
-                var template = angular.element('<md-content layout flex>' + tplHtml + tableHtml + '</md-content>');
+                var template = angular.element('<md-content layout="column" flex>' + tplHtml + '</md-content>');
 
                 angular.element(element).append($compile(template)(scope));
             });
@@ -526,39 +535,8 @@ angular
             // *************************************************************
 
             scope.getList = function(){
-                var query_name = 'get';
-
-                if(scope.actualOptions.ajax_handler){
-
-                    if(scope.searchQuery)
-                        scope.gridRequestOptions[variables['query']] = scope.searchQuery;
-                    else
-                        delete scope.gridRequestOptions[variables['query']];
-
-                    if(scope.actualOptions.order_by)
-                        scope.gridRequestOptions[variables['sort']] = scope.actualOptions.order_by;
-
-                    if(scope.actualOptions.paginate){
-                        scope.gridRequestOptions[variables['offset']] = (scope.gridOptions.current_page - 1) * scope.gridOptions.items_per_page;
-                        scope.gridRequestOptions[variables['limit']] = scope.gridOptions.items_per_page;
-                    }
-
-                    angular.extend(scope.gridRequestOptions, scope.gridOptions.additional_request_params);
-
-                    query_name = 'search';
-                }
-
-
-                AEditHelpers.getResourceQuery(scope.actualOptions.resource, query_name, scope.gridRequestOptions).then(function(response){
-                    scope.ngModel = response[variables['list']] || response;
-
-                    var meta_info = response[variables['meta_info']];
-                    if(meta_info){
-                        scope.gridOptions.total_items = meta_info[variables['total_count']];
-                        scope.gridOptions.filter_items = meta_info[variables['filter_count']];
-                    } else {
-                        console.error('[AEGrid] For pagination needs some meta info in response!');
-                    }
+                scope.ajaxList.getData(!scope.actualOptions.ajax_handler).$promise.then(function(list){
+                    scope.ngModel = list;
                 });
             };
 
@@ -584,12 +562,7 @@ angular
                     scope.filtredList = $filter('orderBy')(scope.filtredList, scope.actualOptions.order_by);
             };
 
-            scope.$watch('searchQuery', scope.search);
-
-            scope.clearSearch = function(){
-                scope.searchQuery = '';
-                scope.filtredList = scope.ngModel;
-            };
+            scope.$watch('ajaxList.search', scope.search);
 
             // *************************************************************
             // EDIT
@@ -917,8 +890,26 @@ angular
 
 angular
     .module('a-edit')
+    .directive('aePaging', ['AppPaths', function(AppPaths) {
+        return {
+            restrict: 'E',
+            templateUrl: 'a-edit-paging.html',
+            scope: {
+                ngModel: '=',
+                ngChange: '&',
+                totalItems: '='
+            },
+            link: function (scope, element) {
+                scope.$watch('ngModel.total_items', function(totalItems){
+                    scope.ngModel.total_pages = Math.ceil(parseInt(totalItems) / scope.ngModel.per_page);
+                })
+            }
+        };
+    }]);
+angular
+    .module('a-edit')
 
-    .directive('aeSelectInput', ['$timeout', '$compile', '$templateCache', '$mdDialog', 'AEditHelpers' ,'AEditConfig', function($timeout, $compile, $templateCache, $mdDialog, AEditHelpers, AEditConfig) {
+    .directive('aeSelectInput', ['$timeout', '$filter', '$compile', '$templateCache', '$mdPanel', 'AEditHelpers' ,'AEditConfig', function($timeout, $filter, $compile, $templateCache, $mdPanel, AEditHelpers, AEditConfig) {
         function getTemplateByType(type, options){
             options = options || {};
 
@@ -946,8 +937,10 @@ angular
             template +=
                         '<md-autocomplete ' +
                             (type == 'select' || type == 'textselect' ? 'ng-if="!viewMode" md-selected-item="$parent.options.selected" ' : ' ') +
+                            'id="{{id}}" ' +
                             'md-search-text="options.search" ' +
-                            'md-items="item in local_list" ' +
+                            'md-items="item in getListByResource(options.search)" ' + // | filter:options.search"
+                            'md-no-cache="true" ' +
                             'ng-disabled="ngDisabled" ' +
                             'md-search-text-change="getListByResource(options.search)" ' +
                             'md-selected-item-change="selectedItemChange(item)" ' +
@@ -958,7 +951,7 @@ angular
                                     '<span md-highlight-text="options.search" md-highlight-flags="^i">{{' + mdSelect.itemName + '}}</span> ' +
                                 '</md-item-template>' +
                                 '<md-not-found>' +
-                                    'Not found. <a ng-click="newItem(options.search)">Create a new one?</a>' +
+                                    'Not found. <a ng-click="newItem(options.search)" ng-show="adder">Create a new one?</a>' +
                                 '</md-not-found>' +
                         '</md-autocomplete>';
 
@@ -1008,6 +1001,7 @@ angular
                 type: '@' //select or multiselect
             },
             link: function (scope, element, attrs, ngModel) {
+                scope.id = 'ae-edit-select-xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {var r = Math.random()*16|0,v=c=='x'?r:r&0x3|0x8;return v.toString(16);});
                 //=============================================================
                 // Config
                 //=============================================================
@@ -1051,7 +1045,7 @@ angular
                     $timeout(scope.ngChange);
 
                     if(scope.type == 'select')  {
-                        scope.fakeModel =  scope.options.selected ?  scope.options.selected.id : null;
+                        scope.fakeModel = scope.options.selected ?  scope.options.selected.id || scope.options.selected.value : null;
                     } else if(scope.type == 'multiselect'){
                         scope.fakeModel = scope.options.selected ?  scope.options.selected.map(function(item){return item.id;}) : [];
                     } else if(scope.type == 'textselect'){
@@ -1086,7 +1080,7 @@ angular
 
                 scope.getListByResource = function (query){
                     if(!scope.ngResource)
-                        return;
+                        return $filter('filter')(scope.local_list, query);
 
                     var request_options = {};
                     if(scope.options.search)
@@ -1127,8 +1121,8 @@ angular
                         return;
                     }
 
-                    if(scope.type == 'multiselect' && scope.ngModel.length){
-                        if(scope.options.selected && scope.options.selected.length)
+                    if(scope.type == 'multiselect' && scope.ngModel && scope.ngModel.length){
+                        if(scope.options.selected && scope.options.selected.length && scope.fakeModel.length == scope.options.selected.length)
                             return;
 
                         scope.options.selected = [];
@@ -1155,12 +1149,12 @@ angular
                             return;
 
                         var found = scope.local_list.some(function(item){
-                            if(item.id == scope.ngModel)
+                            if(item.id == scope.ngModel || item.value == scope.ngModel)
                                 scope.options.selected = item;
 
                             return item.id == scope.ngModel;
                         });
-                        if(!found){
+                        if(!found && scope.ngResource){
                             getObjectFromServer(scope.ngModel).then(function(serverItem){
                                 scope.options.selected = serverItem;
                             })
@@ -1186,7 +1180,7 @@ angular
                         scope.ngResourceFields = [{name: scope.nameField || 'name' || scope.orNameField, label: ''}];
 
                     var inputsHtml = '';
-                    var data = {};
+                    var data = { lists: {} };
                     scope.ngResourceFields.forEach(function(field){
                         if(field.name == scope.nameField || field.name == 'name' || field.name == scope.orNameField)
                             field.default_value = scope.options.search;
@@ -1195,9 +1189,12 @@ angular
                                             item_name: 'new_object',
                                             lists_container: 'lists',
                                             always_edit: true,
+                                            get_list: true,
                                             is_new: true
                                             //already_modal: true
                                         }) + '</div>';
+
+                        data.lists[field.list] = [];
 
                         if(field.resource){
                             data[field.name + '_resource'] = field.resource;
@@ -1208,30 +1205,44 @@ angular
                         }
                     });
 
-                    $mdDialog.show({
-                        clickOutsideToClose: true,
+                    var position = $mdPanel.newPanelPosition()
+                        .relativeTo('#' + scope.id)
+                        .addPanelPosition($mdPanel.xPosition.ALIGN_START, $mdPanel.yPosition.ABOVE);
+
+                    $mdPanel.open({
+                        clickOutsideToClose: false,
+                        position: position,
+                        focusOnOpen: false,
+                        hasBackdrop: true,
+                        bindToController: false,
+                        panelClass: 'md-background md-hue-3',
                         locals: {
                             data: data
                         },
-                        controller: ['$scope', '$mdDialog', 'data', function ($scope, $mdDialog, data) {
+                        controller: ['$scope', 'mdPanelRef', 'data', function ($scope, mdPanelRef, data) {
                             angular.extend($scope, data);
                             $scope.save = function() {
-                                $mdDialog.hide($scope.new_object);
+                                mdPanelRef.save($scope.new_object);
+                                mdPanelRef.hide();
                             };
                             $scope.cancel = function() {
-                                $mdDialog.cancel();
+                                mdPanelRef.hide();
                             };
                         }],
                         template: '' +
-                        '<md-dialog>' +
-                            '<md-dialog-content layout="row" class="padding" layout-wrap>' +
+                        '<md-content layout="column">' +
+                            '<md-toolbar class="md-primary"><div class="md-toolbar-tools"><h4>Create new</h4><span class="flex"></span><md-button class="md-icon-button" ng-click="cancel()"><md-icon>close</md-icon></md-button></div></md-toolbar>' +
+                            '<md-content layout="row" class="padding" layout-wrap>' +
                                 inputsHtml +
-                            '</md-dialog-content>' +
-                            '<md-dialog-actions layout="row">' +
+                            '</md-content>' +
+                            '<md-content layout="row">' +
                                 '<md-button ng-click="save()">Save</md-button>' +
-                            '</md-dialog-actions>' +
-                        '</md-dialog>'
-                    }).then(scope.saveToList);
+                                '<md-button ng-click="cancel()">Cancel</md-button>' +
+                            '</md-content>' +
+                        '</md-content>'
+                    }).then(function(mdPanelRef){
+                        mdPanelRef.save = scope.saveToList;
+                    });
                 };
 
                 //=============================================================
@@ -1444,6 +1455,103 @@ angular
         };
     }]);
 
+angular
+    .module('a-edit')
+    .service('AEditAjaxHelper', [function(){
+
+        return function AjaxHelper(resource, queryOptions){
+            var self = this;
+
+            self.resource = resource;
+
+            self.paging = {
+                current: 1,
+                per_page: queryOptions && queryOptions._limit ? queryOptions._limit : 10
+            };
+
+            self.params = {
+                _config: 'meta-total-count,meta-filter-count'
+            };
+
+            if(queryOptions){
+                angular.extend(self.params, queryOptions)
+            }
+
+            self.search = '';
+
+            self.sorting = { };
+
+            self.defaultSorting = {};
+            if(queryOptions && queryOptions._sort)
+                self.defaultSorting[queryOptions._sort.replace("-", "")] = queryOptions._sort.indexOf('-') == -1 ? 'ASC' : 'DESC';
+            else
+                self.defaultSorting['id'] = 'DESC';
+
+            self.getData = function(is_exclude_params){
+                self.prepareQuery();
+
+                return self.resource.query(is_exclude_params ? {} : self.temp_params, function(data, headers){
+                    self.data = data;
+                    self.paging.total_items = headers('Meta-Filter-Count');
+                    return data;
+                });
+            };
+
+            self.prepareQuery = function(){
+                self.temp_params = angular.copy(self.params);
+
+                self.searchToQuery();
+                self.pagingToQuery();
+                self.sortingToQuery();
+                self.likeParamsToQuery();
+            };
+
+            self.searchToQuery = function(){
+                if(self.search)
+                    self.temp_params._q = self.search;
+                else
+                    delete self.temp_params._q;
+            };
+
+            self.pagingToQuery = function(){
+                if(!self.paging)
+                    return;
+
+                self.temp_params._limit = self.paging.per_page;
+                self.temp_params._offset = (self.paging.current - 1) * self.paging.per_page;
+            };
+
+            self.sortingToQuery = function(){
+                self.temp_params._sort = '';
+
+                var sorting = _.isEmpty(self.sorting) ? self.defaultSorting : self.sorting;
+
+                if(!sorting)
+                    return;
+
+                _.forEach(sorting, function(value, name){
+                    if(!value)
+                        return;
+
+                    if(self.temp_params._sort)
+                        self.temp_params._sort += ',';
+
+                    if(value == 'DESC')
+                        self.temp_params._sort += '-';
+
+                    self.temp_params._sort += name;
+                });
+            };
+
+            self.likeParamsToQuery = function(){
+                angular.forEach(self.temp_params, function callback(value, name){
+                    if (name.indexOf('-lk') != -1) {
+                        self.temp_params[name] = '*' + value + '*';
+                    }
+                });
+            }
+        };
+    }]);
 /**
  * Created by jonybang on 04.07.15.
  */

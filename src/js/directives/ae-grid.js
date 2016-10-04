@@ -1,6 +1,6 @@
 angular
     .module('a-edit')
-    .directive('aeGrid', ['$timeout', '$compile', '$filter', 'AEditHelpers', 'AEditConfig', function($timeout, $compile, $filter, AEditHelpers, AEditConfig) {
+    .directive('aeGrid', ['$timeout', '$compile', '$filter', 'AEditHelpers', 'AEditConfig', 'AEditAjaxHelper', function($timeout, $compile, $filter, AEditHelpers, AEditConfig, AEditAjaxHelper) {
     return {
         restrict: 'E',
         require: 'ngModel',
@@ -43,13 +43,6 @@ angular
 
             var mode = 'local';
 
-            //request options for get list
-            scope.gridRequestOptions = {};
-            //actual options of grid controls
-            scope.gridOptions = {};
-
-            scope.gridOptions.current_page = 1;
-
             var variables = angular.extend({}, AEditConfig.grid_options.request_variables, AEditConfig.grid_options.response_variables);
 
             // *************************************************************
@@ -62,9 +55,13 @@ angular
 
                 scope.actualOptions = angular.extend({}, defaultOptions, scope.options);
                 AEditConfig.current_options = scope.actualOptions;
-                
-                angular.extend(scope.gridOptions, AEditConfig.grid_options, scope.actualOptions);
-                scope.gridOptions.select_options = angular.extend({}, AEditConfig.grid_options, scope.actualOptions);
+
+                var queryOptions = {};
+                queryOptions[variables.sort] = scope.actualOptions.order_by;
+
+                scope.ajaxList = new AEditAjaxHelper(scope.actualOptions.resource, queryOptions);
+
+                scope.select_options = angular.extend({}, AEditConfig.grid_options, scope.actualOptions);
 
                 if(scope.actualOptions.resource){
                     mode = 'remote';
@@ -72,17 +69,16 @@ angular
                         scope.getList();
                 }
 
-
                 var tplHtml = '' +
-                    '<md-content layout="column" flex="grow" layout-wrap class="padding">' +
+                    '<md-content layout="row" flex="grow" layout-wrap class="padding ae-grid">' +
                     '   <md-list flex>' +
-                    '       <md-subheader class="md-no-sticky">';
+                    '       <md-subheader class="md-no-sticky" ng-show="actualOptions.caption || actualOptions.search">';
 
                 if(scope.actualOptions.search){
                     tplHtml +=
                         '       <md-input-container class="md-block no-margin" flex="grow">' +
                         '           <label>Search</label>' +
-                        '           <input ng-model="searchQuery" ng-change="getFiles()"  ng-model-options="{ debounce: ' + scope.actualOptions.search_debounce + ' }">' +
+                        '           <input ng-model="ajaxList.search" ng-model-options="{ debounce: ' + scope.actualOptions.search_debounce + ' }">' +
                         '       </md-input-container>';
                 }
 
@@ -97,7 +93,7 @@ angular
                         field.colspan = 1;
 
                     if(!field.table_hide)
-                        tableFieldsCount += field.colspan;
+                        tableFieldsCount += parseInt(field.colspan);
                 });
 
                 var md_grid_list = '<md-grid-list flex="grow" md-cols="' + tableFieldsCount + '" md-row-height="' + scope.actualOptions.row_height + '">';
@@ -114,13 +110,15 @@ angular
                 if(!scope.actualOptions.track_by)
                     scope.actualOptions.track_by = mode == 'remote' ? 'id' : 'json_id';
 
+                var track_by = scope.actualOptions.track_by == '$index' ? scope.actualOptions.track_by : 'item.' + scope.actualOptions.track_by;
                 var tplBodyItem =
-                        '<md-list-item ng-click="null" class="md-1-line word-wrap" ng-repeat="item in filtredList track by item.' + scope.actualOptions.track_by + '">' +
+                        '<md-list-item ng-click="null" class="md-1-line word-wrap" ng-repeat="item in filtredList track by ' + track_by + '">' +
                         '   <md-content layout layout-fill layout-align="center" flex="grow">' +
                                 md_grid_list;
 
                 var select_list_request_options = {};
-                select_list_request_options[variables['limit']] = scope.gridOptions.select_options.items_per_page;
+                select_list_request_options[variables['limit']] = scope.select_options.items_per_page;
+
                 scope.actualOptions.fields.forEach(function(field, index){
 
                     if(field.resource && field.list && field.list != 'self'){
@@ -144,7 +142,7 @@ angular
                     }
 
                     tplHead +=
-                        '<md-grid-tile md-colspan="' + field.colspan + '"><sorting ng-model="ajaxGrid.sorting.' + field.name + '" ng-change="getFiles()">' + field.label + '</sorting></md-grid-tile>';
+                        '<md-grid-tile md-colspan="' + field.colspan + '"><sorting ng-model="ajaxList.sorting.' + field.name + '" ng-change="getList()">' + field.label + '</sorting></md-grid-tile>';
                     //
                     //var style = 'style="';
                     //if(field.width)
@@ -215,15 +213,18 @@ angular
                 }
 
                 tplHead +=
-                    '</md-list-item>';
+                    '</md-grid-list>' +
+                '</md-list-item>';
 
                 tplBodyNewItem +=
-                        '</md-content>' +
-                    '</md-list-item>';
+                        '</md-grid-list>' +
+                    '</md-content>' +
+                '</md-list-item>';
 
                 tplBodyItem +=
-                        '</md-content>' +
-                    '</md-list-item>';
+                        '</md-grid-list>' +
+                    '</md-content>' +
+                '</md-list-item>';
 
                 var tableHtml = '';
 
@@ -239,13 +240,17 @@ angular
 
                 tableHtml += tplBodyItem;
 
+                tplHtml += tableHtml +
+                        '</md-list>' +
+                    '</md-content>';
+
                 if(scope.actualOptions.paginate) {
-                    tableHtml += '<uib-pagination total-items="gridOptions.filter_items" items-per-page="gridOptions.items_per_page" ng-model="gridOptions.current_page" ng-change="getList()"></uib-pagination>';
+                    tplHtml += '<ae-paging ng-model="ajaxList.paging" ng-change="getList()"></ae-paging>';
                 }
 
                 angular.element(element).html('');
 
-                var template = angular.element('<md-content layout flex>' + tplHtml + tableHtml + '</md-content>');
+                var template = angular.element('<md-content layout="column" flex>' + tplHtml + '</md-content>');
 
                 angular.element(element).append($compile(template)(scope));
             });
@@ -259,39 +264,8 @@ angular
             // *************************************************************
 
             scope.getList = function(){
-                var query_name = 'get';
-
-                if(scope.actualOptions.ajax_handler){
-
-                    if(scope.searchQuery)
-                        scope.gridRequestOptions[variables['query']] = scope.searchQuery;
-                    else
-                        delete scope.gridRequestOptions[variables['query']];
-
-                    if(scope.actualOptions.order_by)
-                        scope.gridRequestOptions[variables['sort']] = scope.actualOptions.order_by;
-
-                    if(scope.actualOptions.paginate){
-                        scope.gridRequestOptions[variables['offset']] = (scope.gridOptions.current_page - 1) * scope.gridOptions.items_per_page;
-                        scope.gridRequestOptions[variables['limit']] = scope.gridOptions.items_per_page;
-                    }
-
-                    angular.extend(scope.gridRequestOptions, scope.gridOptions.additional_request_params);
-
-                    query_name = 'search';
-                }
-
-
-                AEditHelpers.getResourceQuery(scope.actualOptions.resource, query_name, scope.gridRequestOptions).then(function(response){
-                    scope.ngModel = response[variables['list']] || response;
-
-                    var meta_info = response[variables['meta_info']];
-                    if(meta_info){
-                        scope.gridOptions.total_items = meta_info[variables['total_count']];
-                        scope.gridOptions.filter_items = meta_info[variables['filter_count']];
-                    } else {
-                        console.error('[AEGrid] For pagination needs some meta info in response!');
-                    }
+                scope.ajaxList.getData(!scope.actualOptions.ajax_handler).$promise.then(function(list){
+                    scope.ngModel = list;
                 });
             };
 
@@ -317,12 +291,7 @@ angular
                     scope.filtredList = $filter('orderBy')(scope.filtredList, scope.actualOptions.order_by);
             };
 
-            scope.$watch('searchQuery', scope.search);
-
-            scope.clearSearch = function(){
-                scope.searchQuery = '';
-                scope.filtredList = scope.ngModel;
-            };
+            scope.$watch('ajaxList.search', scope.search);
 
             // *************************************************************
             // EDIT
