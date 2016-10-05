@@ -1235,7 +1235,7 @@ angular
                                 mdPanelRef.hide();
                             };
                             $scope.cancel = function() {
-                                mdPanelRef.hide();
+                                mdPanelRef.cancel();
                             };
                         }],
                         template: '' +
