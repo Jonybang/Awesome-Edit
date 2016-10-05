@@ -213,8 +213,12 @@ angular
                         return;
                     }
 
-                    if(scope.type == 'multiselect' && scope.ngModel && scope.ngModel.length){
-                        if(scope.options.selected && scope.options.selected.length && scope.fakeModel.length == scope.options.selected.length)
+                    if(scope.type == 'multiselect'){
+                        if(!scope.ngModel || !scope.ngModel.length){
+                            scope.options.selected = [];
+                            return;
+                        }
+                        else if(scope.options.selected && scope.options.selected.length && scope.fakeModel.length == scope.options.selected.length)
                             return;
 
                         scope.options.selected = [];
@@ -236,9 +240,14 @@ angular
                                 })
                             }
                         });
-                    } else if(scope.type == 'select' && scope.ngModel)  {
-                        if(scope.options.selected)
+                    } else if(scope.type == 'select')  {
+                        if(!scope.ngModel){
+                            scope.options.selected = null;
                             return;
+                        }
+                        else if(scope.options.selected){
+                            return;
+                        }
 
                         var found = scope.local_list.some(function(item){
                             if(item.id == scope.ngModel || item.value == scope.ngModel)
