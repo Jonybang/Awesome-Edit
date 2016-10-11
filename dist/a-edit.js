@@ -1282,6 +1282,9 @@ angular
                         scope.ngModel = scope.fakeModel;
 
                         scope.setSelected();
+
+                        $timeout(scope.onSelect);
+                        $timeout(scope.ngChange);
                     });
                 }
             }
