@@ -20,7 +20,7 @@ angular
 
             if(type == 'multiselect') {
                 template += '' +
-                    '<md-chips ng-model="options.selected">' +
+                    '<md-chips ng-model="options.selected" md-on-remove="removeFromMultiSelect($chip)">' +
                         '<md-chip-template>' +
                             '<span>{{getNameFromObj($chip)}}</span>' +
                         '</md-chip-template>';
@@ -149,6 +149,14 @@ angular
                     //scope.options.search = '';
 
                     scope.getListByResource();
+                };
+
+                scope.removeFromMultiSelect = function(item){
+                    $timeout(scope.ngChange);
+
+                    scope.ngModel.splice(scope.fakeModel.indexOf(item.id), 1);
+                    scope.fakeModel = scope.ngModel;
+                    scope.setSelected();
                 };
 
                 scope.$watch('ngModel', function(newVal){
