@@ -245,7 +245,7 @@ angular
                     '</md-content>';
 
                 if(scope.actualOptions.paginate) {
-                    tplHtml += '<ae-paging ng-model="ajaxList.paging" ng-change="getList()"></ae-paging>';
+                    tplHtml += '<ae-paging ng-model="ajaxList.paging" ng-change="search()"></ae-paging>';
                 }
 
                 angular.element(element).html('');
