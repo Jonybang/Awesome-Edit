@@ -947,7 +947,8 @@ angular
                             'md-selected-item-change="selectedItemChange(item)" ' +
                             'md-item-text="' + mdSelect.itemName + '" ' +
                             'md-min-length="0" ' +
-                            'placeholder="{{placeholder}}"> ' +
+                            'placeholder="{{placeholder}}"' +
+                            '> ' +
                                 '<md-item-template> ' +
                                     '<span md-highlight-text="options.search" md-highlight-flags="^i">{{' + mdSelect.itemName + '}}</span> ' +
                                 '</md-item-template>' +
@@ -1335,7 +1336,7 @@ angular
                 '</div>' +
                 '<div ng-if="!viewMode" ng-class="input_class" layout>' +
                 inputTagBegin +
-                ' placeholder="{{$parent.placeholder}}" ' +
+                //' placeholder="{{$parent.placeholder}}" ' +
                 ' ng-model="$parent.ngModel" ' + (type != 'textarea' ? 'ng-enter="$parent.save()"' : '') +
                 ' ng-model-options="$parent.ngModelOptions || {}"' +
                 ' ng-style="{ \'width\' : $parent.width + \'px\'}"' +

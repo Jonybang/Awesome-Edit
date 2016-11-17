@@ -38,7 +38,8 @@ angular
                             'md-selected-item-change="selectedItemChange(item)" ' +
                             'md-item-text="' + mdSelect.itemName + '" ' +
                             'md-min-length="0" ' +
-                            'placeholder="{{placeholder}}"> ' +
+                            'placeholder="{{placeholder}}"' +
+                            '> ' +
                                 '<md-item-template> ' +
                                     '<span md-highlight-text="options.search" md-highlight-flags="^i">{{' + mdSelect.itemName + '}}</span> ' +
                                 '</md-item-template>' +
