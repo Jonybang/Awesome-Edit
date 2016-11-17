@@ -57,7 +57,10 @@ angular
                 AEditConfig.current_options = scope.actualOptions;
 
                 var queryOptions = {};
-                queryOptions[variables.sort] = scope.actualOptions.order_by;
+                if(scope.actualOptions.order_by.indexOf('-') == 0)
+                    queryOptions[variables.sort][scope.actualOptions.order_by.substr(1)] = 'DESC';
+                else
+                    queryOptions[variables.sort][scope.actualOptions.order_by] = 'ASC';
 
                 scope.ajaxList = new AEditAjaxHelper(scope.actualOptions.resource, queryOptions);
 
