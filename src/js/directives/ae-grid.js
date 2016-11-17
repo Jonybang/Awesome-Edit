@@ -245,7 +245,7 @@ angular
                     '</md-content>';
 
                 if(scope.actualOptions.paginate) {
-                    tplHtml += '<ae-paging ng-model="ajaxList.paging" ng-change="search()"></ae-paging>';
+                    tplHtml += '<ae-paging ng-model="ajaxList.paging" ng-change="getList()"></ae-paging>';
                 }
 
                 angular.element(element).html('');
@@ -266,6 +266,7 @@ angular
             scope.getList = function(){
                 scope.ajaxList.getData(!scope.actualOptions.ajax_handler).$promise.then(function(list){
                     scope.ngModel = list;
+                    scope.filtredList = scope.ngModel;
                 });
             };
 
