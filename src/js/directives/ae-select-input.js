@@ -165,6 +165,7 @@ angular
 
                     scope.fakeModel = newVal;
 
+                    scope.options.selected = null;
                     scope.setSelected();
                 });
 
