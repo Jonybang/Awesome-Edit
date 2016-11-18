@@ -1227,7 +1227,7 @@ angular
 
                     var position = $mdPanel.newPanelPosition()
                         .relativeTo('#' + scope.id)
-                        .addPanelPosition($mdPanel.xPosition.ALIGN_START, $mdPanel.yPosition.ABOVE);
+                        .addPanelPosition($mdPanel.xPosition.ALIGN_START, $mdPanel.yPosition.BELOW);
 
                     $mdPanel.open({
                         clickOutsideToClose: false,
