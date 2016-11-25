@@ -88,8 +88,13 @@ angular
 
             self.likeParamsToQuery = function(){
                 angular.forEach(self.temp_params, function callback(value, name){
-                    if (name.indexOf('-lk') != -1) {
+                    if (name.includes('-lk')) {
                         self.temp_params[name] = '*' + value + '*';
+                    } else if(name.includes('-in') && value && value.join) {
+                        if(value.length)
+                            self.temp_params[name] = value.join(',');
+                        else
+                            delete self.temp_params[name];
                     }
                 });
             }
