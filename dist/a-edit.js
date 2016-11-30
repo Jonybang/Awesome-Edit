@@ -1155,7 +1155,8 @@ angular
                                 scope.options.selected[index] = foundItem;
                             } else {
                                 getObjectFromServer(id).then(function(serverItem){
-                                    scope.options.selected[index] = serverItem;
+                                    if(serverItem)
+                                        scope.options.selected[index] = serverItem;
                                 })
                             }
                         });
