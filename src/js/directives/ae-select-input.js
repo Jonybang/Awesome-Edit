@@ -166,6 +166,14 @@ angular
 
                     scope.fakeModel = newVal;
 
+                    if(scope.type == 'multiselect' && angular.isObject(scope.fakeModel)){
+                        var fixedFakeModel = [];
+                        angular.forEach(scope.fakeModel, function(value){
+                            fixedFakeModel.push(value);
+                        });
+                        scope.fakeModel = fixedFakeModel;
+                    }
+
                     scope.options.selected = null;
                     scope.setSelected();
                 });
