@@ -1081,6 +1081,7 @@ angular
                             fixedFakeModel.push(value);
                         });
                         scope.fakeModel = fixedFakeModel;
+                        scope.ngModel = fixedFakeModel;
                     }
 
                     scope.options.selected = null;
@@ -1172,8 +1173,7 @@ angular
                         if(!scope.ngModel){
                             scope.options.selected = null;
                             return;
-                        }
-                        else if(scope.options.selected){
+                        } else if(scope.options.selected){
                             return;
                         }
 
@@ -1201,7 +1201,38 @@ angular
                     if(scope.type == 'textselect')
                         return obj;
 
-                    return obj[scope.nameField] || obj.name || obj[scope.orNameField];
+                    function getFieldByName(nameField){
+                        var objProp = angular.copy(obj);
+                        nameField.split('.').forEach(function(partOfName){
+                            if(objProp)
+                                objProp = objProp[partOfName];
+                        });
+                        return objProp || '';
+                    }
+
+                    if(!scope.nameField || !scope.nameField.includes('.'))
+                        return obj[scope.nameField] || obj.name || obj[scope.orNameField];
+                    else if(scope.nameField.includes('.')) {
+                        if(scope.nameField.includes('+')){
+                            var result = '';
+                            scope.nameField.split('+').forEach(function(fieldname, index){
+                                var fieldValue = getFieldByName(fieldname);
+                                if(!fieldValue)
+                                    return;
+
+                                if(index > 0)
+                                    result += ' (';
+
+                                result += fieldValue;
+
+                                if(index > 0)
+                                    result += ')';
+                            });
+                            return result;
+                        } else {
+                            return getFieldByName(scope.nameField);
+                        }
+                    }
                 };
 
                 scope.newItem = function(){
