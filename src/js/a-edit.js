@@ -49,7 +49,7 @@ angular
 
       $templateCache.put('a-edit-paging.html', '\
         <md-content ng-if="ngModel.total_pages > 1">\
-            <cl-paging flex cl-pages="ngModel.total_pages" cl-steps="ngModel.per_page" cl-page-changed="ngChange()" cl-align="center" cl-current-page="ngModel.current"></cl-paging>\
+            <cl-paging flex cl-pages="ngModel.total_pages" cl-steps="ngModel.per_page" cl-page-changed="pagingChanged()" cl-align="center" cl-current-page="ngModel.current"></cl-paging>\
         </md-content>\
     ');
   }]);

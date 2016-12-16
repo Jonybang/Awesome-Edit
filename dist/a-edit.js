@@ -49,7 +49,7 @@ angular
 
       $templateCache.put('a-edit-paging.html', '\
         <md-content ng-if="ngModel.total_pages > 1">\
-            <cl-paging flex cl-pages="ngModel.total_pages" cl-steps="ngModel.per_page" cl-page-changed="ngChange()" cl-align="center" cl-current-page="ngModel.current"></cl-paging>\
+            <cl-paging flex cl-pages="ngModel.total_pages" cl-steps="ngModel.per_page" cl-page-changed="pagingChanged()" cl-align="center" cl-current-page="ngModel.current"></cl-paging>\
         </md-content>\
     ');
   }]);
@@ -891,7 +891,7 @@ angular
 
 angular
     .module('a-edit')
-    .directive('aePaging', ['AppPaths', function(AppPaths) {
+    .directive('aePaging', ['AppPaths', '$timeout', function(AppPaths, $timeout) {
         return {
             restrict: 'E',
             templateUrl: 'a-edit-paging.html',
@@ -903,7 +903,16 @@ angular
             link: function (scope, element) {
                 scope.$watch('ngModel.total_items', function(totalItems){
                     scope.ngModel.total_pages = Math.ceil(parseInt(totalItems) / scope.ngModel.per_page);
-                })
+                });
+                var isFirstChange = true;
+                scope.pagingChanged = function(){
+                    if(isFirstChange){
+                        isFirstChange = false;
+                        return;
+                    }
+                    console.log('pagingChanged');
+                    $timeout(scope.ngChange);
+                }
             }
         };
     }]);
