@@ -112,3 +112,9 @@ md-grid-tile:focus{
 md-checkbox > .md-container.md-ink-ripple{
   margin: 5px;
 }
+.md-panel md-input-container {
+  margin: 8px 0;
+}
+.padding-top {
+  padding-top: 15px !important;
+}

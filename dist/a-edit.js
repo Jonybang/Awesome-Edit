@@ -1259,11 +1259,12 @@ angular
                                             lists_container: 'lists',
                                             always_edit: true,
                                             get_list: true,
-                                            is_new: true
+                                            is_new: true,
+                                            list_variable: 'lists.' + field.name + '_list'
                                             //already_modal: true
                                         }) + '</div>';
 
-                        data.lists[field.list] = [];
+                        data.lists[field.name + '_list'] = angular.isArray(field.list) ? field.list : [];
 
                         if(field.resource){
                             data[field.name + '_resource'] = field.resource;
@@ -1301,7 +1302,7 @@ angular
                         template: '' +
                         '<md-content layout="column">' +
                             '<md-toolbar class="md-primary"><div class="md-toolbar-tools"><h4>Create new</h4><span class="flex"></span><md-button class="md-icon-button" ng-click="cancel()"><md-icon>close</md-icon></md-button></div></md-toolbar>' +
-                            '<md-content layout="row" class="padding" layout-wrap>' +
+                            '<md-content layout="row" class="padding padding-top" layout-wrap>' +
                                 inputsHtml +
                             '</md-content>' +
                             '<md-content layout="row">' +
