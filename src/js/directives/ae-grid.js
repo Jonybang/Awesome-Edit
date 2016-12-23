@@ -264,7 +264,7 @@ angular
             // *************************************************************
 
             scope.getList = function(){
-                scope.ajaxList.getData(!scope.actualOptions.ajax_handler).$promise.then(function(list){
+                scope.ajaxList.getData({is_exclude_params: !scope.actualOptions.ajax_handler}).$promise.then(function(list){
                     scope.ngModel = list;
                     scope.filtredList = scope.ngModel;
                 });

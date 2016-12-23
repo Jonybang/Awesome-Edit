@@ -30,10 +30,35 @@ angular
             else
                 self.defaultSorting['id'] = 'DESC';
 
-            self.getData = function(is_exclude_params){
+            self.getData = function(options){
+                if(options){
+                    if(options.is_add_next_page)
+                        self.paging.current++;
+                    if(options.is_search_changed)
+                        self.paging.current = 1;
+                }
+
                 self.prepareQuery();
 
-                return self.resource.query(is_exclude_params ? {} : self.temp_params, function(data, headers){
+                var params = options && options.is_exclude_params ? {} : self.temp_params;
+                var result = self.resource.query(params, function(data, headers){
+                    self.paging.total_items = headers('Meta-Filter-Count');
+                });
+                result.$promise = result.$promise.then(function(data){
+                    if(options && options.is_add_next_page)
+                        self.data = _.concat(self.data, data);
+                    else
+                        self.data = data;
+                    return self.data;
+                });
+                return result;
+            };
+
+            self.getAllData = function(){
+                self.prepareQuery();
+                delete self.temp_params._limit;
+                delete self.temp_params._offset;
+                return self.resource.query(self.temp_params, function(data, headers){
                     self.data = data;
                     self.paging.total_items = headers('Meta-Filter-Count');
                     return data;
