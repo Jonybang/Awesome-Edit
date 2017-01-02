@@ -164,6 +164,12 @@ angular
                     if(scope.fakeModel == newVal)
                         return;
 
+                    if(Array.isArray(scope.fakeModel) && Array.isArray(newVal)){
+                        if(scope.fakeModel.length == newVal.length
+                            && scope.fakeModel.every(function(v,i) { return v === newVal[i]}))
+                            return
+                    }
+
                     scope.fakeModel = newVal;
 
                     if(scope.type == 'multiselect' && angular.isObject(scope.fakeModel)){
