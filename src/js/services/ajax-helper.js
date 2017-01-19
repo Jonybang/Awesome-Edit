@@ -72,6 +72,7 @@ angular
                 self.pagingToQuery();
                 self.sortingToQuery();
                 self.likeParamsToQuery();
+                return self.temp_params;
             };
 
             self.searchToQuery = function(){
