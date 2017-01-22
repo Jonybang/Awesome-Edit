@@ -259,10 +259,13 @@ angular
 
                             if(foundItem){
                                 scope.options.selected[index] = foundItem;
+                                scope.options.selected[index].index = foundItem.id;
                             } else {
                                 getObjectFromServer(id).then(function(serverItem){
-                                    if(serverItem)
+                                    if(serverItem){
                                         scope.options.selected[index] = serverItem;
+                                        scope.options.selected[index].index = serverItem.id;
+                                    }
                                 })
                             }
                         });

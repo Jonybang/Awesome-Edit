@@ -5,7 +5,7 @@ angular
   .run(['amMoment', '$templateCache', function(amMoment, $templateCache) {
     amMoment.changeLocale('ru');
     
-    $templateCache.put('a-edit-image-popover.html', '<img class="img-responsive" ng-src="{{::image}}" alt="">');
+    $templateCache.put('a-edit-image-popover.html', '<img class="fit" ng-src="{{::image}}" alt="">');
     
     $templateCache.put('a-edit-date-input.html', '\
             <div class="date-input">\
@@ -1177,10 +1177,13 @@ angular
 
                             if(foundItem){
                                 scope.options.selected[index] = foundItem;
+                                scope.options.selected[index].index = foundItem.id;
                             } else {
                                 getObjectFromServer(id).then(function(serverItem){
-                                    if(serverItem)
+                                    if(serverItem){
                                         scope.options.selected[index] = serverItem;
+                                        scope.options.selected[index].index = serverItem.id;
+                                    }
                                 })
                             }
                         });
