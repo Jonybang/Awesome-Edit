@@ -260,6 +260,9 @@ angular
                         scope.options.selected = angular.copy(scope.ngModel);
 
                         scope.ngModel.forEach(function(id, index){
+                            if(scope.objectsById[id])
+                                return;
+
                             var foundItem = null;
                             scope.local_list.some(function(item){
                                 if(item.id == id)
