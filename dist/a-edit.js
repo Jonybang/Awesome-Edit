@@ -1052,15 +1052,14 @@ angular
                 // Callbacks
                 //=============================================================
                 scope.selectedItemChange = function(obj){
-                    if(!obj)
-                        return;
-
                     $timeout(scope.onSelect);
                     $timeout(scope.ngChange);
 
                     if(scope.type == 'select')  {
                         scope.fakeModel = scope.options.selected ?  scope.options.selected.id || scope.options.selected.value : null;
                     } else if(scope.type == 'multiselect'){
+                        if(!obj)
+                            return;
                         scope.options.selected = scope.options.selected ?  scope.options.selected.filter(function(obj){return !angular.isObject(obj);}) : [];
                         scope.fakeModel = scope.options.selected;
 
