@@ -1082,7 +1082,8 @@ angular
                 scope.removeFromMultiSelect = function(item){
                     $timeout(scope.ngChange);
 
-                    scope.ngModel.splice(scope.fakeModel.indexOf(item.id), 1);
+                    if(scope.ngModel.includes(item))
+                        scope.ngModel.splice(scope.ngModel.indexOf(item), 1);
                     scope.fakeModel = scope.ngModel;
                     scope.setSelected();
                 };
