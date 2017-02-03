@@ -151,3 +151,11 @@ md-checkbox > .md-container.md-ink-ripple {
 .padding-top {
   padding-top: 15px !important;
 }
+
+md-grid-tile > figure > * {
+  height: 100%;
+}
+
+md-grid-tile > figure img {
+  max-height: 100%;
+}
