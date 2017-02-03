@@ -5,7 +5,7 @@ angular
   .run(['amMoment', '$templateCache', function(amMoment, $templateCache) {
     amMoment.changeLocale('ru');
     
-    $templateCache.put('a-edit-image-popover.html', '<img class="img-responsive" ng-src="{{::image}}" alt="">');
+    $templateCache.put('a-edit-image-popover.html', '<img class="fit" ng-src="{{::image}}" alt="">');
     
     $templateCache.put('a-edit-date-input.html', '\
             <div class="date-input">\
@@ -940,7 +940,7 @@ angular
                 template += '' +
                     '<md-chips ng-model="options.selected" md-on-remove="removeFromMultiSelect($chip)">' +
                         '<md-chip-template>' +
-                            '<span>{{getNameFromObj($chip)}}</span>' +
+                            '<span>{{getNameFromObj(objectsById[$chip])}}</span>' +
                         '</md-chip-template>';
             }
 
@@ -1051,14 +1051,22 @@ angular
                 //=============================================================
                 // Callbacks
                 //=============================================================
-                scope.selectedItemChange = function(){
+                scope.selectedItemChange = function(obj){
                     $timeout(scope.onSelect);
                     $timeout(scope.ngChange);
 
                     if(scope.type == 'select')  {
                         scope.fakeModel = scope.options.selected ?  scope.options.selected.id || scope.options.selected.value : null;
                     } else if(scope.type == 'multiselect'){
-                        scope.fakeModel = scope.options.selected ?  scope.options.selected.map(function(item){return item.id;}) : [];
+                        if(!obj)
+                            return;
+                        scope.options.selected = scope.options.selected ?  scope.options.selected.filter(function(obj){return !angular.isObject(obj);}) : [];
+                        scope.fakeModel = scope.options.selected;
+
+                        scope.options.selected.push(obj.id);
+                        if(!scope.objectsById)
+                            scope.objectsById = {};
+                        scope.objectsById[obj.id] = obj;
                     } else if(scope.type == 'textselect'){
                         scope.fakeModel = scope.options.selected;
                     }
@@ -1073,7 +1081,8 @@ angular
                 scope.removeFromMultiSelect = function(item){
                     $timeout(scope.ngChange);
 
-                    scope.ngModel.splice(scope.fakeModel.indexOf(item.id), 1);
+                    if(scope.ngModel.includes(item))
+                        scope.ngModel.splice(scope.ngModel.indexOf(item), 1);
                     scope.fakeModel = scope.ngModel;
                     scope.setSelected();
                 };
@@ -1081,6 +1090,12 @@ angular
                 scope.$watch('ngModel', function(newVal){
                     if(scope.fakeModel == newVal)
                         return;
+
+                    if(Array.isArray(scope.fakeModel) && Array.isArray(newVal)){
+                        if(scope.fakeModel.length == newVal.length
+                            && scope.fakeModel.every(function(v,i) { return v === newVal[i]}))
+                            return
+                    }
 
                     scope.fakeModel = newVal;
 
@@ -1151,6 +1166,8 @@ angular
                     }
 
                     if(scope.type == 'multiselect'){
+                        if(!scope.objectsById)
+                            scope.objectsById = {};
                         if(!scope.ngModel || !scope.ngModel.length){
                             scope.options.selected = [];
                             return;
@@ -1158,9 +1175,12 @@ angular
                         else if(scope.options.selected && scope.options.selected.length && scope.fakeModel.length == scope.options.selected.length)
                             return;
 
-                        scope.options.selected = [];
+                        scope.options.selected = angular.copy(scope.ngModel);
 
                         scope.ngModel.forEach(function(id, index){
+                            if(scope.objectsById[id])
+                                return;
+
                             var foundItem = null;
                             scope.local_list.some(function(item){
                                 if(item.id == id)
@@ -1170,11 +1190,11 @@ angular
                             });
 
                             if(foundItem){
-                                scope.options.selected[index] = foundItem;
+                                scope.objectsById[foundItem.id] = foundItem;
                             } else {
                                 getObjectFromServer(id).then(function(serverItem){
                                     if(serverItem)
-                                        scope.options.selected[index] = serverItem;
+                                        scope.objectsById[serverItem.id] = serverItem;
                                 })
                             }
                         });
@@ -1602,6 +1622,7 @@ angular
                 self.pagingToQuery();
                 self.sortingToQuery();
                 self.likeParamsToQuery();
+                return self.temp_params;
             };
 
             self.searchToQuery = function(){
