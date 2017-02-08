@@ -508,6 +508,10 @@ angular
                     scope.ngModel.forEach(function(item, index){
                         item.index = index;
                     });
+
+                    if(scope.ngChange)
+                        $timeout(scope.ngChange);
+
                     scope.search();
                 };
 
