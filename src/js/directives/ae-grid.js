@@ -27,6 +27,7 @@ angular
                 order_by: '-id',
                 track_by: '',
                 default_attrs: {},
+                params: {},
                 modal_index: 0,
                 search_debounce: 200,
                 fields: [],
@@ -264,6 +265,7 @@ angular
             // *************************************************************
 
             scope.getList = function(){
+                angular.extend(scope.ajaxList.params, scope.actualOptions.params);
                 scope.ajaxList.getData({is_exclude_params: !scope.actualOptions.ajax_handler}).$promise.then(function(list){
                     scope.ngModel = list;
                     scope.filtredList = scope.ngModel;
@@ -430,7 +432,7 @@ angular
                 }
 
                 function sendItem(){
-                    var resource = new scope.actualOptions.resource(request_object);
+                    var resource = new scope.actualOptions.resource(angular.extend(request_object, scope.actualOptions.params));
 
                     if('id' in request_object && request_object.id){
                         // update if id field exist

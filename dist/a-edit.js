@@ -298,6 +298,7 @@ angular
                 order_by: '-id',
                 track_by: '',
                 default_attrs: {},
+                params: {},
                 modal_index: 0,
                 search_debounce: 200,
                 fields: [],
@@ -535,6 +536,7 @@ angular
             // *************************************************************
 
             scope.getList = function(){
+                angular.extend(scope.ajaxList.params, scope.actualOptions.params);
                 scope.ajaxList.getData({is_exclude_params: !scope.actualOptions.ajax_handler}).$promise.then(function(list){
                     scope.ngModel = list;
                     scope.filtredList = scope.ngModel;
@@ -701,7 +703,7 @@ angular
                 }
 
                 function sendItem(){
-                    var resource = new scope.actualOptions.resource(request_object);
+                    var resource = new scope.actualOptions.resource(angular.extend(request_object, scope.actualOptions.params));
 
                     if('id' in request_object && request_object.id){
                         // update if id field exist
@@ -948,6 +950,7 @@ angular
                         '<md-autocomplete ' +
                             (type == 'select' || type == 'textselect' ? 'ng-if="!viewMode" md-selected-item="$parent.options.selected" ' : ' ') +
                             'id="{{id}}" ' +
+                            'md-clear-button="!disallowClear"' +
                             'md-search-text="options.search" ' +
                             'md-items="item in getListByResource(options.search)" ' + // | filter:options.search"
                             'md-no-cache="true" ' +
@@ -991,6 +994,7 @@ angular
                 ngModelStr: '=?',
                 viewMode: '=?',
                 hasError: '=?',
+                disallowClear: '=?',
 
                 ngResource: '=?',
                 ngResourceFields: '=?',
@@ -1406,7 +1410,7 @@ angular
                 '</div>' +
                 '<div ng-if="!viewMode" ng-class="input_class" layout>' +
                 inputTagBegin +
-                //' placeholder="{{$parent.placeholder}}" ' +
+                ' placeholder="{{$parent.placeholder}}" ' +
                 ' ng-model="$parent.ngModel" ' + (type != 'textarea' ? 'ng-enter="$parent.save()"' : '') +
                 ' ng-model-options="$parent.ngModelOptions || {}"' +
                 ' ng-style="{ \'width\' : $parent.width + \'px\'}"' +

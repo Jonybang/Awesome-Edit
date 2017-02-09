@@ -30,6 +30,7 @@ angular
                         '<md-autocomplete ' +
                             (type == 'select' || type == 'textselect' ? 'ng-if="!viewMode" md-selected-item="$parent.options.selected" ' : ' ') +
                             'id="{{id}}" ' +
+                            'md-clear-button="!disallowClear"' +
                             'md-search-text="options.search" ' +
                             'md-items="item in getListByResource(options.search)" ' + // | filter:options.search"
                             'md-no-cache="true" ' +
@@ -73,6 +74,7 @@ angular
                 ngModelStr: '=?',
                 viewMode: '=?',
                 hasError: '=?',
+                disallowClear: '=?',
 
                 ngResource: '=?',
                 ngResourceFields: '=?',

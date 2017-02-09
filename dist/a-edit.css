@@ -93,7 +93,7 @@ md-grid-list md-grid-tile ae-select-input.edit md-autocomplete {
 
 md-grid-list md-grid-tile ae-text-input.edit {
   position: relative;
-  top: 17px;
+  /*top: 17px;*/
 }
 
 md-grid-tile ae-text-input:not(.edit),
@@ -158,4 +158,13 @@ md-grid-tile > figure > * {
 
 md-grid-tile > figure img {
   max-height: 100%;
+}
+
+ae-grid .md-subheader .md-subheader-inner {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+ae-grid md-input-container {
+  margin: 0;
 }
