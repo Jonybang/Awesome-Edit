@@ -83,6 +83,7 @@ angular.module('a-edit')
                     
                 output += 'ng-model="' + item_field + '" ' +
                     'on-save="save(' + item_name + ')" ' +
+                    'on-add="save({' + field_name + ': addNgModel, is_new: true})" ' +
                     'has-error="' + item_name + '.errors.' + field_name + '" ' +
                     'ng-model-str="' + item_name + '.' +  field_name + '_str" ' +
                     'ng-model-sub-str="' + item_name + '.' +  field_name + '_sub_str" ' +
