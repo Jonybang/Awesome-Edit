@@ -30,9 +30,9 @@ angular
                         '<md-autocomplete ' +
                             (type == 'select' || type == 'textselect' ? 'ng-if="!viewMode" md-selected-item="$parent.options.selected" ' : ' ') +
                             'id="{{id}}" ' +
-                            'name="{{name}}"' +
-                            'ng-required="ngRequired"' +
-                            'md-clear-button="!disallowClear"' +
+                            'name="{{name}}" ' +
+                            'ng-required="ngRequired" ' +
+                            'md-clear-button="!disallowClear" ' +
                             'md-search-text="options.search" ' +
                             'md-items="item in getListByResource(options.search)" ' + // | filter:options.search"
                             'md-no-cache="true" ' +
