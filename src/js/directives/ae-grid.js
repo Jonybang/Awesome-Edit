@@ -23,6 +23,7 @@ angular
                     bold_headers: true,
                     modal_adder: false,
                     ajax_handler: false,
+                    drag_disabled: true,
                     resource: null,
                     order_by: '-id',
                     track_by: '',
@@ -78,7 +79,7 @@ angular
                     if (scope.actualOptions.search) {
                         tplHtml +=
                             '       <md-input-container class="md-block no-margin" flex="grow">' +
-                            '           <label>Search</label>' +
+                            '           <label>' + AEditConfig.locale.search + '</label>' +
                             '           <input ng-model="ajaxList.search" ng-model-options="{ debounce: ' + scope.actualOptions.search_debounce + ' }">' +
                             '       </md-input-container>';
                     }
@@ -113,7 +114,7 @@ angular
 
                     var track_by = scope.actualOptions.track_by == '$index' ? scope.actualOptions.track_by : 'item.' + scope.actualOptions.track_by;
                     var tplBodyItem =
-                        '<md-list-item ng-click="null" class="md-1-line word-wrap" ng-repeat="item in filtredList track by ' + track_by + '"  dnd-list="filtredList"  dnd-draggable="item" dnd-effect-allowed="move" dnd-moved="filtredList.splice($index, 1)" dnd-drop="drop($index, item)">' +
+                        '<md-list-item ng-click="null" class="md-1-line word-wrap" ng-repeat="item in filtredList track by ' + track_by + '"  dnd-list="filtredList"  dnd-draggable="item" dnd-disable-if="actualOptions.drag_disabled" dnd-effect-allowed="move" dnd-moved="filtredList.splice($index, 1)" dnd-drop="drop($index, item)">' +
                         '   <md-content layout layout-fill layout-align="center" flex="grow">' +
                         md_grid_list;
 
@@ -193,23 +194,23 @@ angular
 
                         tplBodyNewItem +=
                             '<md-grid-tile>' +
-                            '<md-button class="md-fab md-mini md-primary" ng-click="save(new_item)">' +
-                            '<md-icon>save</md-icon>' +
-                            '</md-button>' +
+                            '   <md-button class="md-fab md-mini md-primary" ng-click="save(new_item)">' +
+                            '       <md-icon>save</md-icon>' +
+                            '   </md-button>' +
                             '</md-grid-tile>';
 
                         tplBodyItem +=
                             '<md-grid-tile>' +
-                            '<md-menu>' +
-                            '<md-button class="md-icon-button" ng-click="$mdOpenMenu($event)"><md-icon md-menu-origin>more_vert</md-icon></md-button>' +
-                            '<md-menu-content width="4">' +
-                            '<md-menu-item ng-show="item.id"><md-button ng-click="save(item)" ae-object-modal="item" modal-resource-options="actualOptions" on-save="save(item)"><md-icon>open_in_new</md-icon>Open</md-button></md-menu-item>' +
-                            '<md-menu-item ng-show="item.is_edit"><md-button ng-click="save(item)"><md-icon>save</md-icon>Save</md-button></md-menu-item>' +
-                            '<md-menu-item ng-show="item.is_edit"><md-button ng-click="editItem(item)"><md-icon>settings_backup_restore</md-icon>Cancel edit</md-button></md-menu-item>' +
-                            '<md-menu-item ng-hide="item.is_edit"><md-button ng-click="item.is_edit = true"><md-icon>mode_edit</md-icon>Edit</md-button></md-menu-item>' +
-                            (scope.actualOptions.delete ? '<md-menu-item><md-button ng-click="deleteConfirm(item)"><md-icon>delete</md-icon>Delete</md-button></md-menu-item>' : '') +
-                            '</md-menu-content>' +
-                            '</md-menu>' +
+                            '   <md-menu>' +
+                            '       <md-button class="md-icon-button" ng-click="$mdOpenMenu($event)"><md-icon md-menu-origin>more_vert</md-icon></md-button>' +
+                            '       <md-menu-content width="4">' +
+                            '           <md-menu-item ng-show="item.is_edit"><md-button ng-click="save(item)"><md-icon>save</md-icon>' + AEditConfig.locale.save + '</md-button></md-menu-item>' +
+                            '           <md-menu-item ng-show="item.id"><md-button ae-object-modal="item" modal-resource-options="actualOptions" on-save="save(item)"><md-icon>open_in_new</md-icon>' + AEditConfig.locale.open + '</md-button></md-menu-item>' +
+                            '           <md-menu-item ng-show="item.is_edit"><md-button ng-click="editItem(item)"><md-icon>settings_backup_restore</md-icon>' + AEditConfig.locale.cancel_edit + '</md-button></md-menu-item>' +
+                            '           <md-menu-item ng-hide="item.is_edit"><md-button ng-click="item.is_edit = true"><md-icon>mode_edit</md-icon>' + AEditConfig.locale.edit + '</md-button></md-menu-item>' +
+                                        (scope.actualOptions.delete ? '<md-menu-item><md-button ng-click="deleteConfirm(item)"><md-icon>delete</md-icon>' + AEditConfig.locale.delete + '</md-button></md-menu-item>' : '') +
+                            '       </md-menu-content>' +
+                            '   </md-menu>' +
                             '</md-grid-tile>';
                     }
 
@@ -436,9 +437,10 @@ angular
                     }
 
                     function sendItem() {
-                        var resource = new scope.actualOptions.resource(request_object);
+                        var resource = null;
 
                         if ('id' in request_object && request_object.id) {
+                            resource = new scope.actualOptions.resource(request_object);
                             // update if id field exist
                             AEditHelpers.getResourceQuery(resource, 'update').then(function (updated_item) {
                                 angular.extend(item, updated_item);
@@ -451,99 +453,98 @@ angular
                                 request_object[attr] = value;
                             });
 
-                            function sendItem() {
-                                var resource = new scope.actualOptions.resource(angular.extend(request_object, scope.actualOptions.params));
-                                AEditHelpers.getResourceQuery(resource, 'create').then(function (created_item) {
-                                    created_item.is_new = true;
-                                    scope.ngModel.unshift(created_item);
-                                    delete scope.new_item;
-                                    scope.new_item = angular.copy(new_item);
+                            resource = new scope.actualOptions.resource(angular.extend(request_object, scope.actualOptions.params));
+                            AEditHelpers.getResourceQuery(resource, 'create').then(function (created_item) {
+                                created_item.is_new = true;
+                                scope.ngModel.unshift(created_item);
+                                delete scope.new_item;
+                                scope.new_item = angular.copy(new_item);
 
-                                    saveCallbacks(item);
-                                });
-                            }
-                        }
-                    };
-                    // *************************************************************
-                    // DELETE
-                    // *************************************************************
-
-                    scope.deleteConfirm = function (item) {
-                        var index = scope.ngModel.indexOf(item);
-
-                        function deleteCallbacks() {
-                            scope.ngModel.splice(index, 1);
-                            if (scope.ngChange)
-                                $timeout(scope.ngChange);
-
-                            if (scope.actualOptions.callbacks.onChange)
-                                $timeout(scope.actualOptions.callbacks.onChange);
-                        }
-
-                        if (mode != 'remote') {
-                            deleteCallbacks();
-                            return;
-                        }
-
-                        if (confirm('Do you want delete object "' + (item.name || item.key || item.title) + '"?')) {
-                            AEditHelpers.getResourceQuery(new scope.actualOptions.resource(item), 'delete').then(function () {
-                                deleteCallbacks();
+                                saveCallbacks(item);
                             });
                         }
-                    };
+                    }
+                };
 
-                    scope.drop = function (dropped_index, dropped_item) {
-                        var previousIndex = null;
-                        scope.ngModel.some(function (item, index) {
-                            var result = item.json_id == dropped_item.json_id;
-                            if (result)
-                                previousIndex = index;
-                            return result;
-                        });
+                // *************************************************************
+                // DELETE
+                // *************************************************************
 
-                        if (previousIndex === null)
-                            return;
+                scope.deleteConfirm = function (item) {
+                    var index = scope.ngModel.indexOf(item);
 
-                        scope.ngModel.splice(previousIndex, 1);
-
-                        if (previousIndex > dropped_index) {
-                            scope.ngModel.splice(dropped_index, 0, dropped_item);
-                        } else {
-                            scope.ngModel.splice(dropped_index - 1, 0, dropped_item);
-                        }
-                        scope.ngModel.forEach(function (item, index) {
-                            item.index = index;
-                        });
-
+                    function deleteCallbacks() {
+                        scope.ngModel.splice(index, 1);
                         if (scope.ngChange)
                             $timeout(scope.ngChange);
 
-                        scope.search();
-                    };
+                        if (scope.actualOptions.callbacks.onChange)
+                            $timeout(scope.actualOptions.callbacks.onChange);
+                    }
 
-                    // *************************************************************
-                    // WATCHERS
-                    // *************************************************************
+                    if (mode != 'remote') {
+                        deleteCallbacks();
+                        return;
+                    }
 
-                    scope.$watchCollection('ngModel', function (list) {
-                        if (!list)
-                            return;
+                    if (confirm(AEditConfig.locale.delete_confirm + ' "' + (item.name || item.key || item.title || item.value) + '"?')) {
+                        AEditHelpers.getResourceQuery(new scope.actualOptions.resource(item), 'delete').then(function () {
+                            deleteCallbacks();
+                        });
+                    }
+                };
 
-                        if (mode == 'local') {
-                            var track_by = scope.actualOptions.track_by;
-                            list.forEach(function (item, index) {
-                                if (!item[track_by] || item[track_by] == 0) {
-                                    item[track_by] = list.length + index + 1;
-                                }
-                                if (!item.json_id)
-                                    item.json_id = item[track_by];
-                            })
-                        }
-
-                        scope.search();
-                        scope.actualOptions.lists['self'] = list;
+                scope.drop = function (dropped_index, dropped_item) {
+                    var previousIndex = null;
+                    scope.ngModel.some(function (item, index) {
+                        var result = item.json_id == dropped_item.json_id;
+                        if (result)
+                            previousIndex = index;
+                        return result;
                     });
-                }
+
+                    if (previousIndex === null)
+                        return;
+
+                    scope.ngModel.splice(previousIndex, 1);
+
+                    if (previousIndex > dropped_index) {
+                        scope.ngModel.splice(dropped_index, 0, dropped_item);
+                    } else {
+                        scope.ngModel.splice(dropped_index - 1, 0, dropped_item);
+                    }
+                    scope.ngModel.forEach(function (item, index) {
+                        item.index = index;
+                    });
+
+                    if (scope.ngChange)
+                        $timeout(scope.ngChange);
+
+                    scope.search();
+                };
+
+                // *************************************************************
+                // WATCHERS
+                // *************************************************************
+
+                scope.$watchCollection('ngModel', function (list) {
+                    if (!list)
+                        return;
+
+                    if (mode == 'local') {
+                        var track_by = scope.actualOptions.track_by;
+                        list.forEach(function (item, index) {
+                            if (!item[track_by] || item[track_by] == 0) {
+                                item[track_by] = list.length + index + 1;
+                            }
+                            if (!item.json_id)
+                                item.json_id = item[track_by];
+                        })
+                    }
+
+                    scope.search();
+                    scope.actualOptions.lists['self'] = list;
+                });
             }
         }
     }]);

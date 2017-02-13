@@ -27,7 +27,7 @@ angular
                             '<md-dialog class="ae-object-modal">' +
                                 '<md-toolbar>' +
                                     '<div class="md-toolbar-tools">' +
-                                        '<h3>Awesome modal!</h3>' +
+                                        '<h3>' + AEditConfig.locale.modal + '</h3>' +
 
                                         '<span flex></span>' +
 

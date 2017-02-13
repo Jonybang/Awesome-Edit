@@ -4,6 +4,7 @@ angular
   
   .run(['amMoment', '$templateCache', function(amMoment, $templateCache) {
     amMoment.changeLocale('ru');
+
     
     $templateCache.put('a-edit-image-popover.html', '<img class="fit" ng-src="{{::image}}" alt="">');
     

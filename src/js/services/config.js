@@ -33,5 +33,16 @@ angular.module('a-edit')
             reset_search_input: true
         };
 
+        this.locale = {
+            search: 'Search',
+            open: 'Open',
+            edit: 'Edit',
+            save: 'Save',
+            cancel_edit: 'Cancel edit',
+            delete: 'Delete',
+            delete_confirm: 'Do you want delete object',
+            modal: 'Edit'
+        };
+
         return this;
     }]);
