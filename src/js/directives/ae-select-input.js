@@ -73,6 +73,7 @@ angular
                 //require
                 list: '=?',
                 ngModel: '=',
+                params: '=?',
                 ngModelStr: '=?',
                 viewMode: '=?',
                 hasError: '=?',
@@ -213,7 +214,7 @@ angular
                     if(!scope.ngResource)
                         return $filter('filter')(scope.local_list, query);
 
-                    var request_options = {};
+                    var request_options = angular.extend({}, scope.params || {});
                     if(scope.options.search)
                         request_options[variables['query']] = scope.options.search;
                     else
@@ -234,6 +235,7 @@ angular
 
                 scope.$watch('ngResource', initListGetByResource);
                 scope.$watch('refreshListOn', initListGetByResource);
+                scope.$watchCollection('params', scope.getListByResource);
 
                 //=============================================================
                 // Output non edit mode
