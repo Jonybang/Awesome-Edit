@@ -38,10 +38,14 @@ angular.module('a-edit')
             open: 'Open',
             edit: 'Edit',
             save: 'Save',
+            cancel: 'Cancel',
             cancel_edit: 'Cancel edit',
             delete: 'Delete',
             delete_confirm: 'Do you want delete object',
-            modal: 'Edit'
+            modal: 'Edit',
+            not_found: 'Not found.',
+            create_new: 'Create New',
+            create_new_question: 'Create a New one?'
         };
 
         return this;

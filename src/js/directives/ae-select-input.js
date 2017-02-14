@@ -40,14 +40,14 @@ angular
                             'md-search-text-change="getListByResource(options.search)" ' +
                             'md-selected-item-change="selectedItemChange(item)" ' +
                             'md-item-text="' + mdSelect.itemName + '" ' +
-                            'md-min-length="0" ' +
+                            'md-min-length="autoCompleteMinLength" ' +
                             'placeholder="{{placeholder}}"' +
                             '> ' +
                                 '<md-item-template> ' +
                                     '<span md-highlight-text="options.search" md-highlight-flags="^i">{{' + mdSelect.itemName + '}}</span> ' +
                                 '</md-item-template>' +
                                 '<md-not-found>' +
-                                    'Not found. <a ng-click="newItem(options.search)" ng-show="adder">Create a new one?</a>' +
+                                    AEditConfig.locale.not_found + ' <a ng-click="newItem(options.search)" ng-show="adder">' + AEditConfig.locale.create_new_question + '</a>' +
                                 '</md-not-found>' +
                         '</md-autocomplete>';
 
@@ -106,6 +106,7 @@ angular
                 //=============================================================
                 var variables = angular.extend({}, AEditConfig.grid_options.request_variables, AEditConfig.grid_options.response_variables);
 
+                scope.autoCompleteMinLength = 0;
                 scope.refreshDelay = AEditConfig.select_options.refresh_delay;
                 scope.resetSearchInput = AEditConfig.select_options.reset_search_input;
 
@@ -185,6 +186,9 @@ angular
                             return
                     }
 
+                    if(!newVal)
+                        scope.options.search = '';
+
                     scope.fakeModel = newVal;
 
                     if(scope.type == 'multiselect' && angular.isObject(scope.fakeModel)){
@@ -228,7 +232,9 @@ angular
                     return AEditHelpers.getResourceQuery(scope.ngResource, 'get', request_options).then(function(list){
                         scope.local_list = list;
 
-                        scope.setSelected();
+                        if(scope.fakeModel)
+                            scope.setSelected();
+
                         return list;
                     });
                 };
@@ -290,6 +296,10 @@ angular
                     } else if(scope.type == 'select')  {
                         if(!scope.ngModel){
                             scope.options.selected = null;
+                            if(scope.options.search)
+                                return;
+
+                            closeSelectList();
                             return;
                         } else if(scope.options.selected){
                             return;
@@ -312,6 +322,16 @@ angular
                 function getObjectFromServer(id){
                     return AEditHelpers.getResourceQuery(scope.ngResource, 'show', {id: id});
                 }
+
+                function closeSelectList(){
+                    scope.autoCompleteMinLength = 1;
+                    scope.options.search = '';
+                    $timeout(function () {
+                        scope.autoCompleteMinLength = 0;
+                        angular.element(element).find('input').blur();
+                    }, 500);
+                }
+
                 scope.getNameFromObj = function(obj){
                     if(!obj)
                         return '';
@@ -384,6 +404,8 @@ angular
                         }
                     });
 
+                    closeSelectList();
+
                     var position = $mdPanel.newPanelPosition()
                         .relativeTo('#' + scope.id)
                         .addPanelPosition($mdPanel.xPosition.ALIGN_START, $mdPanel.yPosition.BELOW);
@@ -410,13 +432,13 @@ angular
                         }],
                         template: '' +
                         '<md-content layout="column">' +
-                            '<md-toolbar class="md-primary"><div class="md-toolbar-tools"><h4>Create new</h4><span class="flex"></span><md-button class="md-icon-button" ng-click="cancel()"><md-icon>close</md-icon></md-button></div></md-toolbar>' +
+                            '<md-toolbar class="md-primary"><div class="md-toolbar-tools"><h4>' + AEditConfig.locale.create_new + '</h4><span class="flex"></span><md-button class="md-icon-button" ng-click="cancel()"><md-icon>close</md-icon></md-button></div></md-toolbar>' +
                             '<md-content layout="row" class="padding padding-top" layout-wrap>' +
                                 inputsHtml +
                             '</md-content>' +
                             '<md-content layout="row">' +
-                                '<md-button ng-click="save()">Save</md-button>' +
-                                '<md-button ng-click="cancel()">Cancel</md-button>' +
+                                '<md-button ng-click="save()">' + AEditConfig.locale.save + '</md-button>' +
+                                '<md-button ng-click="cancel()">' + AEditConfig.locale.cancel + '</md-button>' +
                             '</md-content>' +
                         '</md-content>'
                     }).then(function(mdPanelRef){
@@ -441,7 +463,7 @@ angular
                         return;
                     }
 
-                    AEditHelpers.getResourceQuery(new scope.ngResource(new_object), 'create').then(function(object){
+                    AEditHelpers.getResourceQuery(new scope.ngResource(angular.extend(new_object, scope.params || {})), 'create').then(function(object){
                         scope.options.search = '';
 
                         if(scope.type == 'multiselect')
