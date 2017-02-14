@@ -961,12 +961,7 @@ angular
     }]);
 angular
     .module('a-edit')
-
-<<<<<<< HEAD
-    .directive('aeSelectInput', ['$timeout', '$filter', '$compile', '$templateCache', '$mdDialog', 'AEditHelpers' ,'AEditConfig', function($timeout, $filter, $compile, $templateCache, $mdDialog, AEditHelpers, AEditConfig) {
-=======
-    .directive('aeSelectInput', ['$timeout', '$filter', '$compile', '$templateCache', '$mdPanel', 'AEditHelpers' ,'AEditConfig', '$q', function($timeout, $filter, $compile, $templateCache, $mdPanel, AEditHelpers, AEditConfig, $q) {
->>>>>>> 64fbc977aaa2984a2b6435751e68559f39253fb8
+    .directive('aeSelectInput', ['$timeout', '$filter', '$compile', '$templateCache', '$mdDialog', 'AEditHelpers' ,'AEditConfig', '$q', function($timeout, $filter, $compile, $templateCache, $mdDialog, AEditHelpers, AEditConfig, $q) {
         function getTemplateByType(type, options){
             options = options || {};
 
