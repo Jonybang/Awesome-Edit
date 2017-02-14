@@ -962,7 +962,11 @@ angular
 angular
     .module('a-edit')
 
+<<<<<<< HEAD
     .directive('aeSelectInput', ['$timeout', '$filter', '$compile', '$templateCache', '$mdDialog', 'AEditHelpers' ,'AEditConfig', function($timeout, $filter, $compile, $templateCache, $mdDialog, AEditHelpers, AEditConfig) {
+=======
+    .directive('aeSelectInput', ['$timeout', '$filter', '$compile', '$templateCache', '$mdPanel', 'AEditHelpers' ,'AEditConfig', '$q', function($timeout, $filter, $compile, $templateCache, $mdPanel, AEditHelpers, AEditConfig, $q) {
+>>>>>>> 64fbc977aaa2984a2b6435751e68559f39253fb8
         function getTemplateByType(type, options){
             options = options || {};
 
@@ -995,10 +999,10 @@ angular
                             'ng-required="ngRequired" ' +
                             'md-clear-button="!disallowClear" ' +
                             'md-search-text="options.search" ' +
-                            'md-items="item in getListByResource(options.search)" ' + // | filter:options.search"
+                            'md-items="item in getListByResource()" ' + // | filter:options.search"
                             'md-no-cache="true" ' +
                             'ng-disabled="ngDisabled" ' +
-                            'md-search-text-change="getListByResource(options.search)" ' +
+                            'md-search-text-change="debouncedGetList()" ' +
                             'md-selected-item-change="selectedItemChange(item)" ' +
                             'md-item-text="' + mdSelect.itemName + '" ' +
                             'md-min-length="autoCompleteMinLength" ' +
@@ -1125,7 +1129,7 @@ angular
 
                     //scope.options.search = '';
 
-                    scope.getListByResource();
+                    getList();
                 };
 
                 scope.removeFromMultiSelect = function(item){
@@ -1172,12 +1176,12 @@ angular
                     if(!scope.ngResource || !scope.getList || (scope.local_list && scope.local_list.length))
                         return;
 
-                    scope.getListByResource();
+                    getList();
                 }
 
-                scope.getListByResource = function (query){
+                function getList(resolve, reject){
                     if(!scope.ngResource)
-                        return $filter('filter')(scope.local_list, query);
+                        return $filter('filter')(scope.local_list, scope.options.search);
 
                     var request_options = angular.extend({}, scope.params || {});
                     if(scope.options.search)
@@ -1196,13 +1200,22 @@ angular
                         if(scope.fakeModel)
                             scope.setSelected();
 
-                        return list;
+                        if(angular.isFunction(resolve))
+                            resolve(list);
+                    }, function(response){
+                        if(angular.isFunction(reject))
+                            reject(response);
                     });
+                }
+
+                scope.debouncedGetList = AEditHelpers.debounce(getList, 300);
+                scope.getListByResource = function (){
+                    return $q(scope.debouncedGetList);
                 };
 
                 scope.$watch('ngResource', initListGetByResource);
                 scope.$watch('refreshListOn', initListGetByResource);
-                scope.$watchCollection('params', scope.getListByResource);
+                scope.$watchCollection('params', getList);
 
                 //=============================================================
                 // Output non edit mode
@@ -1972,6 +1985,20 @@ angular.module('a-edit')
             },
             round5: function(x){
                 return Math.floor(x/5)*5;
+            },
+            debounce: function(func, wait, immediate) {
+                var timeout;
+                return function() {
+                    var context = this, args = arguments;
+                    var later = function() {
+                        timeout = null;
+                        if (!immediate) func.apply(context, args);
+                    };
+                    var callNow = immediate && !timeout;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                    if (callNow) func.apply(context, args);
+                };
             }
         };
 
