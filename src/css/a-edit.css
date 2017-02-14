@@ -135,3 +135,8 @@ ae-grid .md-subheader .md-subheader-inner {
 ae-grid md-input-container{
   margin: 0;
 }
+
+md-dialog-content ae-text-input,
+md-dialog-content ae-select-input{
+  width: 100%;
+}
