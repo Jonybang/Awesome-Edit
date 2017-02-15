@@ -214,8 +214,14 @@ angular
                 }
 
                 function getList(resolve, reject){
-                    if(!scope.ngResource)
-                        return $filter('filter')(scope.local_list, scope.options.search);
+                    if(!scope.ngResource){
+                        var filtred = $filter('filter')(scope.local_list, scope.options.search);
+
+                        if(angular.isFunction(resolve))
+                            resolve(filtred);
+
+                        return filtred;
+                    }
 
                     var request_options = angular.extend({}, scope.params || {});
                     if(scope.options.search)
