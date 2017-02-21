@@ -577,10 +577,15 @@ angular
                     if (!item.is_edit) {
                         item.is_edit = true;
                     } else {
+                        item.is_edit = false;
+
+                        //TODO: make this work for local
+                        if(mode != 'remote')
+                            return;
+
                         scope.actualOptions.resource.get(item, function (response) {
                             angular.extend(item, response);
                         });
-                        item.is_edit = false;
                     }
                 };
 
