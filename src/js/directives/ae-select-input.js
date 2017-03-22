@@ -210,6 +210,8 @@ angular
                     if(!scope.ngResource || !scope.getList || (scope.local_list && scope.local_list.length))
                         return;
 
+                    scope.options.selected = null;
+
                     getList();
                 }
 
