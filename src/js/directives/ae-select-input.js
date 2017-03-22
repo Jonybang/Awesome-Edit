@@ -206,13 +206,20 @@ angular
                 //=============================================================
                 // Init select list
                 //=============================================================
+                var last_resource = scope.ngResource;
                 function initListGetByResource(){
-                    if(!scope.ngResource || !scope.getList || (scope.local_list && scope.local_list.length))
-                        return;
-
-                    scope.options.selected = null;
+                    if(!scope.ngResource || !scope.getList || (scope.local_list && scope.local_list.length)){
+                        if(last_resource == scope.ngResource){
+                            return;
+                        } else {
+                            scope.options.selected = null;
+                            scope.objectsById = null;
+                        }
+                    }
 
                     getList();
+
+                    last_resource = scope.ngResource;
                 }
 
                 function getList(resolve, reject){
@@ -255,8 +262,10 @@ angular
                     return $q(scope.debouncedGetList);
                 };
 
-                scope.$watch('ngResource', initListGetByResource);
-                scope.$watch('refreshListOn', initListGetByResource);
+                var debouncedInitList = AEditHelpers.debounce(initListGetByResource, 300);
+
+                scope.$watch('ngResource', debouncedInitList);
+                scope.$watch('refreshListOn', debouncedInitList);
                 scope.$watchCollection('params', getList);
 
                 //=============================================================
