@@ -1206,17 +1206,24 @@ angular
 
                     request_options[variables['limit']] = AEditConfig.select_options.items_per_page;
 
-                    if(scope.type == 'multiselect')
+                    if(scope.type == 'multiselect' && scope.objectsById)
                         request_options[variables['id_not_in']] = scope.ngModel && scope.ngModel.length ? scope.ngModel.join(',') : [];
 
                     return AEditHelpers.getResourceQuery(scope.ngResource, 'get', request_options).then(function(list){
+                        var isResourceWasReinit = scope.ngModel && scope.ngModel.length && !scope.objectsById
                         scope.local_list = list;
 
                         if(scope.fakeModel)
                             scope.setSelected();
 
+                        if(isResourceWasReinit){
+                            scope.local_list = list.filter(function(item){
+                                return !scope.ngModel.includes(item.id);
+                            });
+                        }
+
                         if(angular.isFunction(resolve))
-                            resolve(list);
+                            resolve(scope.local_list);
                     }, function(response){
                         if(angular.isFunction(reject))
                             reject(response);
