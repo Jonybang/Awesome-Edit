@@ -211,10 +211,12 @@ angular
                     if(!scope.ngResource || !scope.getList || (scope.local_list && scope.local_list.length)){
                         if(last_resource == scope.ngResource){
                             return;
-                        } else {
-                            scope.options.selected = null;
-                            scope.objectsById = null;
                         }
+                    }
+
+                    if(last_resource != scope.ngResource){
+                        scope.options.selected = null;
+                        scope.objectsById = null;
                     }
 
                     getList();
