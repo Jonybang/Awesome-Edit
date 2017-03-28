@@ -1436,7 +1436,7 @@ angular
                         controller: ['$scope', '$mdDialog', 'data', function ($scope, $mdDialog, data) {
                             angular.extend($scope, data);
                             $scope.save = function() {
-                                $mdDialog.hide($scope.new_object);
+                                $mdDialog.hide($scope.object);
                             };
                             $scope.cancel = function() {
                                 $mdDialog.cancel();
