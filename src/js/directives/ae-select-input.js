@@ -20,7 +20,7 @@ angular
             if(type == 'multiselect') {
                 template += '' +
                     '<md-chips ng-model="options.selected" md-on-remove="removeFromMultiSelect($chip)">' +
-                        '<md-chip-template ng-click="editItem(objectsById[$chip])">' +
+                        '<md-chip-template ng-dblclick="editItem(objectsById[$chip])">' +
                             '<span>{{getNameFromObj(objectsById[$chip])}}</span>' +
                         '</md-chip-template>';
             }
