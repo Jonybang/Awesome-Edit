@@ -9,7 +9,7 @@ angular
     $templateCache.put('a-edit-image-popover.html', '<img class="fit" ng-src="{{::image}}" alt="">');
     
     $templateCache.put('a-edit-date-input.html', '\
-            <div class="date-input">\
+        <div class="date-input">\
             <span ng-if="viewMode">{{ngModelStr}}</span>\
             \
             <div ng-if="!viewMode" class="input-group">\
@@ -37,10 +37,12 @@ angular
         </div>\
     ');
 
-    $templateCache.put('a-edit-bool-input.html', '<div>\
-        <span ng-if="viewMode" ng-class="[\'glyphicon\',{\'glyphicon-check\': $parent.fakeModel, \'glyphicon-unchecked\': !$parent.fakeModel}]"></span>\
-        <md-checkbox ng-if="!viewMode" ng-model="$parent.fakeModel" ng-change="$parent.change()">{{$parent.label}}</md-checkbox>\
-    </div>');
+    $templateCache.put('a-edit-bool-input.html', '\
+        <div>\
+            <md-icon ng-if="viewMode">{{$parent.fakeModel ? "done" : "crop_din"}}</md-icon>\
+            <md-checkbox ng-if="!viewMode" ng-model="$parent.fakeModel" ng-change="$parent.change()">{{$parent.label}}</md-checkbox>\
+        </div>\
+    ');
 
     $templateCache.put('a-edit-popover-image.html', '\
         <a target="_blank" href="{{::image}}" uib-popover-template="imagePopoverPath" popover-placement="left" popover-trigger="mouseenter">\
