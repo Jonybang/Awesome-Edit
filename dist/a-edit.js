@@ -1068,6 +1068,7 @@ angular
                 nameField: '@',
                 orNameField: '@',
                 placeholder: '@',
+                defaultValue: '@',
                 label: '@',
                 name: '@',
                 type: '@' //select or multiselect
@@ -1091,6 +1092,9 @@ angular
                 scope.full_type = scope.type = scope.type || 'select';
                 if(scope.adder)
                     scope.full_type += '-adder';
+
+                if(attrs.defaultValue)
+                    scope.ngModel = scope.defaultValue;
 
                 scope.fakeModel = scope.ngModel;
 

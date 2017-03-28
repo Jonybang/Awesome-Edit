@@ -136,6 +136,9 @@ ae-grid md-input-container{
   margin: 0;
 }
 
+md-dialog-content > .ae-select-input-dialog-field {
+  padding-bottom: 5px;
+}
 md-dialog-content > .ae-select-input-dialog-field > * {
   width: 100%;
 }
