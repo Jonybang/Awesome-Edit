@@ -1907,6 +1907,9 @@ angular.module('a-edit')
                 if(field.fields)
                     output += 'ng-resource-fields="' + field.name + '_fields" ';
 
+                if(field.config)
+                    output += 'config="' + JSON.stringify(field.config) + '" ';
+
                 if(config.list_variable)
                     output += 'list="' + config.list_variable + '" ';
                 else if(config.lists_container)
