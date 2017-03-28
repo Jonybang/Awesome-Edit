@@ -1389,7 +1389,7 @@ angular
                         if(field.name == scope.nameField || field.name == 'name' || field.name == scope.orNameField)
                             field.default_value = scope.options.search;
 
-                        inputsHtml += '<div flex="grow" layout="row" layout-fill>' + AEditHelpers.generateDirectiveByConfig(field, {
+                        inputsHtml += '<div class="ae-select-input-dialog-field" flex="grow" layout="row" layout-fill>' + AEditHelpers.generateDirectiveByConfig(field, {
                                             item_name: 'new_object',
                                             lists_container: 'lists',
                                             always_edit: true,
