@@ -65,7 +65,7 @@ angular.module('a-edit')
                     output += 'ng-resource-fields="' + field.name + '_fields" ';
 
                 if(field.config)
-                    output += 'config="' + JSON.stringify(field.config).replace(/\"/g, "\\\"") + '" ';
+                    output += 'config="' + config.config_variable + '" ';
 
                 if(config.list_variable)
                     output += 'list="' + config.list_variable + '" ';

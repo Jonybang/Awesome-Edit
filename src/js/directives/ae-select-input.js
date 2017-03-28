@@ -412,7 +412,7 @@ angular
                         scope.ngResourceFields = [{name: scope.nameField || 'name' || scope.orNameField, label: ''}];
 
                     var inputsHtml = '';
-                    var data = { lists: {} };
+                    var data = { lists: {}, configs: {} };
                     scope.ngResourceFields.forEach(function(field){
                         if(field.name == scope.nameField || field.name == 'name' || field.name == scope.orNameField)
                             field.default_value = scope.options.search;
@@ -423,11 +423,13 @@ angular
                                             always_edit: true,
                                             get_list: true,
                                             is_new: true,
-                                            list_variable: 'lists.' + field.name + '_list'
+                                            list_variable: 'lists.' + field.name + '_list',
+                                            config_variable: 'configs.' + field.name + '_config'
                                             //already_modal: true
                                         }) + '</div>';
 
                         data.lists[field.name + '_list'] = angular.isArray(field.list) ? field.list : [];
+                        data.configs[field.name + '_config'] = angular.isObject(field.config) ? field.config : {};
 
                         if(field.resource){
                             data[field.name + '_resource'] = field.resource;
