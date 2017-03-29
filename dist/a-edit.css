@@ -180,3 +180,7 @@ md-dialog-content > .ae-select-input-dialog-field {
 md-dialog-content > .ae-select-input-dialog-field > * {
   width: 100%;
 }
+
+md-dialog-content > .ae-select-input-dialog-field md-input-container {
+  margin-bottom: 0;
+}
