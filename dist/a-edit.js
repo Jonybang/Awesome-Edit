@@ -323,7 +323,7 @@ angular
                 // TEMPLATE INIT
                 // *************************************************************
 
-                scope.$watch('options', function () {
+                scope.$watchCollection('options', function () {
                     if (!scope.options)
                         return;
 
@@ -1044,6 +1044,7 @@ angular
                 hasError: '=?',
                 disallowClear: '=?',
                 ngRequired: '=?',
+                ngDisabled: '=?',
 
                 ngResource: '=?',
                 ngResourceFields: '=?',

@@ -78,6 +78,7 @@ angular
                 hasError: '=?',
                 disallowClear: '=?',
                 ngRequired: '=?',
+                ngDisabled: '=?',
 
                 ngResource: '=?',
                 ngResourceFields: '=?',
