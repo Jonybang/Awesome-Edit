@@ -23,7 +23,7 @@ angular.module('a-edit')
                 total_count: 'total_count',
                 filter_count: 'filter_count'
             },
-            items_per_page: 15
+            items_per_page: 10
         };
 
         this.select_options = {

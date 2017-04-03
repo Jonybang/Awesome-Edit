@@ -20,7 +20,7 @@ angular
             if(type == 'multiselect') {
                 template += '' +
                     '<md-chips ng-model="options.selected" md-on-remove="removeFromMultiSelect($chip)">' +
-                        '<md-chip-template>' +
+                        '<md-chip-template ng-dblclick="editItem(objectsById[$chip])">' +
                             '<span>{{getNameFromObj(objectsById[$chip])}}</span>' +
                         '</md-chip-template>';
             }
@@ -46,7 +46,7 @@ angular
                                     '<span md-highlight-text="options.search" md-highlight-flags="^i">{{' + mdSelect.itemName + '}}</span> ' +
                                 '</md-item-template>' +
                                 '<md-not-found>' +
-                                    AEditConfig.locale.not_found + ' <a ng-click="newItem(options.search)" ng-show="adder">' + AEditConfig.locale.create_new_question + '</a>' +
+                                    AEditConfig.locale.not_found + ' <a href ng-click="editItem(null)" ng-show="adder">' + AEditConfig.locale.create_new_question + '</a>' +
                                 '</md-not-found>' +
                         '</md-autocomplete>';
 
@@ -95,6 +95,7 @@ angular
                 nameField: '@',
                 orNameField: '@',
                 placeholder: '@',
+                defaultValue: '@',
                 label: '@',
                 name: '@',
                 type: '@' //select or multiselect
@@ -118,6 +119,9 @@ angular
                 scope.full_type = scope.type = scope.type || 'select';
                 if(scope.adder)
                     scope.full_type += '-adder';
+
+                if(attrs.defaultValue)
+                    scope.ngModel = scope.defaultValue;
 
                 scope.fakeModel = scope.ngModel;
 
@@ -207,11 +211,22 @@ angular
                 //=============================================================
                 // Init select list
                 //=============================================================
+                var last_resource = scope.ngResource;
                 function initListGetByResource(){
-                    if(!scope.ngResource || !scope.getList || (scope.local_list && scope.local_list.length))
-                        return;
+                    if(!scope.ngResource || !scope.getList || (scope.local_list && scope.local_list.length)){
+                        if(last_resource == scope.ngResource){
+                            return;
+                        }
+                    }
+
+                    if(last_resource != scope.ngResource){
+                        scope.options.selected = null;
+                        scope.objectsById = null;
+                    }
 
                     getList();
+
+                    last_resource = scope.ngResource;
                 }
 
                 function getList(resolve, reject){
@@ -232,17 +247,24 @@ angular
 
                     request_options[variables['limit']] = AEditConfig.select_options.items_per_page;
 
-                    if(scope.type == 'multiselect')
+                    if(scope.type == 'multiselect' && scope.objectsById)
                         request_options[variables['id_not_in']] = scope.ngModel && scope.ngModel.length ? scope.ngModel.join(',') : [];
 
                     return AEditHelpers.getResourceQuery(scope.ngResource, 'get', request_options).then(function(list){
+                        var isResourceWasReinit = scope.ngModel && scope.ngModel.length && !scope.objectsById
                         scope.local_list = list;
 
                         if(scope.fakeModel)
                             scope.setSelected();
 
+                        if(isResourceWasReinit){
+                            scope.local_list = list.filter(function(item){
+                                return !scope.ngModel.includes(item.id);
+                            });
+                        }
+
                         if(angular.isFunction(resolve))
-                            resolve(list);
+                            resolve(scope.local_list);
                     }, function(response){
                         if(angular.isFunction(reject))
                             reject(response);
@@ -254,8 +276,10 @@ angular
                     return $q(scope.debouncedGetList);
                 };
 
-                scope.$watch('ngResource', initListGetByResource);
-                scope.$watch('refreshListOn', initListGetByResource);
+                var debouncedInitList = AEditHelpers.debounce(initListGetByResource, 300);
+
+                scope.$watch('ngResource', debouncedInitList);
+                scope.$watch('refreshListOn', debouncedInitList);
                 scope.$watchCollection('params', getList);
 
                 //=============================================================
@@ -388,34 +412,37 @@ angular
                     }
                 };
 
-                scope.newItem = function(){
+                scope.editItem = function(item){
                     if(scope.type == 'textselect' || !scope.ngResourceFields || !scope.ngResourceFields.length)
                         scope.ngResourceFields = [{name: scope.nameField || 'name' || scope.orNameField, label: ''}];
 
                     var inputsHtml = '';
-                    var data = { lists: {} };
+                    var data = { lists: {}, configs: {}, object: item || {} };
+
                     scope.ngResourceFields.forEach(function(field){
                         if(field.name == scope.nameField || field.name == 'name' || field.name == scope.orNameField)
                             field.default_value = scope.options.search;
 
-                        inputsHtml += '<div flex="grow" layout="row" layout-fill>' + AEditHelpers.generateDirectiveByConfig(field, {
-                                            item_name: 'new_object',
+                        inputsHtml += '<div class="ae-select-input-dialog-field" flex="grow" layout="row" layout-fill>' + AEditHelpers.generateDirectiveByConfig(field, {
+                                            item_name: 'object',
                                             lists_container: 'lists',
                                             always_edit: true,
                                             get_list: true,
                                             is_new: true,
-                                            list_variable: 'lists.' + field.name + '_list'
+                                            list_variable: 'lists.' + field.name + '_list',
+                                            config_variable: 'configs.' + field.name + '_config'
                                             //already_modal: true
                                         }) + '</div>';
 
                         data.lists[field.name + '_list'] = angular.isArray(field.list) ? field.list : [];
+                        data.configs[field.name + '_config'] = angular.isObject(field.config) ? field.config : {};
 
                         if(field.resource){
                             data[field.name + '_resource'] = field.resource;
                         }
 
                         if(field.type == 'multiselect'){
-                            data.new_object[field.name] = [];
+                            data.object[field.name] = [];
                         }
                     });
 
@@ -436,7 +463,7 @@ angular
                         controller: ['$scope', '$mdDialog', 'data', function ($scope, $mdDialog, data) {
                             angular.extend($scope, data);
                             $scope.save = function() {
-                                $mdDialog.hide($scope.new_object);
+                                $mdDialog.hide($scope.object);
                             };
                             $scope.cancel = function() {
                                 $mdDialog.cancel();
@@ -453,17 +480,19 @@ angular
                                     '<md-button ng-click="cancel()">' + AEditConfig.locale.cancel + '</md-button>' +
                                 '</md-dialog-actions>' +
                         '</md-dialog>'
-                    }).then(scope.saveToList);
+                    }).then(function(savedItem){
+                        saveToList(item, savedItem)
+                    });
                 };
 
                 //=============================================================
                 // Add new item to select list by adder
                 //=============================================================
-                scope.saveToList = function(new_object){
+                function saveToList (editedItem, savedItem){
                     if(scope.type == 'textselect'){
                         //get first property of object and add it to list
                         var is_first_prop = true;
-                        angular.forEach(new_object, function(prop_value){
+                        angular.forEach(savedItem, function(prop_value){
                             if(is_first_prop){
                                 scope.local_list.unshift(prop_value);
                                 scope.ngModel = prop_value;
@@ -473,13 +502,17 @@ angular
                         return;
                     }
 
-                    AEditHelpers.getResourceQuery(new scope.ngResource(angular.extend(new_object, scope.params || {})), 'create').then(function(object){
+                    AEditHelpers.getResourceQuery(new scope.ngResource(angular.extend(editedItem || {}, savedItem, scope.params || {})), editedItem ? 'update' : 'create').then(function(object){
                         scope.options.search = '';
 
-                        if(scope.type == 'multiselect')
-                            scope.fakeModel.push(object.id);
-                        else if(scope.type == 'select')
+                        if(scope.type == 'multiselect'){
+                            if(scope.fakeModel.includes(object.id))
+                                scope.objectsById[object.id] = object;
+                            else
+                                scope.fakeModel.push(object.id);
+                        } else if(scope.type == 'select'){
                             scope.fakeModel = object.id;
+                        }
 
                         scope.ngModel = scope.fakeModel;
 

@@ -60,6 +60,7 @@ angular
 
                     var queryOptions = {};
                     queryOptions[variables.sort] = scope.actualOptions.order_by;
+                    queryOptions[variables.limit] = AEditConfig.grid_options.items_per_page;
 
                     scope.ajaxList = new AEditAjaxHelper(scope.actualOptions.resource, queryOptions);
 
@@ -461,7 +462,8 @@ angular
                             resource = new scope.actualOptions.resource(angular.extend(request_object, scope.actualOptions.params));
                             AEditHelpers.getResourceQuery(resource, 'create').then(function (created_item) {
                                 created_item.is_new = true;
-                                scope.ngModel.unshift(created_item);
+                                //scope.ngModel.unshift(created_item);
+                                scope.getList();
                                 delete scope.new_item;
                                 scope.new_item = angular.copy(new_item);
 
@@ -479,7 +481,11 @@ angular
                     var index = scope.ngModel.indexOf(item);
 
                     function deleteCallbacks() {
-                        scope.ngModel.splice(index, 1);
+                        if (mode == 'remote')
+                            scope.getList();
+                        else
+                            scope.ngModel.splice(index, 1);
+
                         if (scope.ngChange)
                             $timeout(scope.ngChange);
 
