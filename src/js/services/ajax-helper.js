@@ -38,9 +38,19 @@ angular
                         self.paging.current = 1;
                 }
 
-                self.prepareQuery();
+                var temp_params = angular.copy(self.params);
+                if(options && options.temp_params)
+                    angular.extend(temp_params, options.temp_params);
+
+                self.prepareQuery(temp_params);
 
                 var params = options && options.is_exclude_params ? {} : self.temp_params;
+                if(options && options.exclude_params){
+                    options.exclude_params.forEach(function(param){
+                        delete params[param];
+                    })
+                }
+
                 var result = self.resource.query(params, function(data, headers){
                     self.paging.total_items = headers('Meta-Filter-Count');
                 });
@@ -65,9 +75,8 @@ angular
                 });
             };
 
-            self.prepareQuery = function(){
-                self.temp_params = angular.copy(self.params);
-
+            self.prepareQuery = function(params){
+                self.temp_params = angular.copy(params || self.params);
                 self.searchToQuery();
                 self.pagingToQuery();
                 self.sortingToQuery();
