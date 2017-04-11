@@ -11,7 +11,9 @@ angular
                 options: '=',
                 //callbacks
                 ngChange: '&',
-                onSave: '&'
+                onSave: '&',
+                onDelete: '&',
+                onError: '&'
             },
             link: function (scope, element, attrs, ngModel) {
                 var defaultOptions = {
@@ -452,7 +454,7 @@ angular
                                 angular.extend(item, updated_item);
 
                                 saveCallbacks(item);
-                            });
+                            }, errorHandle);
                         } else {
                             //create if id not exist
                             angular.forEach(scope.actualOptions.default_attrs, function (value, attr) {
@@ -468,7 +470,7 @@ angular
                                 scope.new_item = angular.copy(new_item);
 
                                 saveCallbacks(item);
-                            });
+                            }, errorHandle);
                         }
                     }
                 };
@@ -489,8 +491,14 @@ angular
                         if (scope.ngChange)
                             $timeout(scope.ngChange);
 
+                        if (scope.onDelete)
+                            $timeout(scope.onDelete);
+
                         if (scope.actualOptions.callbacks.onChange)
                             $timeout(scope.actualOptions.callbacks.onChange);
+
+                        if (scope.actualOptions.callbacks.onDelete)
+                            $timeout(scope.actualOptions.callbacks.onDelete);
                     }
 
                     if (mode != 'remote') {
@@ -501,9 +509,17 @@ angular
                     if (confirm(AEditConfig.locale.delete_confirm + ' "' + (item.name || item.key || item.title || item.value) + '"?')) {
                         AEditHelpers.getResourceQuery(new scope.actualOptions.resource(item), 'delete').then(function () {
                             deleteCallbacks();
-                        });
+                        }, errorHandle);
                     }
                 };
+
+                function errorHandle(){
+                    if (scope.onError)
+                        $timeout(scope.onError);
+
+                    if (scope.actualOptions.callbacks.onError)
+                        $timeout(scope.actualOptions.callbacks.onError);
+                }
 
                 scope.drop = function (dropped_index, dropped_item) {
                     var previousIndex = null;
