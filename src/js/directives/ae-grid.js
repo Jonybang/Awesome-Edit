@@ -147,7 +147,7 @@ angular
                         }
 
                         tplHead +=
-                            '<md-grid-tile md-colspan="' + field.colspan + '"><sorting ng-model="ajaxList.sorting.' + field.name + '" ng-change="getList()">' + field.label + '</sorting></md-grid-tile>';
+                            '<md-grid-tile md-colspan="' + field.colspan + '"><ae-sorting ng-model="ajaxList.sorting.' + field.name + '" ng-change="getList()">' + field.label + '</ae-sorting></md-grid-tile>';
                         //
                         //var style = 'style="';
                         //if(field.width)

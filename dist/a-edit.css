@@ -184,3 +184,26 @@ md-dialog-content > .ae-select-input-dialog-field > * {
 md-dialog-content > .ae-select-input-dialog-field md-input-container {
   margin-bottom: 0;
 }
+
+.ae-sort-link {
+  position: relative;
+}
+
+.ae-sort-link .md-datepicker-triangle-button.md-button.md-icon-button {
+  right: -35px;
+  top: -10px;
+  display: none;
+}
+
+.ae-sort-link.asc .md-datepicker-triangle-button.md-button.md-icon-button,
+.ae-sort-link.desc .md-datepicker-triangle-button.md-button.md-icon-button {
+  display: block;
+}
+
+.ae-sort-link.asc .md-datepicker-triangle-button.md-button.md-icon-button {
+  transform: rotate(0deg);
+}
+
+.ae-sort-link.desc .md-datepicker-triangle-button.md-button.md-icon-button {
+  transform: rotate(180deg);
+}

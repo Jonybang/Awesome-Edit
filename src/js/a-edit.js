@@ -55,4 +55,13 @@ angular
             <cl-paging flex cl-pages="ngModel.total_pages" cl-steps="ngModel.per_page" cl-page-changed="pagingChanged()" cl-align="center" cl-current-page="ngModel.current"></cl-paging>\
         </md-content>\
     ');
+
+      $templateCache.put('ae-sorting.html', '\
+        <a href ng-click="sort()" ng-class="[\'ae-sort-link\', {\'asc\': ngModel == \'ASC\', \'desc\': ngModel == \'DESC\'}]">\
+            <b ng-transclude></b>\
+            <button class="md-datepicker-triangle-button md-icon-button md-button" md-no-ink ng-click="sort()">\
+                <div class="md-datepicker-expand-triangle ng-scope"></div>\
+            </button>\
+        </a>\
+    ');
   }]);

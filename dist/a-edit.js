@@ -55,6 +55,15 @@ angular
             <cl-paging flex cl-pages="ngModel.total_pages" cl-steps="ngModel.per_page" cl-page-changed="pagingChanged()" cl-align="center" cl-current-page="ngModel.current"></cl-paging>\
         </md-content>\
     ');
+
+      $templateCache.put('ae-sorting.html', '\
+        <a href ng-click="sort()" ng-class="[\'ae-sort-link\', {\'asc\': ngModel == \'ASC\', \'desc\': ngModel == \'DESC\'}]">\
+            <b ng-transclude></b>\
+            <button class="md-datepicker-triangle-button md-icon-button md-button" md-no-ink ng-click="sort()">\
+                <div class="md-datepicker-expand-triangle ng-scope"></div>\
+            </button>\
+        </a>\
+    ');
   }]);
 
 angular
@@ -421,7 +430,7 @@ angular
                         }
 
                         tplHead +=
-                            '<md-grid-tile md-colspan="' + field.colspan + '"><sorting ng-model="ajaxList.sorting.' + field.name + '" ng-change="getList()">' + field.label + '</sorting></md-grid-tile>';
+                            '<md-grid-tile md-colspan="' + field.colspan + '"><ae-sorting ng-model="ajaxList.sorting.' + field.name + '" ng-change="getList()">' + field.label + '</ae-sorting></md-grid-tile>';
                         //
                         //var style = 'style="';
                         //if(field.width)
@@ -1511,6 +1520,33 @@ angular
                         $timeout(scope.onSelect);
                         $timeout(scope.ngChange);
                     });
+                }
+            }
+        };
+    }]);
+angular
+    .module('a-edit')
+    .directive('aeSorting', ['$timeout', 'AppPaths', function($timeout, AppPaths) {
+        return {
+            restrict: 'E',
+            templateUrl: 'ae-sorting.html',
+            transclude: true,
+            scope: {
+                ngModel: '=',
+                name: '@',
+                ngChange: '&'
+            },
+            link: function (scope, element, attrs) {
+                scope.sort = function(){
+                    if(!scope.ngModel){
+                        scope.ngModel = 'ASC';
+                    } else if(scope.ngModel == 'ASC'){
+                        scope.ngModel = 'DESC';
+                    } else if(scope.ngModel == 'DESC'){
+                        scope.ngModel = '';
+                    }
+
+                    $timeout(scope.ngChange);
                 }
             }
         };
