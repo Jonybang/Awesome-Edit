@@ -123,7 +123,7 @@ angular
 
             self.likeParamsToQuery = function(){
                 angular.forEach(self.temp_params, function callback(value, name){
-                    if(!value.length){
+                    if(angular.isUndefined(value) || value == null || ((angular.isString(value) || angular.isArray(value)) && !value.length)){
                         delete self.temp_params[name];
                         return;
                     }
