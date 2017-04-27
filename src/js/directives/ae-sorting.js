@@ -1,6 +1,6 @@
 angular
     .module('a-edit')
-    .directive('aeSorting', ['$timeout', 'AppPaths', function($timeout, AppPaths) {
+    .directive('aeSorting', ['$timeout', function($timeout) {
         return {
             restrict: 'E',
             templateUrl: 'ae-sorting.html',

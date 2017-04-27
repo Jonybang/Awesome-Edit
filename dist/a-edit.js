@@ -1,10 +1,8 @@
 // Code goes here
 angular
-  .module('a-edit', ['ngMaterial', 'angularMoment', 'ngSanitize', 'cl.paging'])
+  .module('a-edit', ['ngMaterial', 'ngSanitize', 'cl.paging'])
   
-  .run(['amMoment', '$templateCache', function(amMoment, $templateCache) {
-    amMoment.changeLocale('ru');
-
+  .run(['$templateCache', function($templateCache) {
     
     $templateCache.put('a-edit-image-popover.html', '<img class="fit" ng-src="{{::image}}" alt="">');
     
@@ -384,7 +382,7 @@ angular
                             tableFieldsCount += parseInt(field.colspan);
                     });
 
-                    var md_grid_list = '<md-grid-list flex="grow" md-cols="' + tableFieldsCount + '" md-row-height="' + scope.actualOptions.row_height + '">';
+                    var md_grid_list = '<md-grid-list layout-align="center center" flex="grow" md-cols="' + tableFieldsCount + '" md-row-height="' + scope.actualOptions.row_height + '">';
 
                     var tplHead =
                         '<md-list-item class="md-1-line">' +
@@ -392,7 +390,7 @@ angular
 
                     var tplBodyNewItem =
                         '<md-list-item class="md-1-line new-item">' +
-                        '   <md-content layout="row" flex="grow">' +
+                        '   <md-content layout layout-fill layout-align="center" flex="grow">' +
                         md_grid_list;
 
                     if (!scope.actualOptions.track_by)
@@ -410,6 +408,9 @@ angular
                     scope.actualOptions.fields.forEach(function (field, index) {
 
                         if (field.resource && field.list && field.list != 'self') {
+                            if(!field.list)
+                                field.list = field.name + '_list';
+
                             if (!scope.actualOptions.lists[field.list]) {
                                 scope.actualOptions.lists[field.list] = [];
 
@@ -972,7 +973,7 @@ angular
 
 angular
     .module('a-edit')
-    .directive('aePaging', ['AppPaths', '$timeout', function(AppPaths, $timeout) {
+    .directive('aePaging', ['$timeout', function($timeout) {
         return {
             restrict: 'E',
             templateUrl: 'a-edit-paging.html',
@@ -1526,7 +1527,7 @@ angular
     }]);
 angular
     .module('a-edit')
-    .directive('aeSorting', ['$timeout', 'AppPaths', function($timeout, AppPaths) {
+    .directive('aeSorting', ['$timeout', function($timeout) {
         return {
             restrict: 'E',
             templateUrl: 'ae-sorting.html',

@@ -101,7 +101,7 @@ angular
                             tableFieldsCount += parseInt(field.colspan);
                     });
 
-                    var md_grid_list = '<md-grid-list flex="grow" md-cols="' + tableFieldsCount + '" md-row-height="' + scope.actualOptions.row_height + '">';
+                    var md_grid_list = '<md-grid-list layout-align="center center" flex="grow" md-cols="' + tableFieldsCount + '" md-row-height="' + scope.actualOptions.row_height + '">';
 
                     var tplHead =
                         '<md-list-item class="md-1-line">' +
@@ -109,7 +109,7 @@ angular
 
                     var tplBodyNewItem =
                         '<md-list-item class="md-1-line new-item">' +
-                        '   <md-content layout="row" flex="grow">' +
+                        '   <md-content layout layout-fill layout-align="center" flex="grow">' +
                         md_grid_list;
 
                     if (!scope.actualOptions.track_by)
@@ -127,6 +127,9 @@ angular
                     scope.actualOptions.fields.forEach(function (field, index) {
 
                         if (field.resource && field.list && field.list != 'self') {
+                            if(!field.list)
+                                field.list = field.name + '_list';
+
                             if (!scope.actualOptions.lists[field.list]) {
                                 scope.actualOptions.lists[field.list] = [];
 

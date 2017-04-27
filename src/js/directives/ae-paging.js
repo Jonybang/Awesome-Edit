@@ -1,6 +1,6 @@
 angular
     .module('a-edit')
-    .directive('aePaging', ['AppPaths', '$timeout', function(AppPaths, $timeout) {
+    .directive('aePaging', ['$timeout', function($timeout) {
         return {
             restrict: 'E',
             templateUrl: 'a-edit-paging.html',

@@ -1,10 +1,8 @@
 // Code goes here
 angular
-  .module('a-edit', ['ngMaterial', 'angularMoment', 'ngSanitize', 'cl.paging'])
+  .module('a-edit', ['ngMaterial', 'ngSanitize', 'cl.paging'])
   
-  .run(['amMoment', '$templateCache', function(amMoment, $templateCache) {
-    amMoment.changeLocale('ru');
-
+  .run(['$templateCache', function($templateCache) {
     
     $templateCache.put('a-edit-image-popover.html', '<img class="fit" ng-src="{{::image}}" alt="">');
     
