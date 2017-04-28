@@ -356,8 +356,7 @@ angular
                     }
 
                     var tplHtml = '' +
-                        '<md-content layout="row" flex="grow" layout-wrap class="padding ae-grid">' +
-                        '   <md-list flex>' +
+                        '<div class="padding ae-grid">' +
                         '       <md-subheader class="md-no-sticky" ng-show="actualOptions.caption || actualOptions.search">';
 
                     if (scope.actualOptions.search) {
@@ -373,37 +372,36 @@ angular
                         '       </md-subheader>';
 
 
-                    var tableFieldsCount = 1;
+                    var visibleFieldsCount = 1;
+                    var columnsCount = 1;
                     scope.actualOptions.fields.forEach(function (field) {
                         if (!field.colspan)
                             field.colspan = 1;
 
-                        if (!field.table_hide)
-                            tableFieldsCount += parseInt(field.colspan);
+                        if (!field.table_hide){
+                            visibleFieldsCount++;
+                            columnsCount += parseInt(field.colspan);
+                        }
                     });
 
-                    var md_grid_list = '<md-grid-list layout-align="center center" flex="grow" md-cols="' + tableFieldsCount + '" md-row-height="' + scope.actualOptions.row_height + '">';
+                    var tplHead = '<div class="ae-grid-row">';
 
-                    var tplHead =
-                        '<md-list-item class="md-1-line">' +
-                        md_grid_list;
-
-                    var tplBodyNewItem =
-                        '<md-list-item class="md-1-line new-item">' +
-                        '   <md-content layout layout-fill layout-align="center" flex="grow">' +
-                        md_grid_list;
+                    var tplBodyNewItem = '<div class="ae-grid-row">';
 
                     if (!scope.actualOptions.track_by)
                         scope.actualOptions.track_by = mode == 'remote' ? 'id' : 'json_id';
 
                     var track_by = scope.actualOptions.track_by == '$index' ? scope.actualOptions.track_by : 'item.' + scope.actualOptions.track_by;
                     var tplBodyItem =
-                        '<md-list-item ng-click="null" class="md-1-line word-wrap" ng-repeat="item in filtredList track by ' + track_by + '"  dnd-list="filtredList"  dnd-draggable="item" dnd-disable-if="actualOptions.drag_disabled" dnd-effect-allowed="move" dnd-moved="filtredList.splice($index, 1)" dnd-drop="drop($index, item)">' +
-                        '   <md-content layout layout-fill layout-align="center" flex="grow">' +
-                        md_grid_list;
+                        '<div class="ae-grid-row" ng-click="null" ng-repeat="item in filtredList track by ' + track_by + '" dnd-list="filtredList" dnd-draggable="item" dnd-disable-if="actualOptions.drag_disabled" dnd-effect-allowed="move" dnd-moved="filtredList.splice($index, 1)" dnd-drop="drop($index, item)">';
 
                     var select_list_request_options = {};
                     select_list_request_options[variables['limit']] = scope.select_options.items_per_page;
+
+                    if(!scope.actualOptions.menu_col_percent)
+                        scope.actualOptions.menu_col_percent = 10;
+
+                    var availableColPercent = 100 - scope.actualOptions.menu_col_percent;
 
                     scope.actualOptions.fields.forEach(function (field, index) {
 
@@ -430,8 +428,14 @@ angular
                             scope[field.name + '_fields'] = field.fields;
                         }
 
+                        var columnPercent = Math.round(field.colspan/columnsCount * 100);
+                        if(columnPercent > availableColPercent)
+                            columnPercent = availableColPercent;
+
+                        availableColPercent -= columnPercent;
+
                         tplHead +=
-                            '<md-grid-tile md-colspan="' + field.colspan + '"><ae-sorting ng-model="ajaxList.sorting.' + field.name + '" ng-change="getList()">' + field.label + '</ae-sorting></md-grid-tile>';
+                            '<div class="ae-grid-col-' + columnPercent + '"><ae-sorting ng-model="ajaxList.sorting.' + field.name + '" ng-change="getList()">' + field.label + '</ae-sorting></div>';
                         //
                         //var style = 'style="';
                         //if(field.width)
@@ -440,10 +444,10 @@ angular
 
                         //for new item row
                         tplBodyNewItem +=
-                            '<md-grid-tile md-colspan="' + field.colspan + '">';
+                            '<div class="ae-grid-col-' + columnPercent + '">';
                         //for regular item row
                         tplBodyItem +=
-                            '<md-grid-tile md-colspan="' + field.colspan + '" ng-dblclick="editItem(item)">';
+                            '<div class="ae-grid-col-' + columnPercent + '" ng-dblclick="editItem(item)">';
 
                         function getFieldDirective(is_new) {
                             var item_name = (is_new ? 'new_' : '' ) + 'item';
@@ -470,24 +474,24 @@ angular
                         }
 
                         tplBodyNewItem += getFieldDirective(true) +
-                            '</md-grid-tile>';
+                            '</div>';
                         tplBodyItem += getFieldDirective(false) +
-                            '</md-grid-tile>';
+                            '</div>';
                     });
 
                     if (scope.actualOptions.edit) {
                         tplHead +=
-                            '<md-grid-tile></md-grid-tile>';
+                            '<div class="ae-grid-col-' + scope.actualOptions.menu_col_percent + '"></div>';
 
                         tplBodyNewItem +=
-                            '<md-grid-tile>' +
+                            '<div class="ae-grid-col-' + scope.actualOptions.menu_col_percent + '">' +
                             '   <md-button class="md-fab md-mini md-primary" ng-click="save(new_item)">' +
                             '       <md-icon>save</md-icon>' +
                             '   </md-button>' +
-                            '</md-grid-tile>';
+                            '</div>';
 
                         tplBodyItem +=
-                            '<md-grid-tile>' +
+                            '<div class="ae-grid-col-' + scope.actualOptions.menu_col_percent + '">' +
                             '   <md-menu>' +
                             '       <md-button class="md-icon-button" ng-click="$mdOpenMenu($event)"><md-icon md-menu-origin>more_vert</md-icon></md-button>' +
                             '       <md-menu-content width="4">' +
@@ -498,22 +502,17 @@ angular
                                         (scope.actualOptions.delete ? '<md-menu-item><md-button ng-click="deleteConfirm(item)"><md-icon>delete</md-icon>' + AEditConfig.locale.delete + '</md-button></md-menu-item>' : '') +
                             '       </md-menu-content>' +
                             '   </md-menu>' +
-                            '</md-grid-tile>';
+                            '</div>';
                     }
 
                     tplHead +=
-                        '</md-grid-list>' +
-                        '</md-list-item>';
+                        '</div>';
 
                     tplBodyNewItem +=
-                        '</md-grid-list>' +
-                        '</md-content>' +
-                        '</md-list-item>';
+                        '</div>';
 
                     tplBodyItem +=
-                        '</md-grid-list>' +
-                        '</md-content>' +
-                        '</md-list-item>';
+                        '</div>';
 
                     var tableHtml = '';
 
@@ -530,8 +529,7 @@ angular
                     tableHtml += tplBodyItem;
 
                     tplHtml += tableHtml +
-                        '</md-list>' +
-                        '</md-content>';
+                        '</div>';
 
                     if (scope.actualOptions.paginate) {
                         tplHtml += '<ae-paging ng-model="ajaxList.paging" ng-change="getList()"></ae-paging>';
@@ -539,7 +537,7 @@ angular
 
                     angular.element(element).html('');
 
-                    var template = angular.element('<md-content layout="column" flex>' + tplHtml + '</md-content>');
+                    var template = angular.element(tplHtml);
 
                     angular.element(element).append($compile(template)(scope));
                 });
@@ -1027,7 +1025,8 @@ angular
 
             template +=
                         '<md-autocomplete ' +
-                            (type == 'select' || type == 'textselect' ? 'ng-if="!viewMode" md-selected-item="$parent.options.selected" ' : ' ') +
+                            (type == 'select' || type == 'textselect' ? ' md-selected-item="$parent.options.selected" ' : ' ') +
+                            'ng-if="!viewMode"' +
                             'id="{{id}}" ' +
                             'name="{{name}}" ' +
                             'ng-required="ngRequired" ' +
@@ -1251,13 +1250,13 @@ angular
                         request_options[variables['id_not_in']] = scope.ngModel && scope.ngModel.length ? scope.ngModel.join(',') : [];
 
                     return AEditHelpers.getResourceQuery(scope.ngResource, 'get', request_options).then(function(list){
-                        var isResourceWasReinit = scope.ngModel && scope.ngModel.length && !scope.objectsById
+                        //var isResourceWasReinit = scope.ngModel && scope.ngModel.length && !scope.objectsById
                         scope.local_list = list;
 
                         if(scope.fakeModel)
                             scope.setSelected();
 
-                        if(isResourceWasReinit){
+                        if(scope.type == 'multiselect' && scope.ngModel && scope.ngModel.length){
                             scope.local_list = list.filter(function(item){
                                 return !scope.ngModel.includes(item.id);
                             });

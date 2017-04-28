@@ -49,36 +49,7 @@ pre {
 .ui-select-multiple.ui-select-bootstrap input.ui-select-search {
   width: 100% !important;
 }
-ae-grid md-list-item > .md-button.md-no-style > .md-list-item-inner > md-content,
-ae-grid md-list-item > md-content{
-  background: transparent;
-  overflow-y: hidden;
-}
-md-grid-list figure {
-  text-align: left;
-}
-md-grid-list md-grid-tile ae-select-input.edit {
-  position: relative;
-  top: -1px;
-}
-md-grid-tile ae-select-input label,
-.ae-object-modal ae-select-input label,
-.ae-object-modal ae-text-input label {
-  display: none;
-}
-md-grid-list md-grid-tile ae-select-input.edit md-autocomplete {
-  min-width: 10px;
-}
-md-grid-list md-grid-tile ae-text-input.edit {
-  position: relative;
-  /*top: 17px;*/
-}
-md-grid-tile ae-text-input:not(.edit),
-md-grid-tile ae-select-input:not(.edit){
-  line-height: 1;
-  display: block!important;
-  text-align: left;
-}
+
 input:focus,
 select:focus,
 textarea:focus,
@@ -106,9 +77,6 @@ md-grid-tile:focus{
 .md-panel-outer-wrapper {
   position: fixed;
 }
-.ae-grid md-grid-list md-grid-tile figure{
-  justify-content: flex-start !important;
-}
 md-checkbox > .md-container.md-ink-ripple{
   margin: 5px;
 }
@@ -117,16 +85,6 @@ md-checkbox > .md-container.md-ink-ripple{
 }
 .padding-top {
   padding-top: 15px !important;
-}
-
-md-grid-tile > figure > * {
-  height: 100%;
-}
-md-grid-tile > figure img {
-  max-height: 100%;
-}
-md-grid-tile > figure > ae-text-input {
-  width: 100%;
 }
 ae-grid .md-subheader .md-subheader-inner {
   padding-top: 0;
@@ -166,4 +124,50 @@ md-dialog-content > .ae-select-input-dialog-field md-input-container {
 }
 .ae-sort-link.desc .md-datepicker-triangle-button.md-button.md-icon-button {
   transform: rotate(180deg);
+}
+.ae-grid,
+.ae-grid-row {
+  width: 100%;
+  height: 100%;
+}
+
+.ae-grid-row md-grid-tile figure {
+  padding: 5px;
+}
+
+.ae-grid-row{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center; /*stretch*/
+  align-content: flex-start;
+}
+div[class^="ae-grid-col-"] {
+  margin: auto;
+
+  ae-select-input,
+  ae-select-input,
+  ae-text-input  {
+    label {
+      display: none;
+    }
+    &:not(.edit){
+      line-height: 1;
+      display: block!important;
+      text-align: left;
+    }
+  }
+
+  ae-select-input md-autocomplete {
+    min-width: 10px;
+  }
+  img {
+    max-height: 100%;
+  }
+}
+@for $i from 1 through 100 {
+  .ae-grid-col-#{$i} {
+    width: 1% * $i;
+  }
 }

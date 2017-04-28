@@ -27,7 +27,8 @@ angular
 
             template +=
                         '<md-autocomplete ' +
-                            (type == 'select' || type == 'textselect' ? 'ng-if="!viewMode" md-selected-item="$parent.options.selected" ' : ' ') +
+                            (type == 'select' || type == 'textselect' ? ' md-selected-item="$parent.options.selected" ' : ' ') +
+                            'ng-if="!viewMode"' +
                             'id="{{id}}" ' +
                             'name="{{name}}" ' +
                             'ng-required="ngRequired" ' +
@@ -251,13 +252,13 @@ angular
                         request_options[variables['id_not_in']] = scope.ngModel && scope.ngModel.length ? scope.ngModel.join(',') : [];
 
                     return AEditHelpers.getResourceQuery(scope.ngResource, 'get', request_options).then(function(list){
-                        var isResourceWasReinit = scope.ngModel && scope.ngModel.length && !scope.objectsById
+                        //var isResourceWasReinit = scope.ngModel && scope.ngModel.length && !scope.objectsById
                         scope.local_list = list;
 
                         if(scope.fakeModel)
                             scope.setSelected();
 
-                        if(isResourceWasReinit){
+                        if(scope.type == 'multiselect' && scope.ngModel && scope.ngModel.length){
                             scope.local_list = list.filter(function(item){
                                 return !scope.ngModel.includes(item.id);
                             });
