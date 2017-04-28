@@ -8,10 +8,11 @@ angular
             {id: 3, name: 'Synergy', country_id: 1, directions_ids: [3]}
         ];
 
-        $httpBackend.whenGET(/\/api\/companies\?*/).respond(getList(companies));
+        $httpBackend.whenGET(/\/api\/companies\D{3,}/).respond(getList(companies));
+        $httpBackend.whenGET(/\/api\/companies\/\d+/).respond(getById(companies));
         $httpBackend.whenPOST('/api/companies').respond(createOrUpdate(companies));
-        $httpBackend.whenPOST(/\api\/companies\/*/).respond(createOrUpdate(companies));
-        $httpBackend.whenDELETE(/\api\/companies\/*/).respond(deleteById(companies));
+        $httpBackend.whenPOST(/\/api\/companies\/*/).respond(createOrUpdate(companies));
+        $httpBackend.whenDELETE(/\/api\/companies\/*/).respond(deleteById(companies));
 
         var countries = [
             {id: 1, name: 'Russia'},
@@ -19,10 +20,11 @@ angular
             {id: 3, name: 'China'}
         ];
 
-        $httpBackend.whenGET(/\api\/countries\?*/).respond(getList(countries));
+        $httpBackend.whenGET(/\/api\/countries\D{3,}/).respond(getList(countries));
+        $httpBackend.whenGET(/\/api\/countries\/\d+/).respond(getById(countries));
         $httpBackend.whenPOST('/api/countries').respond(createOrUpdate(countries));
-        $httpBackend.whenPOST(/\api\/countries\/*/).respond(createOrUpdate(countries));
-        $httpBackend.whenDELETE(/\api\/countries\/*/).respond(deleteById(countries));
+        $httpBackend.whenPOST(/\/api\/countries\/*/).respond(createOrUpdate(countries));
+        $httpBackend.whenDELETE(/\/api\/countries\/*/).respond(deleteById(countries));
 
         var directions = [
             {id: 1, name: 'Search'},
@@ -30,10 +32,11 @@ angular
             {id: 3, name: 'Develop'}
         ];
 
-        $httpBackend.whenGET(/\api\/directions\?*/).respond(getList(directions));
+        $httpBackend.whenGET(/\/api\/directions\D{3,}/).respond(getList(directions));
+        $httpBackend.whenGET(/\/api\/directions\/\d+/).respond(getById(directions));
         $httpBackend.whenPOST('/api/directions').respond(createOrUpdate(directions));
-        $httpBackend.whenPOST(/\api\/directions\/*/).respond(createOrUpdate(directions));
-        $httpBackend.whenDELETE(/\api\/directions\/*/).respond(deleteById(directions));
+        $httpBackend.whenPOST(/\/api\/directions\/*/).respond(createOrUpdate(directions));
+        $httpBackend.whenDELETE(/\/api\/directions\/*/).respond(deleteById(directions));
 
         $httpBackend.whenGET(/.html/).passThrough()
 
@@ -51,6 +54,14 @@ function getList(items) {
             });
 
         return [200, result_list, {}];
+    }
+}
+function getById(items) {
+    return function(method, url, data, headers) {
+        var id = url.split("/").slice(-1)[0];
+        var result = _.find(items, {id: parseInt(id)});
+
+        return [200, result, {}];
     }
 }
 
