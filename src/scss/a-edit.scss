@@ -55,7 +55,8 @@ select:focus,
 textarea:focus,
 button:focus,
 figure:focus,
-md-grid-tile:focus{
+.ae-grid-row:focus,
+*[class^="ae-"]:focus{
   outline: none;
 }
 .padding {
