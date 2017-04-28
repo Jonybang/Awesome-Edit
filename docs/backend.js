@@ -8,9 +8,7 @@ angular
             {id: 3, name: 'Synergy', country_id: 1, directions_ids: [3]}
         ];
 
-        $httpBackend.whenGET(/\/api\/companies\?*/).respond(function(method, url, data, headers) {
-            return [200, companies, {}];
-        });
+        $httpBackend.whenGET(/\/api\/companies\?*/).respond(getList(companies));
         $httpBackend.whenPOST('/api/companies').respond(createOrUpdate(companies));
         $httpBackend.whenPOST(/\api\/companies\/*/).respond(createOrUpdate(companies));
         $httpBackend.whenDELETE(/\api\/companies\/*/).respond(deleteById(companies));
@@ -21,9 +19,7 @@ angular
             {id: 3, name: 'China'}
         ];
 
-        $httpBackend.whenGET(/\api\/countries\?*/).respond(function(method, url, data, headers) {
-            return [200, countries, {}];
-        });
+        $httpBackend.whenGET(/\api\/countries\?*/).respond(getList(countries));
         $httpBackend.whenPOST('/api/countries').respond(createOrUpdate(countries));
         $httpBackend.whenPOST(/\api\/countries\/*/).respond(createOrUpdate(countries));
         $httpBackend.whenDELETE(/\api\/countries\/*/).respond(deleteById(countries));
@@ -34,9 +30,7 @@ angular
             {id: 3, name: 'Develop'}
         ];
 
-        $httpBackend.whenGET(/\api\/directions\?*/).respond(function(method, url, data, headers) {
-            return [200, directions, {}];
-        });
+        $httpBackend.whenGET(/\api\/directions\?*/).respond(getList(directions));
         $httpBackend.whenPOST('/api/directions').respond(createOrUpdate(directions));
         $httpBackend.whenPOST(/\api\/directions\/*/).respond(createOrUpdate(directions));
         $httpBackend.whenDELETE(/\api\/directions\/*/).respond(deleteById(directions));
@@ -44,6 +38,21 @@ angular
         $httpBackend.whenGET(/.html/).passThrough()
 
     }]);
+
+function getList(items) {
+    return function(method, url, data, headers) {
+        var result_list = items;
+
+        var search = getParameterByName('_q', url);
+
+        if(search)
+            result_list = result_list.filter(function(item){
+                return item.name.toLowerCase().indexOf(search.toLowerCase()) != -1;
+            });
+
+        return [200, result_list, {}];
+    }
+}
 
 function createOrUpdate(items) {
     var counter = items.length;
@@ -73,4 +82,14 @@ function deleteById(items) {
         _.remove(items, {id: id});
         return [200, {}, {}];
     };
+}
+
+function getParameterByName(name, url) {
+    if (!url) url = window.location.href;
+    name = name.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
 }

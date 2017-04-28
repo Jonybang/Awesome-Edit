@@ -10,6 +10,8 @@
     "gulp-concat": "^2.6.1",
     "gulp-copy": "^1.0.0",
     "gulp-css-globbing": "^0.1.9",
+    "gulp-ext-replace": "^0.3.0",
+    "gulp-file-include": "^1.1.0",
     "gulp-sass": "^2.3.2",
     "gulp-size": "^2.1.0"
   },

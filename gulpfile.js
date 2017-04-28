@@ -1,21 +1,27 @@
-var gulp = require('gulp');
+var gulp = require('gulp'),
 
-var concat = require('gulp-concat');
-var sass = require('gulp-sass');
-var cssGlobbing = require('gulp-css-globbing');
-var autoprefixer = require('gulp-autoprefixer');
-var gulpCopy = require('gulp-copy');
+    concat = require('gulp-concat'),
+    sass = require('gulp-sass'),
+    cssGlobbing = require('gulp-css-globbing'),
+    autoprefixer = require('gulp-autoprefixer'),
 
-var build_dir = './dist/';
+    gulpCopy = require('gulp-copy'),
+    fileinclude = require('gulp-file-include'),
+    ext_replace = require('gulp-ext-replace');
+
+var build_dir = './dist/',
+    js_src = './src/js/**/*.js',
+    scss_src = './src/scss/**/*.scss',
+    docs_tpls = './docs/tpl/**/*.tpl';
 
 gulp.task('concatJS', function() {
-  return gulp.src('./src/js/**/*.js')
+  return gulp.src(js_src)
       .pipe(concat('a-edit.js'))
       .pipe(gulp.dest(build_dir));
 });
 
 gulp.task('buildSASS', function () {
-  return gulp.src('./src/scss/**/*.scss')
+  return gulp.src(scss_src)
       .pipe(cssGlobbing())
       .pipe(sass().on('error', sass.logError))
       .pipe(autoprefixer())
@@ -28,9 +34,17 @@ gulp.task('copyToDocs', function () {
       .pipe(gulp.dest('./docs/assets'));
 });
 
-gulp.task('watch', function() {
-  gulp.watch(['./src/js/**/*.js'], ['concatJS', 'copyToDocs']);
-  gulp.watch(['./src/scss/**/*.scss'], ['buildSASS', 'copyToDocs']);
+gulp.task('buildDocsTemplates', function () {
+  return gulp.src([docs_tpls])
+      .pipe(fileinclude())
+      .pipe(ext_replace('.html'))
+      .pipe(gulp.dest('./docs/'));
 });
 
-gulp.task('default', ['concatJS', 'buildSASS', 'copyToDocs', 'watch']);
+gulp.task('watch', function() {
+  gulp.watch([js_src], ['concatJS', 'copyToDocs']);
+  gulp.watch([scss_src], ['buildSASS', 'copyToDocs']);
+  gulp.watch([docs_tpls], ['buildDocsTemplates']);
+});
+
+gulp.task('default', ['concatJS', 'buildSASS', 'copyToDocs', 'buildDocsTemplates', 'watch']);

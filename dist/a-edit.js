@@ -356,7 +356,7 @@ angular
                     }
 
                     var tplHtml = '' +
-                        '<div class="padding ae-grid">' +
+                        '<div class="ae-grid">' +
                         '       <md-subheader class="md-no-sticky" ng-show="actualOptions.caption || actualOptions.search">';
 
                     if (scope.actualOptions.search) {
@@ -421,12 +421,11 @@ angular
                         if (field.table_hide)
                             return;
 
-                        if (field.resource) {
+                        if (field.resource)
                             scope[field.name + '_resource'] = field.resource;
-                        }
-                        if (field.fields) {
+
+                        if (field.fields)
                             scope[field.name + '_fields'] = field.fields;
-                        }
 
                         var columnPercent = Math.round(field.colspan/columnsCount * 100);
                         if(columnPercent > availableColPercent)
@@ -473,10 +472,8 @@ angular
                             });
                         }
 
-                        tplBodyNewItem += getFieldDirective(true) +
-                            '</div>';
-                        tplBodyItem += getFieldDirective(false) +
-                            '</div>';
+                        tplBodyNewItem += getFieldDirective(true) + '</div>';
+                        tplBodyItem += getFieldDirective(false) + '</div>';
                     });
 
                     if (scope.actualOptions.edit) {
@@ -528,8 +525,7 @@ angular
 
                     tableHtml += tplBodyItem;
 
-                    tplHtml += tableHtml +
-                        '</div>';
+                    tplHtml += tableHtml + '</div>';
 
                     if (scope.actualOptions.paginate) {
                         tplHtml += '<ae-paging ng-model="ajaxList.paging" ng-change="getList()"></ae-paging>';
@@ -817,11 +813,11 @@ angular
 
                     scope.ngModel.splice(previousIndex, 1);
 
-                    if (previousIndex > dropped_index) {
+                    if (previousIndex > dropped_index)
                         scope.ngModel.splice(dropped_index, 0, dropped_item);
-                    } else {
+                    else
                         scope.ngModel.splice(dropped_index - 1, 0, dropped_item);
-                    }
+
                     scope.ngModel.forEach(function (item, index) {
                         item.index = index;
                     });

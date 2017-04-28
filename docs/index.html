@@ -2,37 +2,95 @@
 <html>
 <head>
     <meta charset="utf-8">
+<link rel="shortcut icon" href="favicon.ico">
+<script src="http://wurfl.io/wurfl.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.4/angular-material.css">
+
+<link rel="stylesheet" href="assets/a-edit.css">
+
     <title>Awesome Edit Examples</title>
-    <link rel="shortcut icon" href="favicon.ico">
-    <script src="http://wurfl.io/wurfl.js"></script>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.4/angular-material.css">
-
-    <link rel="stylesheet" href="assets/a-edit.css">
 </head>
 
-<body ng-app="app" ng-strict-di="" ng-cloak>
-    <ng-include src="'main/main.html'"></ng-include>
+<body ng-app="app" ng-strict-di="" ng-cloak class="md-padding">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+    <h1>Awesome Edit module examples</h1>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-mocks.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-sanitize.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-messages.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-aria.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-animate.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-resource/1.6.1/angular-resource.min.js"></script>
+    <h2>ae-grid directive:</h2>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.4/angular-material.min.js"></script>
+    <p>Directive for make flexible table by lists of objects(from server or local, like json). The directive provides such basic facilities for working with objects as: search, create new objects, edit exist objects, delete objects, open modal with edit possibility.</p>
 
-    <script src="assets/material-angular-paging.min.js"></script>
-    <script src="assets/a-edit.js"></script>
+    <md-content layout="row">
+        <md-content layout="column" flex="60">
+            <md-content ng-controller="MainController">
+    <ae-grid ng-if="aeGridOptions" ng-model="list" layout="row" options="aeGridOptions"></ae-grid>
+</md-content>
+        </md-content>
 
-    <script src="backend.js"></script>
-    <script src="app.js"></script>
+        <md-content layout="column" flex="40">
+            <pre class="prettyprint"><code class="language-js">angular
+    .module('app')
+    .controller('MainController', ['$scope', '$resource', function($scope, $resource) {
+
+        var CompaniesResource = $resource('/api/companies/:id', {id:'@id'});
+
+        $scope.aeGridOptions = {
+            resource: CompaniesResource,
+            ajax_handler: true,
+            get_list: true,
+            paginate: true,
+            edit: true,
+            delete: true,
+            fields: [
+                {
+                    name: 'name',
+                    label: 'Name',
+                    modal: 'self',
+                    colspan: 2,
+                    new_placeholder: 'New company'
+                },
+                {
+                    name: 'country_id',
+                    label: 'Country',
+                    type: 'select',
+                    resource: $resource('/api/countries/:id', {id:'@id'}),
+                    get_list: true
+                },
+                {
+                    name: 'directions_ids',
+                    label: 'Directions',
+                    type: 'multiselect',
+                    resource: $resource('/api/directions/:id', {id:'@id'}),
+                    get_list: true
+                }
+            ]
+        };
+    }]);</code></pre>
+        </md-content>
+    </md-content>
+
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-mocks.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-sanitize.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-messages.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-aria.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.1/angular-animate.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-resource/1.6.1/angular-resource.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular-material/1.1.4/angular-material.min.js"></script>
+
+<script src="assets/material-angular-paging.min.js"></script>
+<script src="assets/a-edit.js"></script>
+
+<script src="backend.js"></script>
+<script src="app.js"></script>
+
     <script src="main/main.js"></script>
 </body>
 </html>
