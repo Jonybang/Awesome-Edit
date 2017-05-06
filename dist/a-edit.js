@@ -1756,6 +1756,8 @@ angular
             else
                 self.defaultSorting['id'] = 'DESC';
 
+            self.manualSorting = false;
+
             self.getData = function(options){
                 if(options){
                     if(options.is_add_next_page)
@@ -1826,6 +1828,9 @@ angular
             };
 
             self.sortingToQuery = function(){
+                if(self.manualSorting)
+                    return;
+
                 self.temp_params._sort = '';
 
                 var sorting = _.isEmpty(self.sorting) ? self.defaultSorting : self.sorting;
