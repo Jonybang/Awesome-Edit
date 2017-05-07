@@ -253,6 +253,7 @@ angular
                     angular.element(element).html('');
 
                     var template = angular.element(tplHtml);
+                    //var template = angular.element('<md-content>' + tplHtml + '</md-content>');
 
                     angular.element(element).append($compile(template)(scope));
                 });
