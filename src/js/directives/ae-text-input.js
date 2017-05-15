@@ -34,6 +34,8 @@ angular
                 '<div ng-if="!viewMode" ng-class="input_class" layout>' +
                 inputTagBegin +
                 ' placeholder="{{$parent.placeholder}}" ' +
+                ' name="{{$parent.name}}" ' +
+                ' ng-required="$parent.ngRequired" ' +
                 ' ng-model="$parent.ngModel" ' + (type != 'textarea' ? 'ng-enter="$parent.save()"' : '') +
                 ' ng-model-options="$parent.ngModelOptions || {}"' +
                 ' ng-style="{ \'width\' : $parent.width + \'px\'}"' +
@@ -62,6 +64,7 @@ angular
                 modalOptions: '=?',
                 hasError: '=?',
                 ngDisabled: '=?',
+                ngRequired: '=?',
                 defaultValue: '@',
                 //callbacks
                 ngChange: '&',
@@ -71,7 +74,6 @@ angular
                 placeholder: '@',
                 name: '@',
                 width: '@',
-                required: '@',
                 type: '@' //text or textarea
             },
             link: function (scope, element, attrs) {

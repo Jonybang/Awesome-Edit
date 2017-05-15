@@ -30,8 +30,9 @@ angular
                             (type == 'select' || type == 'textselect' ? ' md-selected-item="$parent.options.selected" ' : ' ') +
                             'ng-if="!viewMode"' +
                             'id="{{id}}" ' +
-                            'name="{{name}}" ' +
-                            'ng-required="ngRequired" ' +
+                            'md-input-name="{{name}}" ' +
+                            'ng-required="{{ngRequired}}" ' +
+                            'md-require-match="ngRequired" ' +
                             'md-clear-button="!disallowClear" ' +
                             'md-search-text="options.search" ' +
                             'md-items="item in getListByResource()" ' + // | filter:options.search"
@@ -418,11 +419,13 @@ angular
                         scope.ngResourceFields = [{name: scope.nameField || 'name' || scope.orNameField, label: ''}];
 
                     var inputsHtml = '';
-                    var data = { lists: {}, configs: {}, object: item || {} };
+                    var data = { lists: {}, configs: {}, object: item || {}, fields: scope.ngResourceFields };
 
                     scope.ngResourceFields.forEach(function(field){
-                        if(field.name == scope.nameField || field.name == 'name' || field.name == scope.orNameField)
-                            field.default_value = scope.options.search;
+                        if(field.name == scope.nameField || field.name == 'name' || field.name == scope.orNameField){
+                            data.object[field.name] = scope.options.search;
+                            //field.default_value = scope.options.search;
+                        }
 
                         inputsHtml += '<div class="ae-select-input-dialog-field" flex="grow" layout="row" layout-fill>' + AEditHelpers.generateDirectiveByConfig(field, {
                                             item_name: 'object',
@@ -431,9 +434,10 @@ angular
                                             get_list: true,
                                             is_new: true,
                                             list_variable: 'lists.' + field.name + '_list',
-                                            config_variable: 'configs.' + field.name + '_config'
+                                            config_variable: 'configs.' + field.name + '_config',
+                                            input_name: field.name
                                             //already_modal: true
-                                        }) + '</div>';
+                                        }, data.object) + '</div>';
 
                         data.lists[field.name + '_list'] = angular.isArray(field.list) ? field.list : [];
                         data.configs[field.name + '_config'] = angular.isObject(field.config) ? field.config : {};
@@ -464,6 +468,21 @@ angular
                         controller: ['$scope', '$mdDialog', 'data', function ($scope, $mdDialog, data) {
                             angular.extend($scope, data);
                             $scope.save = function() {
+                                $scope.form.$setSubmitted();
+
+                                if(!$scope.form.$valid)
+                                    return;
+                                //
+                                // var errors = {};
+                                // data.fields.forEach(function(field){
+                                //     if (field.required && !$scope.object[field.name])
+                                //         errors[field.name] = true;
+                                //     else if (errors[field.name])
+                                //         delete errors[field.name];
+                                // });
+                                // if (!AEditHelpers.isEmptyObject(item.errors))
+                                //     return;
+
                                 $mdDialog.hide($scope.object);
                             };
                             $scope.cancel = function() {
@@ -472,14 +491,18 @@ angular
                         }],
                         template: '' +
                         '<md-dialog>' +
-                                '<md-toolbar class="md-primary"><div class="md-toolbar-tools"><h4>' + AEditConfig.locale.create_new + '</h4><span class="flex"></span><md-button class="md-icon-button" ng-click="cancel()"><md-icon>close</md-icon></md-button></div></md-toolbar>' +
-                                '<md-dialog-content layout="row" class="padding padding-top" layout-wrap>' +
-                                    inputsHtml +
-                                '</md-dialog-content>' +
-                                '<md-dialog-actions>' +
-                                    '<md-button ng-click="save()">' + AEditConfig.locale.save + '</md-button>' +
-                                    '<md-button ng-click="cancel()">' + AEditConfig.locale.cancel + '</md-button>' +
-                                '</md-dialog-actions>' +
+                            '<md-toolbar class="md-primary"><div class="md-toolbar-tools"><h4>' + AEditConfig.locale.create_new + '</h4><span class="flex"></span><md-button class="md-icon-button" ng-click="cancel()"><md-icon>close</md-icon></md-button></div></md-toolbar>' +
+                            '<md-dialog-content layout="row" class="padding padding-top" layout-wrap>' +
+                                '<form name="form" layout="column" flex="grow">' +
+                                    '<md-content layout="row" layout-wrap>' +
+                                        inputsHtml +
+                                    '</md-content>' +
+                                '</form>' +
+                            '</md-dialog-content>' +
+                            '<md-dialog-actions>' +
+                                '<md-button ng-click="save()">' + AEditConfig.locale.save + '</md-button>' +
+                                '<md-button ng-click="cancel()">' + AEditConfig.locale.cancel + '</md-button>' +
+                            '</md-dialog-actions>' +
                         '</md-dialog>'
                     }).then(function(savedItem){
                         saveToList(item, savedItem)

@@ -11,9 +11,12 @@ angular.module('a-edit')
             //  item_name
             //  field_name
             //  always_edit
-            generateDirectiveByConfig: function(field, config){
+            generateDirectiveByConfig: function(field, config, object){
                 var output = '';
                 var directive = '';
+
+                if(!config)
+                    config = {};
 
                 switch(field.type){
                     case 'select':
@@ -44,13 +47,13 @@ angular.module('a-edit')
                 output += '<' + directive + ' ';
 
                 output += 'type="' + (field.type || '') + '" ' +
-                    'input-name="' + (field.input_name || '') + '" ';
+                    'name="' + (field.input_name || config.input_name || '') + '" ';
 
                 //if(field.width)
                  //   output += 'width="' + field.width + '" ';
 
                 if(field.required)
-                    output += 'required="true" ';
+                    output += 'ng-required="true" ';
 
                 if('get_list' in config)
                     output += 'get-list="' + config.get_list + '" ';
@@ -90,13 +93,18 @@ angular.module('a-edit')
                     'has-error="' + item_name + '.errors.' + field_name + '" ' +
                     'ng-model-str="' + item_name + '.' +  field_name + '_str" ' +
                     'ng-model-sub-str="' + item_name + '.' +  field_name + '_sub_str" ' +
-                    (field.default_value ? 'default-value="' + field.default_value + '" ' : '') +
                     (config.no_label ? '' : 'label="' + field.label + '" ' )+
                     'view-mode="!' + is_edit + '" '+
                     'is-new="' + (config.is_new ? 'true': 'false') + '" '+
                     'ng-class="{\'edit\':' + (config.is_new ? 'true': is_edit) + '}" '+
                     'placeholder="' + ((config.always_edit ? field.new_placeholder : field.placeholder) || '') + '" ';
 
+                if(field.default_value){
+                    if(angular.isFunction(field.default_value))
+                        field.default_value = field.default_value(object);
+
+                    output += 'default-value="' + field.default_value + '" ';
+                }
                 if(directive == 'ae-file-upload')
                     output += 'uploader="' + item_name + '.' + field_name + '__uploader" ';
 

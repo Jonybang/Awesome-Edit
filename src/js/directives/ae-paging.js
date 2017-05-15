@@ -10,9 +10,11 @@ angular
                 totalItems: '='
             },
             link: function (scope, element) {
-                scope.$watch('ngModel.total_items', function(totalItems){
-                    scope.ngModel.total_pages = Math.ceil(parseInt(totalItems) / scope.ngModel.per_page);
-                });
+                scope.$watch('ngModel.total_items', onConfigChange);
+                scope.$watch('ngModel.per_page', onConfigChange);
+                function onConfigChange(){
+                    scope.ngModel.total_pages = Math.ceil(parseInt(scope.ngModel.total_items) / scope.ngModel.per_page);
+                }
                 var isFirstChange = true;
                 scope.pagingChanged = function(){
                     if(isFirstChange){

@@ -274,9 +274,12 @@ angular.module('a-edit')
             //  item_name
             //  field_name
             //  always_edit
-            generateDirectiveByConfig: function(field, config){
+            generateDirectiveByConfig: function(field, config, object){
                 var output = '';
                 var directive = '';
+
+                if(!config)
+                    config = {};
 
                 switch(field.type){
                     case 'select':
@@ -307,13 +310,13 @@ angular.module('a-edit')
                 output += '<' + directive + ' ';
 
                 output += 'type="' + (field.type || '') + '" ' +
-                    'input-name="' + (field.input_name || '') + '" ';
+                    'name="' + (field.input_name || config.input_name || '') + '" ';
 
                 //if(field.width)
                  //   output += 'width="' + field.width + '" ';
 
                 if(field.required)
-                    output += 'required="true" ';
+                    output += 'ng-required="true" ';
 
                 if('get_list' in config)
                     output += 'get-list="' + config.get_list + '" ';
@@ -353,13 +356,18 @@ angular.module('a-edit')
                     'has-error="' + item_name + '.errors.' + field_name + '" ' +
                     'ng-model-str="' + item_name + '.' +  field_name + '_str" ' +
                     'ng-model-sub-str="' + item_name + '.' +  field_name + '_sub_str" ' +
-                    (field.default_value ? 'default-value="' + field.default_value + '" ' : '') +
                     (config.no_label ? '' : 'label="' + field.label + '" ' )+
                     'view-mode="!' + is_edit + '" '+
                     'is-new="' + (config.is_new ? 'true': 'false') + '" '+
                     'ng-class="{\'edit\':' + (config.is_new ? 'true': is_edit) + '}" '+
                     'placeholder="' + ((config.always_edit ? field.new_placeholder : field.placeholder) || '') + '" ';
 
+                if(field.default_value){
+                    if(angular.isFunction(field.default_value))
+                        field.default_value = field.default_value(object);
+
+                    output += 'default-value="' + field.default_value + '" ';
+                }
                 if(directive == 'ae-file-upload')
                     output += 'uploader="' + item_name + '.' + field_name + '__uploader" ';
 
@@ -929,7 +937,7 @@ angular
 
                     angular.element(element).html('');
 
-                    var template = angular.element('<md-content>' + tplHtml + '</md-content>');
+                    var template = angular.element(tplHtml);
                     //var template = angular.element('<md-content>' + tplHtml + '</md-content>');
 
                     angular.element(element).append($compile(template)(scope));
@@ -1374,9 +1382,11 @@ angular
                 totalItems: '='
             },
             link: function (scope, element) {
-                scope.$watch('ngModel.total_items', function(totalItems){
-                    scope.ngModel.total_pages = Math.ceil(parseInt(totalItems) / scope.ngModel.per_page);
-                });
+                scope.$watch('ngModel.total_items', onConfigChange);
+                scope.$watch('ngModel.per_page', onConfigChange);
+                function onConfigChange(totalItems){
+                    scope.ngModel.total_pages = Math.ceil(parseInt(scope.ngModel.totalItems) / scope.ngModel.per_page);
+                }
                 var isFirstChange = true;
                 scope.pagingChanged = function(){
                     if(isFirstChange){
@@ -1421,8 +1431,9 @@ angular
                             (type == 'select' || type == 'textselect' ? ' md-selected-item="$parent.options.selected" ' : ' ') +
                             'ng-if="!viewMode"' +
                             'id="{{id}}" ' +
-                            'name="{{name}}" ' +
-                            'ng-required="ngRequired" ' +
+                            'md-input-name="{{name}}" ' +
+                            'ng-required="{{ngRequired}}" ' +
+                            'md-require-match="ngRequired" ' +
                             'md-clear-button="!disallowClear" ' +
                             'md-search-text="options.search" ' +
                             'md-items="item in getListByResource()" ' + // | filter:options.search"
@@ -1809,11 +1820,13 @@ angular
                         scope.ngResourceFields = [{name: scope.nameField || 'name' || scope.orNameField, label: ''}];
 
                     var inputsHtml = '';
-                    var data = { lists: {}, configs: {}, object: item || {} };
+                    var data = { lists: {}, configs: {}, object: item || {}, fields: scope.ngResourceFields };
 
                     scope.ngResourceFields.forEach(function(field){
-                        if(field.name == scope.nameField || field.name == 'name' || field.name == scope.orNameField)
-                            field.default_value = scope.options.search;
+                        if(field.name == scope.nameField || field.name == 'name' || field.name == scope.orNameField){
+                            data.object[field.name] = scope.options.search;
+                            //field.default_value = scope.options.search;
+                        }
 
                         inputsHtml += '<div class="ae-select-input-dialog-field" flex="grow" layout="row" layout-fill>' + AEditHelpers.generateDirectiveByConfig(field, {
                                             item_name: 'object',
@@ -1822,9 +1835,10 @@ angular
                                             get_list: true,
                                             is_new: true,
                                             list_variable: 'lists.' + field.name + '_list',
-                                            config_variable: 'configs.' + field.name + '_config'
+                                            config_variable: 'configs.' + field.name + '_config',
+                                            input_name: field.name
                                             //already_modal: true
-                                        }) + '</div>';
+                                        }, data.object) + '</div>';
 
                         data.lists[field.name + '_list'] = angular.isArray(field.list) ? field.list : [];
                         data.configs[field.name + '_config'] = angular.isObject(field.config) ? field.config : {};
@@ -1855,6 +1869,21 @@ angular
                         controller: ['$scope', '$mdDialog', 'data', function ($scope, $mdDialog, data) {
                             angular.extend($scope, data);
                             $scope.save = function() {
+                                $scope.form.$setSubmitted();
+
+                                if(!$scope.form.$valid)
+                                    return;
+                                //
+                                // var errors = {};
+                                // data.fields.forEach(function(field){
+                                //     if (field.required && !$scope.object[field.name])
+                                //         errors[field.name] = true;
+                                //     else if (errors[field.name])
+                                //         delete errors[field.name];
+                                // });
+                                // if (!AEditHelpers.isEmptyObject(item.errors))
+                                //     return;
+
                                 $mdDialog.hide($scope.object);
                             };
                             $scope.cancel = function() {
@@ -1863,14 +1892,18 @@ angular
                         }],
                         template: '' +
                         '<md-dialog>' +
-                                '<md-toolbar class="md-primary"><div class="md-toolbar-tools"><h4>' + AEditConfig.locale.create_new + '</h4><span class="flex"></span><md-button class="md-icon-button" ng-click="cancel()"><md-icon>close</md-icon></md-button></div></md-toolbar>' +
-                                '<md-dialog-content layout="row" class="padding padding-top" layout-wrap>' +
-                                    inputsHtml +
-                                '</md-dialog-content>' +
-                                '<md-dialog-actions>' +
-                                    '<md-button ng-click="save()">' + AEditConfig.locale.save + '</md-button>' +
-                                    '<md-button ng-click="cancel()">' + AEditConfig.locale.cancel + '</md-button>' +
-                                '</md-dialog-actions>' +
+                            '<md-toolbar class="md-primary"><div class="md-toolbar-tools"><h4>' + AEditConfig.locale.create_new + '</h4><span class="flex"></span><md-button class="md-icon-button" ng-click="cancel()"><md-icon>close</md-icon></md-button></div></md-toolbar>' +
+                            '<md-dialog-content layout="row" class="padding padding-top" layout-wrap>' +
+                                '<form name="form" layout="column" flex="grow">' +
+                                    '<md-content layout="row" layout-wrap>' +
+                                        inputsHtml +
+                                    '</md-content>' +
+                                '</form>' +
+                            '</md-dialog-content>' +
+                            '<md-dialog-actions>' +
+                                '<md-button ng-click="save()">' + AEditConfig.locale.save + '</md-button>' +
+                                '<md-button ng-click="cancel()">' + AEditConfig.locale.cancel + '</md-button>' +
+                            '</md-dialog-actions>' +
                         '</md-dialog>'
                     }).then(function(savedItem){
                         saveToList(item, savedItem)
@@ -1980,6 +2013,8 @@ angular
                 '<div ng-if="!viewMode" ng-class="input_class" layout>' +
                 inputTagBegin +
                 ' placeholder="{{$parent.placeholder}}" ' +
+                ' name="{{$parent.name}}" ' +
+                ' ng-required="$parent.ngRequired" ' +
                 ' ng-model="$parent.ngModel" ' + (type != 'textarea' ? 'ng-enter="$parent.save()"' : '') +
                 ' ng-model-options="$parent.ngModelOptions || {}"' +
                 ' ng-style="{ \'width\' : $parent.width + \'px\'}"' +
@@ -2008,6 +2043,7 @@ angular
                 modalOptions: '=?',
                 hasError: '=?',
                 ngDisabled: '=?',
+                ngRequired: '=?',
                 defaultValue: '@',
                 //callbacks
                 ngChange: '&',
@@ -2017,7 +2053,6 @@ angular
                 placeholder: '@',
                 name: '@',
                 width: '@',
-                required: '@',
                 type: '@' //text or textarea
             },
             link: function (scope, element, attrs) {

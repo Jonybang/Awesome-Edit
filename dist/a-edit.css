@@ -82,6 +82,9 @@ figure:focus,
 md-checkbox > .md-container.md-ink-ripple {
   margin: 5px; }
 
+.ng-submitted md-autocomplete input.ng-invalid {
+  border: 1px solid #c51162; }
+
 .md-panel md-input-container {
   margin: 8px 0; }
 
@@ -151,6 +154,9 @@ md-dialog-content > .ae-select-input-dialog-field md-input-container {
   /*stretch*/
   -ms-flex-line-pack: start;
       align-content: flex-start; }
+
+ae-text-input md-input-container {
+  margin-bottom: 0; }
 
 div[class^="ae-grid-col-"] {
   margin: auto; }
