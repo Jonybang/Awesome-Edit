@@ -12,6 +12,8 @@ angular.module('a-edit')
             //  field_name
             //  always_edit
             generateDirectiveByConfig: function(field, config, object){
+                field = angular.copy(field);
+
                 var output = '';
                 var directive = '';
 

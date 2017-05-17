@@ -98,14 +98,12 @@ ae-grid .md-subheader .md-subheader-inner {
 ae-grid md-input-container {
   margin: 0; }
 
-md-dialog-content > .ae-select-input-dialog-field {
+md-dialog-content .ae-select-input-dialog-field {
   padding-bottom: 5px; }
-
-md-dialog-content > .ae-select-input-dialog-field > * {
-  width: 100%; }
-
-md-dialog-content > .ae-select-input-dialog-field md-input-container {
-  margin-bottom: 0; }
+  md-dialog-content .ae-select-input-dialog-field > * {
+    width: 100%; }
+  md-dialog-content .ae-select-input-dialog-field md-input-container {
+    margin-bottom: 0; }
 
 .ae-sort-link {
   position: relative; }
