@@ -389,10 +389,10 @@ angular
                         return objProp || '';
                     }
 
-                    if(!scope.nameField || !scope.nameField.includes('.'))
+                    if(!scope.nameField && scope.nameField.indexOf('.') == -1 && scope.nameField.indexOf('+') == -1)
                         return obj[scope.nameField] || obj.name || obj[scope.orNameField];
-                    else if(scope.nameField.includes('.')) {
-                        if(scope.nameField.includes('+')){
+                    else {
+                        if(scope.nameField.indexOf('+') != -1){
                             var result = '';
                             scope.nameField.split('+').forEach(function(fieldname, index){
                                 var fieldValue = getFieldByName(fieldname);
@@ -467,21 +467,18 @@ angular
                         },
                         controller: ['$scope', '$mdDialog', 'data', function ($scope, $mdDialog, data) {
                             angular.extend($scope, data);
+
+                            $scope.isDisabled = function(){
+                                return scope.ngResourceFields.some(function(field){
+                                    return field.required && !$scope.object[field.name];
+                                });
+                            };
+
                             $scope.save = function() {
                                 $scope.form.$setSubmitted();
 
                                 if(!$scope.form.$valid)
                                     return;
-                                //
-                                // var errors = {};
-                                // data.fields.forEach(function(field){
-                                //     if (field.required && !$scope.object[field.name])
-                                //         errors[field.name] = true;
-                                //     else if (errors[field.name])
-                                //         delete errors[field.name];
-                                // });
-                                // if (!AEditHelpers.isEmptyObject(item.errors))
-                                //     return;
 
                                 $mdDialog.hide($scope.object);
                             };
@@ -500,7 +497,7 @@ angular
                                 '</form>' +
                             '</md-dialog-content>' +
                             '<md-dialog-actions>' +
-                                '<md-button ng-click="save()">' + AEditConfig.locale.save + '</md-button>' +
+                                '<md-button ng-click="save()" ng-disabled="isDisabled()">' + AEditConfig.locale.save + '</md-button>' +
                                 '<md-button ng-click="cancel()">' + AEditConfig.locale.cancel + '</md-button>' +
                             '</md-dialog-actions>' +
                         '</md-dialog>'

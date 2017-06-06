@@ -285,6 +285,7 @@ angular
                         return;
 
                     if (scope.actualOptions.ajax_handler) {
+                        scope.ajaxList.paging.current = 1;
                         scope.getList();
                         return;
                     }
