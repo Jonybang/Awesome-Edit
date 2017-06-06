@@ -566,6 +566,7 @@ angular
                         return;
 
                     if (scope.actualOptions.ajax_handler) {
+                        scope.ajaxList.paging.current = 1;
                         scope.getList();
                         return;
                     }
@@ -1464,21 +1465,18 @@ angular
                         },
                         controller: ['$scope', '$mdDialog', 'data', function ($scope, $mdDialog, data) {
                             angular.extend($scope, data);
+
+                            $scope.isDisabled = function(){
+                                return scope.ngResourceFields.some(function(field){
+                                    return field.required && !$scope.object[field.name];
+                                });
+                            };
+
                             $scope.save = function() {
                                 $scope.form.$setSubmitted();
 
                                 if(!$scope.form.$valid)
                                     return;
-                                //
-                                // var errors = {};
-                                // data.fields.forEach(function(field){
-                                //     if (field.required && !$scope.object[field.name])
-                                //         errors[field.name] = true;
-                                //     else if (errors[field.name])
-                                //         delete errors[field.name];
-                                // });
-                                // if (!AEditHelpers.isEmptyObject(item.errors))
-                                //     return;
 
                                 $mdDialog.hide($scope.object);
                             };
@@ -1497,7 +1495,7 @@ angular
                                 '</form>' +
                             '</md-dialog-content>' +
                             '<md-dialog-actions>' +
-                                '<md-button ng-click="save()">' + AEditConfig.locale.save + '</md-button>' +
+                                '<md-button ng-click="save()" ng-disabled="isDisabled()">' + AEditConfig.locale.save + '</md-button>' +
                                 '<md-button ng-click="cancel()">' + AEditConfig.locale.cancel + '</md-button>' +
                             '</md-dialog-actions>' +
                         '</md-dialog>'

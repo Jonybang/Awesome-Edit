@@ -389,7 +389,7 @@ angular
                         return objProp || '';
                     }
 
-                    if(!scope.nameField && scope.nameField.indexOf('.') == -1 && scope.nameField.indexOf('+') == -1)
+                    if(!scope.nameField || (scope.nameField.indexOf('.') == -1 && scope.nameField.indexOf('+') == -1))
                         return obj[scope.nameField] || obj.name || obj[scope.orNameField];
                     else {
                         if(scope.nameField.indexOf('+') != -1){
