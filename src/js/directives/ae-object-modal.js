@@ -20,9 +20,19 @@ angular
                 scope.options = scope.modalResourceOptions || AEditConfig.current_options;
 
                 element.on("click", function () {
-                    var template = cache.get(resource_name) || '';
-                    //'<button ng-click="cancel()" class="close pull-right"><span>&times;</span></button>' +
-                    if(!template){
+                    // var template = cache.get(resource_name) || '';
+                    // //'<button ng-click="cancel()" class="close pull-right"><span>&times;</span></button>' +
+                    // if(!template){
+
+                    var data = {
+                        object: angular.copy(scope.aeObjectModal),
+                        resource: scope.options.resource,
+                        lists: scope.options.lists,
+                        viewMode: scope.viewMode
+                    };
+
+                    var template = '';
+
                         template +=
                             '<md-dialog class="ae-object-modal">' +
                                 '<md-toolbar>' +
@@ -50,6 +60,8 @@ angular
                             }) + '</div>';
 
                             template += '</md-content>';
+
+                            data[field.name + '_resource'] = field.resource;
                         });
                         
                         template +=
@@ -59,19 +71,14 @@ angular
                                 '</md-dialog-actions>' +
                             '</md-dialog>';
                             
-                        cache.put(resource_name, template);
-                    }
+                    //     cache.put(resource_name, template);
+                    // }
 
                     var modalInstance = $mdDialog.show({
                         clickOutsideToClose: true,
                         template: template,
                         locals: {
-                            data: {
-                                object: angular.copy(scope.aeObjectModal),
-                                resource: scope.options.resource,
-                                lists: scope.options.lists,
-                                viewMode: scope.viewMode
-                            }
+                            data: data
                         },
                         controller: ['$scope', '$mdDialog', 'data', function($scope, $mdDialog, data) {
                             angular.extend($scope, data);
