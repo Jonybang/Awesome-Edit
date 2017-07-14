@@ -101,6 +101,11 @@ angular
                 self.temp_params._offset = (self.paging.current - 1) * self.paging.per_page;
             };
 
+            self.setSortingByString = function(string){
+                self.sorting = {};
+                self.sorting[string.replace("-", "")] = string.indexOf('-') == -1 ? 'ASC' : 'DESC';
+            };
+
             self.sortingToQuery = function(){
                 if(self.manualSorting)
                     return;
