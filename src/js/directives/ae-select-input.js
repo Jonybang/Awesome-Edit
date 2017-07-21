@@ -422,9 +422,11 @@ angular
                     var data = { lists: {}, configs: {}, object: item || {}, fields: scope.ngResourceFields };
 
                     scope.ngResourceFields.forEach(function(field){
-                        if(field.name == scope.nameField || field.name == 'name' || field.name == scope.orNameField){
-                            data.object[field.name] = scope.options.search;
-                            //field.default_value = scope.options.search;
+                        if(!item.id){
+                            if(field.name == scope.nameField || field.name == 'name' || field.name == scope.orNameField){
+                                data.object[field.name] = scope.options.search;
+                                //field.default_value = scope.options.search;
+                            }
                         }
 
                         inputsHtml += '<div class="ae-select-input-dialog-field" flex="grow" layout="row" layout-fill>' + AEditHelpers.generateDirectiveByConfig(field, {
