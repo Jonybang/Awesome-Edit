@@ -91,6 +91,7 @@ angular
                 ngChange: '&',
                 onSave: '&',
                 onSelect: '&',
+                onRemove: '&',
                 //sub
                 adder: '=?',
                 getList: '=?',
@@ -176,6 +177,8 @@ angular
 
                 scope.removeFromMultiSelect = function(item){
                     $timeout(scope.ngChange);
+                    if(scope.onRemove)
+                        scope.onRemove({item: item});
 
                     if(scope.ngModel.includes(item))
                         scope.ngModel.splice(scope.ngModel.indexOf(item), 1);
