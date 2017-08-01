@@ -162,6 +162,7 @@ angular
                         if(!scope.objectsById)
                             scope.objectsById = {};
                         scope.objectsById[obj.id] = obj;
+                        scope.options.search = '';
                     } else if(scope.type == 'textselect'){
                         scope.fakeModel = scope.options.selected;
                     }
@@ -422,7 +423,7 @@ angular
                     var data = { lists: {}, configs: {}, object: item || {}, fields: scope.ngResourceFields };
 
                     scope.ngResourceFields.forEach(function(field){
-                        if(!item.id){
+                        if(!item || !item.id){
                             if(field.name == scope.nameField || field.name == 'name' || field.name == scope.orNameField){
                                 data.object[field.name] = scope.options.search;
                                 //field.default_value = scope.options.search;
