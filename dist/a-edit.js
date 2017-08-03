@@ -1153,13 +1153,6 @@ angular
                 // Callbacks
                 //=============================================================
                 scope.selectedItemChange = function(obj){
-                    if(scope.onSelect){
-                        if(angular.isObject(obj))
-                            scope.onSelect({item: obj.id});
-                        else
-                            scope.onSelect({item: obj});
-                    }
-                    $timeout(scope.ngChange);
 
                     if(scope.type == 'select')  {
                         scope.fakeModel = scope.options.selected ?  scope.options.selected.id || scope.options.selected.value : null;
@@ -1183,12 +1176,25 @@ angular
                     //scope.options.search = '';
 
                     getList();
+
+                    $timeout(function () {
+                        if(scope.onSelect){
+                            if(angular.isObject(obj))
+                                scope.onSelect({item: obj.id});
+                            else
+                                scope.onSelect({item: obj});
+                        }
+                    });
+
+                    $timeout(scope.ngChange);
                 };
 
                 scope.removeFromMultiSelect = function(item){
                     $timeout(scope.ngChange);
-                    if(scope.onRemove)
-                        scope.onRemove({item: item});
+                    $timeout(function () {
+                        if (scope.onRemove)
+                            scope.onRemove({item: item});
+                    });
 
                     if(scope.ngModel.includes(item))
                         scope.ngModel.splice(scope.ngModel.indexOf(item), 1);
