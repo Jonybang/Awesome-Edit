@@ -1096,6 +1096,7 @@ angular
                 ngChange: '&',
                 onSave: '&',
                 onSelect: '&',
+                onRemove: '&',
                 //sub
                 adder: '=?',
                 getList: '=?',
@@ -1152,7 +1153,12 @@ angular
                 // Callbacks
                 //=============================================================
                 scope.selectedItemChange = function(obj){
-                    $timeout(scope.onSelect);
+                    if(scope.onSelect){
+                        if(angular.isObject(obj))
+                            scope.scope.onSelect({item: obj.id});
+                        else
+                            scope.onSelect({item: obj});
+                    }
                     $timeout(scope.ngChange);
 
                     if(scope.type == 'select')  {
@@ -1181,6 +1187,8 @@ angular
 
                 scope.removeFromMultiSelect = function(item){
                     $timeout(scope.ngChange);
+                    if(scope.onRemove)
+                        scope.onRemove({item: item});
 
                     if(scope.ngModel.includes(item))
                         scope.ngModel.splice(scope.ngModel.indexOf(item), 1);

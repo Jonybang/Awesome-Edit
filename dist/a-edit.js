@@ -1153,7 +1153,12 @@ angular
                 // Callbacks
                 //=============================================================
                 scope.selectedItemChange = function(obj){
-                    $timeout(scope.onSelect);
+                    if(scope.onSelect){
+                        if(angular.isObject(obj))
+                            scope.onSelect({item: obj.id});
+                        else
+                            scope.onSelect({item: obj});
+                    }
                     $timeout(scope.ngChange);
 
                     if(scope.type == 'select')  {
