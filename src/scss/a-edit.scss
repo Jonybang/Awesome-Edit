@@ -176,6 +176,10 @@ div[class^="ae-grid-col-"] {
     max-height: 100%;
   }
 }
+
+.ae-grid-row {
+  min-height: 30px;
+}
 @for $i from 1 through 100 {
   .ae-grid-col-#{$i} {
     width: 1% * $i;
