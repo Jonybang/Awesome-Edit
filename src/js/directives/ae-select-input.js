@@ -95,6 +95,7 @@ angular
                 //sub
                 adder: '=?',
                 getList: '=?',
+                idAsName: '=?',
                 nameField: '@',
                 orNameField: '@',
                 placeholder: '@',
@@ -248,7 +249,19 @@ angular
 
                 function getList(resolve, reject){
                     if(!scope.ngResource){
+                        if(!scope.local_list)
+                            scope.local_list = [];
+
                         var filtred = $filter('filter')(scope.local_list, scope.options.search);
+
+                        filtred = filtred.filter(function (item) {
+                            if(scope.type == 'multiselect' && scope.ngModel && scope.ngModel.length)
+                                return scope.ngModel.indexOf(item.id) == -1;
+                            else if(scope.type == 'select')
+                                return scope.ngModel != item.id;
+                            else
+                                return true;
+                        });
 
                         if(angular.isFunction(resolve))
                             resolve(filtred);
@@ -308,7 +321,7 @@ angular
                 });
 
                 scope.setSelected = function(){
-                    if(!scope.local_list || !scope.local_list.length)
+                    if((!scope.local_list || !scope.local_list.length) && !scope.idAsName)
                         return;
 
                     if(scope.type == 'textselect'){
@@ -331,6 +344,14 @@ angular
                         scope.ngModel.forEach(function(id, index){
                             if(scope.objectsById[id])
                                 return;
+
+                            if(scope.idAsName){
+                                scope.objectsById[id] = {
+                                    id: id,
+                                    name: id
+                                };
+                                return;
+                            }
 
                             var foundItem = null;
                             scope.local_list.some(function(item){
@@ -392,7 +413,7 @@ angular
                     if(!obj)
                         return '';
 
-                    if(scope.type == 'textselect')
+                    if(scope.type == 'textselect' || angular.isString(obj))
                         return obj;
 
                     function getFieldByName(nameField){
