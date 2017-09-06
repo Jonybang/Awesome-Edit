@@ -1263,7 +1263,7 @@ angular
                             if(scope.type == 'multiselect' && scope.ngModel && scope.ngModel.length)
                                 return scope.ngModel.indexOf(item.id) == -1;
                             else if(scope.type == 'select')
-                                return scope.ngModel != item.id;
+                                return scope.ngModel != (item.id || item.value);
                             else
                                 return true;
                         });

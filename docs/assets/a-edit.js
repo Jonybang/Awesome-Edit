@@ -1346,9 +1346,6 @@ angular
 
                         scope.options.selected = angular.copy(scope.ngModel);
 
-                        if(scope.idAsName){
-                            scope.objectsById = {};
-                        }
                         scope.ngModel.forEach(function(id, index){
                             if(scope.objectsById[id])
                                 return;

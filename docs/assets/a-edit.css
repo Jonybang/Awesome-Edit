@@ -173,6 +173,9 @@ div[class^="ae-grid-col-"] {
   div[class^="ae-grid-col-"] img {
     max-height: 100%; }
 
+.ae-grid-row {
+  min-height: 30px; }
+
 .ae-grid-col-1 {
   width: 1%; }
 
