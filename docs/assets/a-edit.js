@@ -1263,7 +1263,7 @@ angular
                             if(scope.type == 'multiselect' && scope.ngModel && scope.ngModel.length)
                                 return scope.ngModel.indexOf(item.id) == -1;
                             else if(scope.type == 'select')
-                                return scope.ngModel != item.id;
+                                return scope.ngModel != (item.id || item.value);
                             else
                                 return true;
                         });
@@ -1829,7 +1829,7 @@ angular
 
             self.manualSorting = false;
 
-            self.getData = function(options){
+            self.getData = function(options, callback){
                 if(options){
                     if(options.is_add_next_page)
                         self.paging.current++;
@@ -1852,6 +1852,8 @@ angular
 
                 var result = self.resource.query(params, function(data, headers){
                     self.paging.total_items = headers('Meta-Filter-Count');
+                    if(callback)
+                        callback(callback);
                 });
                 result.$promise = result.$promise.then(function(data){
                     if(options && options.is_add_next_page)

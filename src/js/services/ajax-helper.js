@@ -32,7 +32,7 @@ angular
 
             self.manualSorting = false;
 
-            self.getData = function(options){
+            self.getData = function(options, callback){
                 if(options){
                     if(options.is_add_next_page)
                         self.paging.current++;
@@ -55,6 +55,8 @@ angular
 
                 var result = self.resource.query(params, function(data, headers){
                     self.paging.total_items = headers('Meta-Filter-Count');
+                    if(callback)
+                        callback(data);
                 });
                 result.$promise = result.$promise.then(function(data){
                     if(options && options.is_add_next_page)
